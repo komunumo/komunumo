@@ -249,9 +249,7 @@ public final class LoginService {
                         LOGGER.warn("User with email '{}' exists, but login is not allowed for type '{}'.", email, user.type());
                     }
                 },
-                () -> {
-                    LOGGER.warn("User with email '{}' not found. Ignoring login request.", email);
-                }
+                () -> LOGGER.warn("User with email '{}' not found. Ignoring login request.", email)
         );
     }
 
