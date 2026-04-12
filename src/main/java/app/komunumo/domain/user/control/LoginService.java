@@ -56,6 +56,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+/**
+ * <p>Service responsible for passwordless login, logout, and confirmation-link handling.</p>
+ *
+ * <p>The service authenticates users via email-based confirmation links and synchronizes the
+ * authentication state with the current Vaadin/Spring Security session.</p>
+ */
 @Service
 public final class LoginService {
 
@@ -64,7 +70,6 @@ public final class LoginService {
     public static final @NotNull String CONFIRMATION_PARAMETER = "confirm";
 
     private final @NotNull AuthenticationState authenticationState;
-
     private final @NotNull UserService userService;
 
     /**
@@ -80,6 +85,14 @@ public final class LoginService {
     private final ConfigurationService configurationService;
     private final MailService mailService;
 
+    /**
+     * <p>Creates a new login service instance.</p>
+     *
+     * @param userService service for loading users by email or identifier
+     * @param authenticationState shared UI authentication state
+     * @param configurationService service for instance configuration values
+     * @param mailService service used to send login confirmation mails
+     */
     public LoginService(final @NotNull UserService userService,
                         final @NotNull AuthenticationState authenticationState,
                         final @NotNull ConfigurationService configurationService,
@@ -91,10 +104,25 @@ public final class LoginService {
         this.mailService = mailService;
     }
 
+    /**
+     * <p>Performs a login attempt for the given email address.</p>
+     *
+     * @param emailAddress the email address used to authenticate the user
+     * @return {@code true} if authentication was successful, otherwise {@code false}
+     */
     public boolean login(final @NotNull String emailAddress) {
         return internalLogin(emailAddress);
     }
 
+    /**
+     * <p>Executes the internal authentication workflow for the provided email address.</p>
+     *
+     * <p>The method validates login eligibility, updates the security context, persists it in the
+     * HTTP session, and synchronizes the UI authentication state.</p>
+     *
+     * @param emailAddress the email address used to authenticate the user
+     * @return {@code true} if authentication was successful, otherwise {@code false}
+     */
     private boolean internalLogin(final @NotNull String emailAddress) {
         final var optUser = userService.getUserByEmail(emailAddress);
         if (optUser.isEmpty()) {
@@ -149,19 +177,37 @@ public final class LoginService {
         return true;
     }
 
+    /**
+     * <p>Returns the currently authenticated user if available.</p>
+     *
+     * @return the logged-in user wrapped in an {@link Optional}
+     */
     public @NotNull Optional<UserDto> getLoggedInUser() {
         return SecurityUtil.getUserPrincipal()
                 .flatMap(principal -> userService.getUserById(principal.getUserId()));
     }
 
+    /**
+     * <p>Indicates whether a user is currently logged in.</p>
+     *
+     * @return {@code true} if a user is authenticated, otherwise {@code false}
+     */
     public boolean isUserLoggedIn() {
         return getLoggedInUser().isPresent();
     }
 
+    /**
+     * <p>Logs out the current user and redirects to the default logout success URL.</p>
+     */
     public void logout() {
         logout(SecurityConfig.LOGOUT_SUCCESS_URL);
     }
 
+    /**
+     * <p>Logs out the current user and redirects to the given location.</p>
+     *
+     * @param location the target location used after logout
+     */
     public void logout(final @NotNull String location) {
         authenticationState.setAuthenticated(false);
 
@@ -176,6 +222,15 @@ public final class LoginService {
         }
     }
 
+    /**
+     * <p>Starts the email-based login confirmation process for the given user email.</p>
+     *
+     * <p>If the email belongs to a login-capable user, a confirmation link is generated, cached,
+     * and sent via email. Unknown emails are intentionally ignored in the UI and only logged.</p>
+     *
+     * @param email the email address to start the login process for
+     * @param locale the locale used for the outgoing confirmation email
+     */
     public void startLoginProcess(final @NotNull String email,
                                   final @NotNull Locale locale) {
         userService.getUserByEmail(email).ifPresentOrElse(
@@ -200,6 +255,15 @@ public final class LoginService {
         );
     }
 
+    /**
+     * <p>Validates and handles a login confirmation identifier.</p>
+     *
+     * <p>The identifier is resolved from the in-memory cache. On successful authentication, the
+     * cached confirmation data is removed.</p>
+     *
+     * @param confirmationId the confirmation identifier from the login link
+     * @return {@code true} if login was successful, otherwise {@code false}
+     */
     public boolean handleLogin(final @NotNull String confirmationId) {
         final var confirmationData = confirmationCache.getIfPresent(confirmationId);
         if (confirmationData != null) {
