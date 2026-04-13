@@ -28,6 +28,7 @@ class MailTemplateIdTest {
         assertThat(MailTemplateId.CONFIRMATION_PROCESS).hasToString("CONFIRMATION_PROCESS");
         assertThat(MailTemplateId.EVENT_REGISTRATION_NOTIFY_MANAGERS).hasToString("EVENT_REGISTRATION_NOTIFY_MANAGERS");
         assertThat(MailTemplateId.EVENT_REGISTRATION_SUCCESS).hasToString("EVENT_REGISTRATION_SUCCESS");
+        assertThat(MailTemplateId.EVENT_UNREGISTRATION_NOTIFY_MANAGERS).hasToString("EVENT_UNREGISTRATION_NOTIFY_MANAGERS");
         assertThat(MailTemplateId.TEST).hasToString("TEST");
     }
 

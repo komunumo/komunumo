@@ -299,7 +299,7 @@ class ParticipantServiceKT extends KaribuTest {
     void handleConfirmationResponse_shouldNotifyEventManagers_withParticipantName() {
         final var event = eventService.getUpcomingEventsWithImage().getFirst().event();
         final var email = "participant-with-name@example.com";
-        final var user = userService.storeUser(new UserDto(
+        userService.storeUser(new UserDto(
                 null, null, null, null, email, "Alice", "",
                 null, UserRole.USER, UserType.LOCAL));
 
@@ -331,7 +331,8 @@ class ParticipantServiceKT extends KaribuTest {
 
         assertThat(confirmationResponse.confirmationStatus()).isEqualTo(ConfirmationStatus.SUCCESS);
         final var expectedParticipantCount = Integer.toString(service.getParticipantCount(event));
-        assertManagerNotificationMail(mailServiceMock, locale, event.title(), "Alice",
+        assertManagerNotificationMail(mailServiceMock, MailTemplateId.EVENT_REGISTRATION_NOTIFY_MANAGERS,
+                locale, event.title(), "Alice",
                 expectedParticipantCount, expectedRecipientEmails);
     }
 
@@ -368,11 +369,13 @@ class ParticipantServiceKT extends KaribuTest {
 
         assertThat(confirmationResponse.confirmationStatus()).isEqualTo(ConfirmationStatus.SUCCESS);
         final var expectedParticipantCount = Integer.toString(service.getParticipantCount(event));
-        assertManagerNotificationMail(mailServiceMock, locale, event.title(), "Someone",
+        assertManagerNotificationMail(mailServiceMock, MailTemplateId.EVENT_REGISTRATION_NOTIFY_MANAGERS,
+                locale, event.title(), "Someone",
                 expectedParticipantCount, expectedRecipientEmails);
     }
 
     private void assertManagerNotificationMail(final @NotNull MailService mailServiceMock,
+                                               final @NotNull MailTemplateId mailTemplateId,
                                                final @NotNull Locale locale,
                                                final @NotNull String eventTitle,
                                                final @NotNull String participantName,
@@ -381,12 +384,21 @@ class ParticipantServiceKT extends KaribuTest {
         final var managerMailInvocation = mockingDetails(mailServiceMock).getInvocations().stream()
                 .filter(invocation -> "sendMail".equals(invocation.getMethod().getName()))
                 .filter(invocation -> invocation.getArguments().length >= 5)
-                .filter(invocation -> invocation.getArguments()[0] == MailTemplateId.EVENT_REGISTRATION_NOTIFY_MANAGERS)
+                .filter(invocation -> invocation.getArguments()[0] == mailTemplateId)
                 .findFirst()
                 .orElseThrow();
 
         assertMailArguments(managerMailInvocation, locale, eventTitle, participantName,
                 participantCount, expectedRecipientEmails);
+    }
+
+    private void assertNoMailWithTemplate(final @NotNull MailService mailServiceMock,
+                                          final @NotNull MailTemplateId mailTemplateId) {
+        final var templateMailSent = mockingDetails(mailServiceMock).getInvocations().stream()
+                .filter(invocation -> "sendMail".equals(invocation.getMethod().getName()))
+                .anyMatch(invocation -> invocation.getArguments().length > 0
+                        && invocation.getArguments()[0] == mailTemplateId);
+        assertThat(templateMailSent).isFalse();
     }
 
     @SuppressWarnings("unchecked")
@@ -485,7 +497,22 @@ class ParticipantServiceKT extends KaribuTest {
         final var result = service.unregisterFromEvent(userWithoutEmail, event, locale);
 
         assertThat(result).isTrue();
-        verify(mailServiceMock, never()).sendMail(any(), any(), any(), any(), any());
+        assertNoMailWithTemplate(mailServiceMock, MailTemplateId.EVENT_UNREGISTRATION_SUCCESS);
+
+        final var expectedRecipientEmails = dsl.select(USER.EMAIL)
+                .from(MEMBER)
+                .join(USER).on(MEMBER.USER_ID.eq(USER.ID))
+                .where(MEMBER.COMMUNITY_ID.eq(event.communityId()))
+                .and(MEMBER.ROLE.in(MemberRole.OWNER.name(), MemberRole.ORGANIZER.name()))
+                .and(USER.EMAIL.isNotNull())
+                .fetch(USER.EMAIL)
+                .stream()
+                .filter(recipientEmail -> !recipientEmail.isBlank())
+                .distinct()
+                .toArray(String[]::new);
+        final var expectedParticipantCount = Integer.toString(service.getParticipantCount(event));
+        assertManagerNotificationMail(mailServiceMock, MailTemplateId.EVENT_UNREGISTRATION_NOTIFY_MANAGERS,
+                locale, event.title(), userWithoutEmail.name(), expectedParticipantCount, expectedRecipientEmails);
     }
 
     @Test
@@ -522,7 +549,22 @@ class ParticipantServiceKT extends KaribuTest {
         final var result = service.unregisterFromEvent(userWithoutEmail, event, locale);
 
         assertThat(result).isTrue();
-        verify(mailServiceMock, never()).sendMail(any(), any(), any(), any(), any());
+        assertNoMailWithTemplate(mailServiceMock, MailTemplateId.EVENT_UNREGISTRATION_SUCCESS);
+
+        final var expectedRecipientEmails = dsl.select(USER.EMAIL)
+                .from(MEMBER)
+                .join(USER).on(MEMBER.USER_ID.eq(USER.ID))
+                .where(MEMBER.COMMUNITY_ID.eq(event.communityId()))
+                .and(MEMBER.ROLE.in(MemberRole.OWNER.name(), MemberRole.ORGANIZER.name()))
+                .and(USER.EMAIL.isNotNull())
+                .fetch(USER.EMAIL)
+                .stream()
+                .filter(recipientEmail -> !recipientEmail.isBlank())
+                .distinct()
+                .toArray(String[]::new);
+        final var expectedParticipantCount = Integer.toString(service.getParticipantCount(event));
+        assertManagerNotificationMail(mailServiceMock, MailTemplateId.EVENT_UNREGISTRATION_NOTIFY_MANAGERS,
+                locale, event.title(), userWithoutEmail.name(), expectedParticipantCount, expectedRecipientEmails);
     }
 
 }

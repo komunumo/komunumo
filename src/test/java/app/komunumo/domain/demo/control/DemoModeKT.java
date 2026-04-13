@@ -97,7 +97,7 @@ class DemoModeKT extends KaribuTest {
         assertThat(eventService.getEventCount()).isEqualTo(6);
         assertThat(participantService.getParticipantCount()).isEqualTo(6);
         assertThat(globalPageService.getGlobalPageCount()).isEqualTo(2);
-        assertThat(mailService.getMailTemplateCount()).isEqualTo(18);
+        assertThat(mailService.getMailTemplateCount()).isEqualTo(20);
 
         imageService.storeImage(new ImageDto(null, ContentType.IMAGE_PNG));
         assertThat(imageService.getImageCount()).isEqualTo(3);
@@ -139,7 +139,7 @@ class DemoModeKT extends KaribuTest {
         dsl.deleteFrom(MAIL_TEMPLATE)
                 .where(MAIL_TEMPLATE.ID.eq("TEST"))
                 .execute();
-        assertThat(mailService.getMailTemplateCount()).isEqualTo(16);
+        assertThat(mailService.getMailTemplateCount()).isEqualTo(18);
 
         demoMode.resetDemoData();
 
@@ -152,7 +152,7 @@ class DemoModeKT extends KaribuTest {
         assertThat(eventService.getEventCount()).isEqualTo(6);
         assertThat(participantService.getParticipantCount()).isEqualTo(6);
         assertThat(globalPageService.getGlobalPageCount()).isEqualTo(2);
-        assertThat(mailService.getMailTemplateCount()).isEqualTo(18);
+        assertThat(mailService.getMailTemplateCount()).isEqualTo(20);
     }
 
 }

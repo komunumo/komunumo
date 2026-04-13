@@ -150,14 +150,16 @@ public final class ParticipantService {
                     mailVariables, email);
         }
 
-        notifyEventManagersAboutNewRegistration(event, user, locale);
+        notifyEventManagersAboutParticipationChange(event, user, locale,
+                MailTemplateId.EVENT_REGISTRATION_NOTIFY_MANAGERS);
 
         return true;
     }
 
-    private void notifyEventManagersAboutNewRegistration(final @NotNull EventDto event,
-                                                         final @NotNull UserDto user,
-                                                         final @NotNull Locale locale) {
+    private void notifyEventManagersAboutParticipationChange(final @NotNull EventDto event,
+                                                             final @NotNull UserDto user,
+                                                             final @NotNull Locale locale,
+                                                             final @NotNull MailTemplateId mailTemplateId) {
         final var recipientEmails = dsl.select(USER.EMAIL)
                 .from(MEMBER)
                 .join(USER).on(MEMBER.USER_ID.eq(USER.ID))
@@ -174,8 +176,7 @@ public final class ParticipantService {
                 "participantName", resolveParticipantName(user, locale),
                 "participantCount", Integer.toString(getParticipantCount(event))
         );
-        mailService.sendMail(MailTemplateId.EVENT_REGISTRATION_NOTIFY_MANAGERS, locale, MailFormat.MARKDOWN,
-                mailVariables, recipientEmails);
+        mailService.sendMail(mailTemplateId, locale, MailFormat.MARKDOWN, mailVariables, recipientEmails);
     }
 
     private @NotNull String resolveParticipantName(final @NotNull UserDto user,
@@ -278,6 +279,8 @@ public final class ParticipantService {
                                 mailService.sendMail(MailTemplateId.EVENT_UNREGISTRATION_SUCCESS, locale,
                                         MailFormat.MARKDOWN, mailVariables, email);
                             }
+                            notifyEventManagersAboutParticipationChange(event, user, locale,
+                                    MailTemplateId.EVENT_UNREGISTRATION_NOTIFY_MANAGERS);
                         }
                         return success;
                 })
