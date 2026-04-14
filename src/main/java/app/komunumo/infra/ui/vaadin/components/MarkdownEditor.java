@@ -17,7 +17,7 @@
  */
 package app.komunumo.infra.ui.vaadin.components;
 
-import app.komunumo.infra.ui.i18n.LocaleUtil;
+import app.komunumo.util.LocaleUtil;
 import app.komunumo.util.ResourceUtil;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;

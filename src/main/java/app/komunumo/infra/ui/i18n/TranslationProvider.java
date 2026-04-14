@@ -17,6 +17,7 @@
  */
 package app.komunumo.infra.ui.i18n;
 
+import app.komunumo.util.LocaleUtil;
 import com.ibm.icu.text.MessageFormat;
 import com.ibm.icu.util.ULocale;
 import com.vaadin.flow.i18n.I18NProvider;

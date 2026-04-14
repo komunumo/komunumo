@@ -25,7 +25,6 @@ import app.komunumo.domain.user.control.LoginService;
 import app.komunumo.domain.user.control.UserService;
 import app.komunumo.domain.user.entity.AuthenticationState;
 import app.komunumo.infra.config.AppConfig;
-import app.komunumo.infra.ui.i18n.LocaleUtil;
 import app.komunumo.infra.ui.vaadin.components.InfoBanner;
 import app.komunumo.infra.ui.vaadin.control.ThemeUtil;
 import app.komunumo.util.TimeZoneUtil;
@@ -106,7 +105,6 @@ public final class WebsiteLayout extends Div implements RouterLayout, BeforeEnte
         // configure utility classes based on browser settings
         final var ui = event.getUI();
         TimeZoneUtil.detectClientTimeZone(ui);
-        LocaleUtil.detectClientLocale(ui);
         ThemeUtil.initializeDarkMode(ui);
 
         // redirect users with incomplete profiles (logout is always allowed)

@@ -39,7 +39,7 @@ import tools.jackson.databind.node.ObjectNode;
 import java.nio.file.Files;
 import java.util.Base64;
 
-import static app.komunumo.infra.ui.i18n.LocaleUtil.getLanguageCode;
+import static app.komunumo.util.LocaleUtil.getLanguageCode;
 
 /**
  * <p>Exports all Komunumo instance data as a JSON file.</p>

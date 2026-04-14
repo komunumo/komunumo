@@ -60,7 +60,7 @@ class DateTimeUtilTest {
                                            final ZonedDateTime input,
                                            final ZonedDateTime expected) {
         try (var mockedTimeZoneUtil = mockStatic(TimeZoneUtil.class)) {
-            mockedTimeZoneUtil.when(TimeZoneUtil::getClientTimeZone).thenAnswer(invocation -> targetTimeZone);
+            mockedTimeZoneUtil.when(TimeZoneUtil::getClientTimeZone).thenAnswer(_ -> targetTimeZone);
             final var actual = DateTimeUtil.getLocalizedDateTime(input);
             assertThat(actual)
                     .as("Expected dateTime in zone %s", targetTimeZone)
@@ -107,7 +107,7 @@ class DateTimeUtilTest {
                                                  final ZonedDateTime inputDateTime,
                                                  final String expectedPart) {
         try (var mockedTimeZoneUtil = mockStatic(TimeZoneUtil.class)) {
-            mockedTimeZoneUtil.when(TimeZoneUtil::getClientTimeZone).thenAnswer(invocation -> zoneId);
+            mockedTimeZoneUtil.when(TimeZoneUtil::getClientTimeZone).thenAnswer(_ -> zoneId);
             final var formatted = DateTimeUtil.getLocalizedDateTimeString(inputDateTime, locale);
             assertThat(formatted)
                     .as("Formatted string for zone %s and locale %s", zoneId, locale)
@@ -123,8 +123,8 @@ class DateTimeUtilTest {
                                                           final String expectedPart) {
         when(mockSession.getAttribute("CLIENT_LOCALE")).thenReturn(locale);
         try (var mockedTimeZoneUtil = mockStatic(TimeZoneUtil.class)) {
-            mockedTimeZoneUtil.when(TimeZoneUtil::getClientTimeZone).thenAnswer(invocation -> zoneId);
-            final var formatted = DateTimeUtil.getLocalizedDateTimeString(inputDateTime);
+            mockedTimeZoneUtil.when(TimeZoneUtil::getClientTimeZone).thenAnswer(_ -> zoneId);
+            final var formatted = DateTimeUtil.getLocalizedDateTimeString(inputDateTime, locale);
             assertThat(formatted)
                     .as("Formatted string for zone %s and locale %s", zoneId, locale)
                     .isEqualTo(expectedPart);

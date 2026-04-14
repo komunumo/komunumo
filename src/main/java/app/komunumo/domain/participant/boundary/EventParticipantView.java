@@ -120,7 +120,7 @@ public final class EventParticipantView extends AbstractView implements BeforeEn
                 .setHeader("Name")
                 .setAutoWidth(true)
                 .setFlexGrow(1);
-        participantsGrid.addColumn(item -> getLocalizedDateTimeString(item.registered()))
+        participantsGrid.addColumn(item -> getLocalizedDateTimeString(item.registered(), getLocale()))
                 .setHeader("Registration")
                 .setAutoWidth(true)
                 .setFlexGrow(0);

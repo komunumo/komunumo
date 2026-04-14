@@ -18,7 +18,7 @@
 package app.komunumo.domain.core.config.control;
 
 import app.komunumo.domain.core.config.entity.ConfigurationSetting;
-import app.komunumo.infra.ui.i18n.LocaleUtil;
+import app.komunumo.util.LocaleUtil;
 import app.komunumo.infra.ui.vaadin.control.LinkUtil;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;

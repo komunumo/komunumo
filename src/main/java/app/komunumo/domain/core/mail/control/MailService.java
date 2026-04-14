@@ -22,7 +22,7 @@ import app.komunumo.domain.core.mail.entity.MailFormat;
 import app.komunumo.domain.core.mail.entity.MailTemplate;
 import app.komunumo.domain.core.mail.entity.MailTemplateId;
 import app.komunumo.infra.config.AppConfig;
-import app.komunumo.infra.ui.i18n.LocaleUtil;
+import app.komunumo.util.LocaleUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jooq.DSLContext;

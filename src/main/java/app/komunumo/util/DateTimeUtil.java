@@ -17,7 +17,6 @@
  */
 package app.komunumo.util;
 
-import app.komunumo.infra.ui.i18n.LocaleUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -32,10 +31,6 @@ public final class DateTimeUtil {
 
     public static @NotNull ZonedDateTime getLocalizedDateTime(final @NotNull ZonedDateTime dateTime) {
         return getLocalizedDateTime(dateTime, TimeZoneUtil.getClientTimeZone());
-    }
-
-    public static @NotNull String getLocalizedDateTimeString(final @Nullable ZonedDateTime dateTime) {
-        return getLocalizedDateTimeString(dateTime, LocaleUtil.getClientLocale());
     }
 
     public static @NotNull String getLocalizedDateTimeString(final @Nullable ZonedDateTime dateTime,

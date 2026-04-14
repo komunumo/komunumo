@@ -19,7 +19,7 @@ package app.komunumo.domain.page.control;
 
 import app.komunumo.data.db.tables.records.GlobalPageRecord;
 import app.komunumo.domain.page.entity.GlobalPageDto;
-import app.komunumo.infra.ui.i18n.LocaleUtil;
+import app.komunumo.util.LocaleUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Service;

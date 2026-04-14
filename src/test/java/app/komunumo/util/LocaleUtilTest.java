@@ -15,63 +15,15 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package app.komunumo.infra.ui.i18n;
+package app.komunumo.util;
 
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.server.VaadinSession;
-import org.jetbrains.annotations.NotNull;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.Locale;
-import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 class LocaleUtilTest {
-
-    private VaadinSession mockSession;
-
-    @BeforeEach
-    void setup() {
-        mockSession = mock(VaadinSession.class);
-        VaadinSession.setCurrent(mockSession);
-    }
-
-    @Test
-    void returnsClientLocaleIfSet() {
-        final var clientLocale = Locale.JAPANESE;
-        when(mockSession.getAttribute("CLIENT_LOCALE")).thenReturn(clientLocale);
-        final var result = LocaleUtil.getClientLocale();
-        assertThat(result).isEqualTo(clientLocale);
-    }
-
-    @Test
-    void returnsSystemDefaultLocaleIfNotSet() {
-        when(mockSession.getAttribute("CLIENT_LOCALE")).thenReturn(null);
-        final var result = LocaleUtil.getClientLocale();
-        assertThat(result).isEqualTo(Locale.getDefault());
-    }
-
-    @ParameterizedTest
-    @MethodSource("localeProvider")
-    @SuppressWarnings("java:S6068") // false positive for mock verification
-    void detectClientLocaleStoresInSession(final @NotNull Locale locale) {
-        final var mockUI = mock(UI.class);
-        when(mockUI.getLocale()).thenReturn(locale);
-        LocaleUtil.detectClientLocale(mockUI);
-        verify(mockSession).setAttribute(eq("CLIENT_LOCALE"), eq(locale));
-    }
-
-    static Stream<Locale> localeProvider() {
-        return Stream.of(Locale.ENGLISH, Locale.GERMANY, Locale.FRENCH, Locale.ITALIAN, Locale.JAPANESE);
-    }
 
     @Test
     void shouldReturnEmptyStringIfLocaleIsNull() {

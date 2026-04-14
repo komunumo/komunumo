@@ -21,7 +21,6 @@ import app.komunumo.domain.core.confirmation.boundary.ConfirmationDialog;
 import app.komunumo.domain.event.control.EventService;
 import app.komunumo.domain.event.entity.EventDto;
 import app.komunumo.domain.event.entity.EventWithImageDto;
-import app.komunumo.domain.user.boundary.LoginView;
 import app.komunumo.infra.ui.vaadin.components.KomunumoMessageBox;
 import app.komunumo.test.KaribuTest;
 import app.komunumo.util.DateTimeUtil;
@@ -35,6 +34,8 @@ import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.markdown.Markdown;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.Locale;
 
 import static app.komunumo.test.TestUtil.findComponent;
 import static com.github.mvysny.kaributesting.v10.LocatorJ._click;
@@ -70,11 +71,13 @@ class EventDetailViewKT extends KaribuTest {
 
         final var beginDate = _get(Paragraph.class, spec -> spec.withClasses("event-date-begin"));
         assertThat(beginDate).isNotNull();
-        assertThat(beginDate.getText()).isEqualTo("Begin: " + DateTimeUtil.getLocalizedDateTimeString(testEvent.begin()));
+        assertThat(beginDate.getText()).isEqualTo("Begin: " +
+                DateTimeUtil.getLocalizedDateTimeString(testEvent.begin(), Locale.ENGLISH));
 
         final var endDate = _get(Paragraph.class, spec -> spec.withClasses("event-date-end"));
         assertThat(endDate).isNotNull();
-        assertThat(endDate.getText()).isEqualTo("End: " + DateTimeUtil.getLocalizedDateTimeString(testEvent.end()));
+        assertThat(endDate.getText()).isEqualTo("End: " +
+                DateTimeUtil.getLocalizedDateTimeString(testEvent.end(), Locale.ENGLISH));
 
         final var description = _get(Markdown.class, spec -> spec.withClasses("event-description"));
         assertThat(description).isNotNull();
