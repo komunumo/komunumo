@@ -22,25 +22,27 @@ import app.komunumo.domain.event.control.EventService;
 import app.komunumo.infra.ui.vaadin.layout.AbstractView;
 import app.komunumo.infra.ui.vaadin.layout.WebsiteLayout;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import org.jetbrains.annotations.NotNull;
 
 @Route(value = "events", layout = WebsiteLayout.class)
 @AnonymousAllowed
-public final class EventGridView extends AbstractView {
+public final class UpcomingEventsView extends AbstractView {
 
-    public EventGridView(final @NotNull ConfigurationService configurationService,
-                         final @NotNull EventService eventService) {
+    public UpcomingEventsView(final @NotNull ConfigurationService configurationService,
+                              final @NotNull EventService eventService) {
         super(configurationService);
-        setId("events-view");
+        setId("upcoming-events-view");
+        add(new H3(getViewTitle()));
         final var events = eventService.getUpcomingEventsWithImage();
         add(new EventGrid(events));
     }
 
     @Override
     protected @NotNull String getViewTitle() {
-        return getTranslation(UI.getCurrent().getLocale(), "event.boundary.EventGridView.title");
+        return getTranslation(UI.getCurrent().getLocale(), "event.boundary.UpcomingEventsView.title");
     }
 
 }

@@ -49,32 +49,32 @@ class TranslationProviderTest {
 
     @Test
     void testGetMessageInEnglish() {
-        assertThat(translationProvider.getTranslation("event.boundary.EventGridView.title", ENGLISH))
-                .isEqualTo("Events");
+        assertThat(translationProvider.getTranslation("event.boundary.UpcomingEventsView.title", ENGLISH))
+                .isEqualTo("Upcoming Events");
     }
 
     @Test
     void testTranslationInGerman() {
-        assertThat(translationProvider.getTranslation("event.boundary.EventGridView.title", GERMAN))
-                .isEqualTo("Veranstaltungen");
+        assertThat(translationProvider.getTranslation("event.boundary.UpcomingEventsView.title", GERMAN))
+                .isEqualTo("Geplante Veranstaltungen");
     }
 
     @Test
     void testSwissGermanFallbackToGerman() {
-        assertThat(translationProvider.getTranslation("event.boundary.EventGridView.title", Locale.forLanguageTag("de-CH")))
-                .isEqualTo("Veranstaltungen");
+        assertThat(translationProvider.getTranslation("event.boundary.UpcomingEventsView.title", Locale.forLanguageTag("de-CH")))
+                .isEqualTo("Geplante Veranstaltungen");
     }
 
     @Test
     void testFallbackToEnglish() {
-        assertThat(translationProvider.getTranslation("event.boundary.EventGridView.title", Locale.ITALIAN))
-                .isEqualTo("Events");
+        assertThat(translationProvider.getTranslation("event.boundary.UpcomingEventsView.title", Locale.ITALIAN))
+                .isEqualTo("Upcoming Events");
     }
 
     @Test
     void testFallbackWhenLocaleIsNull() {
-        assertThat(translationProvider.getTranslation("event.boundary.EventGridView.title", null))
-                .isEqualTo("Events");
+        assertThat(translationProvider.getTranslation("event.boundary.UpcomingEventsView.title", null))
+                .isEqualTo("Upcoming Events");
     }
 
     @Test
@@ -110,8 +110,8 @@ class TranslationProviderTest {
 
     @Test
     void testMissingPlaceholder() {
-        assertThat(translationProvider.getTranslation("event.boundary.EventGridView.title", ENGLISH, "foobar"))
-                .isEqualTo("Events");
+        assertThat(translationProvider.getTranslation("event.boundary.UpcomingEventsView.title", ENGLISH, "foobar"))
+                .isEqualTo("Upcoming Events");
     }
 
     @Test

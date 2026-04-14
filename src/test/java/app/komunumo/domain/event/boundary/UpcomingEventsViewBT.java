@@ -27,7 +27,7 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class EventGridViewBT extends BrowserTest {
+class UpcomingEventsViewBT extends BrowserTest {
 
     @Autowired
     private @NotNull EventService eventService;
@@ -39,7 +39,7 @@ class EventGridViewBT extends BrowserTest {
         page.navigate(getInstanceUrl() + "events/");
         page.waitForSelector(getInstanceNameSelector());
         captureScreenshot("upcoming-events-view");
-        assertThat(page.title()).isEqualTo("Events – Komunumo Test");
+        assertThat(page.title()).isEqualTo("Upcoming Events – Komunumo Test");
 
         assertThat(page.locator("a[href='events']").getAttribute("highlight")).isNotNull().isBlank();
 
