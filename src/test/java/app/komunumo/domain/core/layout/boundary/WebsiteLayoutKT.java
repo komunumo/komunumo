@@ -53,7 +53,6 @@ import static app.komunumo.test.TestUtil.assertContainsExactlyOneRouterLinkOf;
 import static app.komunumo.test.TestUtil.findComponent;
 import static app.komunumo.test.TestUtil.findComponents;
 import static com.github.mvysny.kaributesting.v10.LocatorJ._find;
-import static com.github.mvysny.kaributesting.v10.LocatorJ._get;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;

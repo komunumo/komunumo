@@ -23,7 +23,7 @@ import app.komunumo.domain.core.confirmation.entity.ConfirmationRequest;
 import app.komunumo.domain.core.confirmation.entity.ConfirmationResponse;
 import app.komunumo.domain.core.confirmation.entity.ConfirmationStatus;
 import app.komunumo.domain.core.mail.control.MailService;
-import app.komunumo.infra.ui.i18n.TranslationProvider;
+import app.komunumo.infra.i18n.TranslationProvider;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import org.jetbrains.annotations.NotNull;

@@ -34,7 +34,7 @@ import app.komunumo.domain.participant.entity.RegisteredParticipantDto;
 import app.komunumo.domain.user.control.LoginService;
 import app.komunumo.domain.user.control.UserService;
 import app.komunumo.domain.user.entity.UserDto;
-import app.komunumo.infra.ui.i18n.TranslationProvider;
+import app.komunumo.infra.i18n.TranslationProvider;
 import app.komunumo.infra.ui.vaadin.control.LinkUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.VisibleForTesting;

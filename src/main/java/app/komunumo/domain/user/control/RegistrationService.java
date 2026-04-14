@@ -30,7 +30,7 @@ import app.komunumo.domain.core.mail.entity.MailTemplateId;
 import app.komunumo.domain.user.entity.UserDto;
 import app.komunumo.domain.user.entity.UserRole;
 import app.komunumo.domain.user.entity.UserType;
-import app.komunumo.infra.ui.i18n.TranslationProvider;
+import app.komunumo.infra.i18n.TranslationProvider;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

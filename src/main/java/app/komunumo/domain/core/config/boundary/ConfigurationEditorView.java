@@ -19,7 +19,7 @@ package app.komunumo.domain.core.config.boundary;
 
 import app.komunumo.domain.core.config.control.ConfigurationService;
 import app.komunumo.domain.core.config.entity.ConfigurationSetting;
-import app.komunumo.infra.ui.i18n.TranslationProvider;
+import app.komunumo.infra.i18n.TranslationProvider;
 import app.komunumo.infra.ui.vaadin.layout.AbstractView;
 import app.komunumo.infra.ui.vaadin.layout.WebsiteLayout;
 import com.vaadin.flow.component.html.H2;

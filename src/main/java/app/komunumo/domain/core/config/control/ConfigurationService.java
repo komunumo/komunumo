@@ -18,8 +18,8 @@
 package app.komunumo.domain.core.config.control;
 
 import app.komunumo.domain.core.config.entity.ConfigurationSetting;
-import app.komunumo.util.LocaleUtil;
 import app.komunumo.infra.ui.vaadin.control.LinkUtil;
+import app.komunumo.util.LocaleUtil;
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import org.jetbrains.annotations.NotNull;

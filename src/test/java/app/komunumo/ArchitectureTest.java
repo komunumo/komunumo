@@ -250,7 +250,7 @@ class ArchitectureTest {
     @Test
     void localeGetLanguageShouldOnlyBeUsedInLocaleUtil() {
         final var forbiddenMethod = "getLanguage";
-        final var allowedClass = "app.komunumo.infra.ui.i18n.LocaleUtil";
+        final var allowedClass = "app.komunumo.util.LocaleUtil";
 
         final var onlyLocaleUtilMayCallGetLanguage = new ArchCondition<JavaClass>(
                 "only LocaleUtil may call Locale.getLanguage()") {

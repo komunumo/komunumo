@@ -28,7 +28,7 @@ import app.komunumo.domain.member.control.MemberService;
 import app.komunumo.domain.page.control.GlobalPageService;
 import app.komunumo.domain.participant.control.ParticipantService;
 import app.komunumo.domain.user.control.UserService;
-import app.komunumo.infra.ui.i18n.TranslationProvider;
+import app.komunumo.infra.i18n.TranslationProvider;
 import app.komunumo.util.ImageUtil;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;

@@ -44,7 +44,7 @@ import app.komunumo.domain.user.entity.UserRole;
 import app.komunumo.domain.user.entity.UserType;
 import app.komunumo.infra.config.AppConfig;
 import app.komunumo.infra.config.FilesConfig;
-import app.komunumo.infra.ui.i18n.TranslationProvider;
+import app.komunumo.infra.i18n.TranslationProvider;
 import app.komunumo.util.ImageUtil;
 import nl.altindag.log.LogCaptor;
 import org.junit.jupiter.api.BeforeEach;

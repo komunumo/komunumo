@@ -31,7 +31,7 @@ import app.komunumo.domain.user.control.UserService;
 import app.komunumo.domain.user.entity.UserDto;
 import app.komunumo.domain.user.entity.UserRole;
 import app.komunumo.domain.user.entity.UserType;
-import app.komunumo.infra.ui.i18n.TranslationProvider;
+import app.komunumo.infra.i18n.TranslationProvider;
 import app.komunumo.test.KaribuTest;
 import org.jetbrains.annotations.NotNull;
 import org.jooq.DSLContext;

@@ -20,7 +20,7 @@ package app.komunumo.domain.user.control;
 import app.komunumo.domain.core.config.control.ConfigurationService;
 import app.komunumo.domain.core.confirmation.control.ConfirmationService;
 import app.komunumo.domain.core.mail.control.MailService;
-import app.komunumo.infra.ui.i18n.TranslationProvider;
+import app.komunumo.infra.i18n.TranslationProvider;
 import nl.altindag.log.LogCaptor;
 import org.junit.jupiter.api.Test;
 
