@@ -21,8 +21,11 @@ import app.komunumo.domain.core.image.entity.ImageDto;
 import app.komunumo.util.ImageUtil;
 import com.vaadin.flow.component.card.Card;
 import com.vaadin.flow.component.card.CardVariant;
+import com.vaadin.flow.component.ClickEvent;
+import com.vaadin.flow.component.ClickNotifier;
+import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.dom.DomEventListener;
+import com.vaadin.flow.shared.Registration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -31,7 +34,7 @@ import org.jetbrains.annotations.Nullable;
  *
  * <p>Adds common styling and support for a title and optional media content (image).</p>
  */
-public abstract class KomunumoCard extends Card {
+public abstract class KomunumoCard extends Card implements ClickNotifier<KomunumoCard> {
 
     /**
      * <p>Creates a new {@code KomunumoCard} with default styling and no content.</p>
@@ -78,16 +81,16 @@ public abstract class KomunumoCard extends Card {
      * <p>Registers a click listener on this card and automatically adds the
      * {@code clickable} CSS class to indicate interactivity (e.g., via cursor styling).</p>
      *
-     * <p>The listener will be invoked whenever a {@code click} DOM event is fired
+     * <p>The listener will be invoked whenever a {@code click} event is fired
      * on this component.</p>
      *
-     * @param listener the DOM event listener to handle click events, must not be {@code null}
+     * @param listener the click event listener, must not be {@code null}
      */
-    protected void addClickListener(final @NotNull DomEventListener listener) {
+    @Override
+    public @NotNull Registration addClickListener(
+            final @NotNull ComponentEventListener<ClickEvent<KomunumoCard>> listener) {
         addClassName("clickable");
-        getElement()
-                .addEventListener("click", listener)
-                .setFilter("event.button === 0");
+        return ClickNotifier.super.addClickListener(listener);
     }
 
 }
