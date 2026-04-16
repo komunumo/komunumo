@@ -39,5 +39,6 @@
 @import "views/community/community-detail-view.css";
 @import "views/community/create-community-view.css";
 @import "views/event/event-detail-view.css";
+@import "views/image/image-dialog.css";
 @import "views/user/login-view.css";
 @import "views/user/user-registration-view.css";

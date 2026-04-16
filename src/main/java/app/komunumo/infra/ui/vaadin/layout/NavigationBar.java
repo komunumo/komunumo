@@ -22,6 +22,7 @@ import app.komunumo.domain.community.boundary.CreateCommunityView;
 import app.komunumo.domain.core.config.boundary.ConfigurationEditorView;
 import app.komunumo.domain.core.config.control.ConfigurationService;
 import app.komunumo.domain.core.exporter.boundary.ExporterView;
+import app.komunumo.domain.core.image.boundary.OrphanedImagesView;
 import app.komunumo.domain.core.importer.boundary.ImporterView;
 import app.komunumo.domain.event.boundary.CreateEventView;
 import app.komunumo.domain.event.boundary.EventGridView;
@@ -93,6 +94,9 @@ public final class NavigationBar extends HorizontalLayout {
         final var adminMenu = adminMenuItem.getSubMenu();
         adminMenu.addItem(ui.getTranslation("vaadin.components.NavigationBar.config"),
                 _ -> ui.navigate(ConfigurationEditorView.class)
+        );
+        adminMenu.addItem(ui.getTranslation("vaadin.components.NavigationBar.orphanedImages"),
+                _ -> ui.navigate(OrphanedImagesView.class)
         );
         adminMenu.addItem(ui.getTranslation("vaadin.components.NavigationBar.import"),
                 _ -> ui.navigate(ImporterView.class)
