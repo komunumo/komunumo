@@ -17,174 +17,153 @@
  */
 package app.komunumo.domain.event.control;
 
-import app.komunumo.data.db.tables.Image;
-import app.komunumo.data.db.tables.records.EventRecord;
 import app.komunumo.domain.community.entity.CommunityDto;
-import app.komunumo.domain.core.image.entity.ContentType;
-import app.komunumo.domain.core.image.entity.ImageDto;
 import app.komunumo.domain.event.entity.EventDto;
-import app.komunumo.domain.event.entity.EventStatus;
-import app.komunumo.domain.event.entity.EventVisibility;
 import app.komunumo.domain.event.entity.EventWithImageDto;
-import app.komunumo.domain.member.entity.MemberRole;
 import app.komunumo.domain.user.entity.UserDto;
 import app.komunumo.domain.user.entity.UserRole;
-import app.komunumo.infra.persistence.jooq.StorageService;
-import app.komunumo.infra.persistence.jooq.UniqueIdGenerator;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jooq.DSLContext;
-import org.jooq.Record;
 import org.springframework.stereotype.Service;
 
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static app.komunumo.data.db.tables.Community.COMMUNITY;
-import static app.komunumo.data.db.tables.Event.EVENT;
-import static app.komunumo.data.db.tables.Image.IMAGE;
-import static app.komunumo.data.db.tables.Member.MEMBER;
-import static org.jooq.impl.DSL.noCondition;
-
+/**
+ * <p>Provides event-related business operations and delegates persistence to {@link EventStore}.</p>
+ *
+ * <p>This service forms the control-layer API for event use cases while keeping database
+ * access details encapsulated in the store implementation.</p>
+ */
 @Service
-public final class EventService extends StorageService {
+public final class EventService {
 
-    private final @NotNull DSLContext dsl;
+    /**
+     * <p>Store responsible for all event persistence operations.</p>
+     */
+    private final @NotNull EventStore eventStore;
 
-    public EventService(final @NotNull DSLContext dsl,
-                        final @NotNull UniqueIdGenerator idGenerator) {
-        super(idGenerator);
-        this.dsl = dsl;
+    /**
+     * <p>Creates a new event service.</p>
+     *
+     * @param eventStore the store used for event persistence access
+     */
+    EventService(final @NotNull EventStore eventStore) {
+        this.eventStore = eventStore;
     }
 
+    /**
+     * <p>Creates or updates an event.</p>
+     *
+     * @param event the event data to persist
+     * @return the persisted event
+     */
     public @NotNull EventDto storeEvent(final @NotNull EventDto event) {
-        final EventRecord eventRecord = dsl.fetchOptional(EVENT, EVENT.ID.eq(event.id()))
-                .orElse(dsl.newRecord(EVENT));
-        createOrUpdate(EVENT, event, eventRecord);
-        return eventRecord.into(EventDto.class);
+        return eventStore.storeEvent(event);
     }
 
+    /**
+     * <p>Loads an event by its unique identifier.</p>
+     *
+     * @param id the event ID
+     * @return an optional containing the event if found; otherwise empty
+     */
     public @NotNull Optional<EventDto> getEvent(final @NotNull UUID id) {
-        return dsl.selectFrom(EVENT)
-                .where(EVENT.ID.eq(id))
-                .fetchOptionalInto(EventDto.class);
+        return eventStore.getEvent(id);
     }
 
+    /**
+     * <p>Loads an event by ID including optional image data.</p>
+     *
+     * @param id the event ID
+     * @return an optional containing the event and image projection if found; otherwise empty
+     */
     public @NotNull Optional<EventWithImageDto> getEventWithImage(final @NotNull UUID id) {
-        var communityImage = IMAGE.as("COMMUNITY_IMAGE");
-        return dsl.select()
-                .from(EVENT)
-                .leftJoin(IMAGE).on(EVENT.IMAGE_ID.eq(IMAGE.ID))
-                .leftJoin(COMMUNITY).on(EVENT.COMMUNITY_ID.eq(COMMUNITY.ID))
-                .leftJoin(communityImage).on(COMMUNITY.IMAGE_ID.eq(communityImage.ID))
-                .where(EVENT.ID.eq(id)
-                        .and(EVENT.VISIBILITY.eq(EventVisibility.PUBLIC))
-                        .and(EVENT.STATUS.in(EventStatus.PUBLISHED, EventStatus.CANCELED)))
-                .fetchOptional(record -> mapRecordToEventWithImage(record, communityImage));
+        return eventStore.getEventWithImage(id);
     }
 
+    /**
+     * <p>Loads all events.</p>
+     *
+     * @return all events
+     */
     public @NotNull List<@NotNull EventDto> getEvents() {
-        return dsl.selectFrom(EVENT)
-                .fetchInto(EventDto.class);
+        return eventStore.getEvents();
     }
 
+    /**
+     * <p>Loads upcoming public events with image data.</p>
+     *
+     * @return upcoming events with optional image projection
+     */
     public @NotNull List<@NotNull EventWithImageDto> getUpcomingEventsWithImage() {
         return getUpcomingEventsWithImage(null);
     }
 
+    /**
+     * <p>Loads upcoming public events with image data, optionally filtered by community.</p>
+     *
+     * @param community the community filter; if {@code null}, events from all communities are returned
+     * @return upcoming events with optional image projection
+     */
     public @NotNull List<@NotNull EventWithImageDto> getUpcomingEventsWithImage(final @Nullable CommunityDto community) {
-        final var now = ZonedDateTime.now(ZoneOffset.UTC);
-        var communityImage = IMAGE.as("COMMUNITY_IMAGE");
-        return dsl.select()
-                .from(EVENT)
-                .leftJoin(IMAGE).on(EVENT.IMAGE_ID.eq(IMAGE.ID))
-                .leftJoin(COMMUNITY).on(EVENT.COMMUNITY_ID.eq(COMMUNITY.ID))
-                .leftJoin(communityImage).on(COMMUNITY.IMAGE_ID.eq(communityImage.ID))
-                .where(
-                        EVENT.BEGIN.isNotNull()
-                                .and(EVENT.END.isNotNull())
-                                .and(EVENT.END.gt(now))
-                                .and(EVENT.VISIBILITY.eq(EventVisibility.PUBLIC))
-                                .and(EVENT.STATUS.in(EventStatus.PUBLISHED, EventStatus.CANCELED))
-                                .and(community != null ? EVENT.COMMUNITY_ID.eq(community.id()) : noCondition()))
-                .orderBy(EVENT.BEGIN.asc())
-                .fetch(record -> mapRecordToEventWithImage(record, communityImage));
+        return eventStore.getUpcomingEventsWithImage(community);
     }
 
+    /**
+     * <p>Loads past public events with image data.</p>
+     *
+     * @return past events with optional image projection
+     */
     public @NotNull List<@NotNull EventWithImageDto> getPastEventsWithImage() {
         return getPastEventsWithImage(null);
     }
 
+    /**
+     * <p>Loads past public events with image data, optionally filtered by community.</p>
+     *
+     * @param community the community filter; if {@code null}, events from all communities are returned
+     * @return past events with optional image projection
+     */
     public @NotNull List<@NotNull EventWithImageDto> getPastEventsWithImage(final @Nullable CommunityDto community) {
-        final var now = ZonedDateTime.now(ZoneOffset.UTC);
-        var communityImage = IMAGE.as("COMMUNITY_IMAGE");
-        return dsl.select()
-                .from(EVENT)
-                .leftJoin(IMAGE).on(EVENT.IMAGE_ID.eq(IMAGE.ID))
-                .leftJoin(COMMUNITY).on(EVENT.COMMUNITY_ID.eq(COMMUNITY.ID))
-                .leftJoin(communityImage).on(COMMUNITY.IMAGE_ID.eq(communityImage.ID))
-                .where(
-                        EVENT.BEGIN.isNotNull()
-                                .and(EVENT.END.isNotNull())
-                                .and(EVENT.END.lt(now))
-                                .and(EVENT.VISIBILITY.eq(EventVisibility.PUBLIC))
-                                .and(EVENT.STATUS.in(EventStatus.PUBLISHED, EventStatus.CANCELED))
-                                .and(community != null ? EVENT.COMMUNITY_ID.eq(community.id()) : noCondition()))
-                .orderBy(EVENT.BEGIN.desc())
-                .fetch(record -> mapRecordToEventWithImage(record, communityImage));
+        return eventStore.getPastEventsWithImage(community);
     }
 
-    private @NotNull EventWithImageDto mapRecordToEventWithImage(final @NotNull Record record,
-                                                                 final @NotNull Image communityImage) {
-        final ImageDto image;
-        if (record.get(IMAGE.ID) != null) {
-            image = new ImageDto(
-                    record.get(IMAGE.ID, UUID.class),
-                    record.get(IMAGE.CONTENT_TYPE, ContentType.class)
-            );
-        } else if (record.get(communityImage.ID) != null) {
-            image = new ImageDto(
-                    record.get(communityImage.ID, UUID.class),
-                    record.get(communityImage.CONTENT_TYPE, ContentType.class)
-            );
-        } else {
-            image = null;
-        }
-
-        final var event = record.into(EVENT).into(EventDto.class);
-        return new EventWithImageDto(event, image);
-    }
-
+    /**
+     * <p>Counts all persisted events.</p>
+     *
+     * @return the total number of events; never negative
+     */
     public int getEventCount() {
-        return Optional.ofNullable(
-                dsl.selectCount()
-                        .from(EVENT)
-                        .fetchOne(0, Integer.class)
-        ).orElse(0);
+        return eventStore.getEventCount();
     }
 
+    /**
+     * <p>Deletes the given event.</p>
+     *
+     * @param event the event to delete
+     * @return {@code true} if the event was deleted; otherwise {@code false}
+     */
     public boolean deleteEvent(final @NotNull EventDto event) {
-        return dsl.delete(EVENT)
-                .where(EVENT.ID.eq(event.id()))
-                .execute() > 0;
+        return eventStore.deleteEvent(event) > 0;
     }
 
+    /**
+     * <p>Checks whether the given user has management permission for the given event.</p>
+     *
+     * <p>Administrators always have permission. Other users need manager permissions
+     * on the event's community.</p>
+     *
+     * @param event the event to check against
+     * @param user the user to check
+     * @return {@code true} if the user can manage the event; otherwise {@code false}
+     */
     public boolean hasManagementPermission(final @NotNull EventDto event, final @NotNull UserDto user) {
         if (user.role() == UserRole.ADMIN) {
             return true;
         }
 
-        return dsl.fetchExists(
-                dsl.selectOne()
-                        .from(EVENT)
-                        .join(MEMBER).on(MEMBER.COMMUNITY_ID.eq(EVENT.COMMUNITY_ID))
-                        .where(EVENT.ID.eq(event.id()))
-                        .and(MEMBER.USER_ID.eq(user.id()))
-                        .and(MEMBER.ROLE.in(MemberRole.OWNER.name(),
-                                MemberRole.ORGANIZER.name()))
-        );
+        return eventStore.hasManagementPermission(event, user);
     }
 }

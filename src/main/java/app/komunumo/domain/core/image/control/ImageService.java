@@ -17,14 +17,10 @@
  */
 package app.komunumo.domain.core.image.control;
 
-import app.komunumo.data.db.Tables;
-import app.komunumo.data.db.tables.records.ImageRecord;
 import app.komunumo.domain.core.image.entity.ImageDto;
-import app.komunumo.infra.persistence.jooq.UniqueIdGenerator;
 import app.komunumo.util.ImageUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -36,79 +32,88 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static app.komunumo.data.db.tables.Community.COMMUNITY;
-import static app.komunumo.data.db.tables.Event.EVENT;
-import static app.komunumo.data.db.tables.Image.IMAGE;
-import static app.komunumo.data.db.tables.User.USER;
-import static org.jooq.impl.DSL.selectOne;
-
+/**
+ * <p>Provides image-related business operations and delegates persistence to {@link ImageStore}.</p>
+ *
+ * <p>This service orchestrates image lifecycle use cases such as orphan cleanup and file deletion,
+ * while database access is encapsulated in the store implementation.</p>
+ */
 @Service
 public final class ImageService {
 
+    /**
+     * <p>Logger used for cleanup progress and file deletion errors.</p>
+     */
     private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(ImageService.class);
 
-    private final @NotNull DSLContext dsl;
-    private final @NotNull UniqueIdGenerator idGenerator;
+    /**
+     * <p>Store responsible for image persistence and read operations.</p>
+     */
+    private final @NotNull ImageStore imageStore;
 
-    public ImageService(final @NotNull DSLContext dsl,
-                        final @NotNull UniqueIdGenerator idGenerator) {
-        super();
-        this.dsl = dsl;
-        this.idGenerator = idGenerator;
+    /**
+     * <p>Creates a new image service.</p>
+     *
+     * @param imageStore the store used for image persistence access
+     */
+    ImageService(final @NotNull ImageStore imageStore) {
+        this.imageStore = imageStore;
     }
 
+    /**
+     * <p>Stores or updates an image record.</p>
+     *
+     * @param image the image DTO to persist
+     * @return the persisted image DTO
+     */
     public @NotNull ImageDto storeImage(final @NotNull ImageDto image) {
-        final ImageRecord imageRecord = dsl
-                .fetchOptional(Tables.IMAGE, Tables.IMAGE.ID.eq(image.id()))
-                .orElse(dsl.newRecord(Tables.IMAGE));
-        imageRecord.from(image);
-        if (imageRecord.getId() == null) { // NOSONAR (false positive: ID may be null for new images)
-            imageRecord.setId(idGenerator.getUniqueID(Tables.IMAGE));
-        }
-        imageRecord.store();
-        return imageRecord.into(ImageDto.class);
+        return imageStore.storeImage(image);
     }
 
+    /**
+     * <p>Loads an image by ID.</p>
+     *
+     * @param id the image ID; may be {@code null}
+     * @return an optional containing the image if found; otherwise empty
+     */
     public @NotNull Optional<ImageDto> getImage(final @Nullable UUID id) {
-        return id == null ? Optional.empty() : dsl
-                .selectFrom(IMAGE)
-                .where(IMAGE.ID.eq(id))
-                .fetchOptionalInto(ImageDto.class);
+        return imageStore.getImage(id);
     }
 
-    public List<ImageDto> getImages() {
-        return dsl.selectFrom(IMAGE)
-                .fetchInto(ImageDto.class);
+    /**
+     * <p>Loads all images.</p>
+     *
+     * @return all persisted images
+     */
+    public @NotNull List<@NotNull ImageDto> getImages() {
+        return imageStore.getImages();
     }
 
+    /**
+     * <p>Counts all persisted images.</p>
+     *
+     * @return the total number of images; never negative
+     */
     public int getImageCount() {
-        return Optional.ofNullable(
-                dsl.selectCount()
-                        .from(IMAGE)
-                        .fetchOne(0, Integer.class)
-        ).orElse(0);
+        return imageStore.getImageCount();
     }
 
+    /**
+     * <p>Loads all orphaned images.</p>
+     *
+     * <p>An image is orphaned when it is not referenced by community, event, or user records.</p>
+     *
+     * @return all orphaned image DTOs
+     */
     public @NotNull List<@NotNull ImageDto> findOrphanedImages() {
-        return dsl.selectFrom(IMAGE)
-                .whereNotExists(
-                        selectOne()
-                                .from(COMMUNITY)
-                                .where(COMMUNITY.IMAGE_ID.eq(IMAGE.ID))
-                )
-                .andNotExists(
-                        selectOne()
-                                .from(EVENT)
-                                .where(EVENT.IMAGE_ID.eq(IMAGE.ID))
-                )
-                .andNotExists(
-                        selectOne()
-                                .from(USER)
-                                .where(USER.IMAGE_ID.eq(IMAGE.ID))
-                )
-                .fetchInto(ImageDto.class);
+        return imageStore.findOrphanedImages();
     }
 
+    /**
+     * <p>Performs periodic cleanup of orphaned images.</p>
+     *
+     * <p>This cleanup removes orphaned image records and then removes orphaned files from disk.</p>
+     */
     @Scheduled(cron = "0 0 0 * * *")
     public void cleanupOrphanedImages() {
         LOGGER.info("Cleaning up orphaned images...");
@@ -117,19 +122,35 @@ public final class ImageService {
         LOGGER.info("Orphaned images cleaned.");
     }
 
-    public List<UUID> getAllImageIds() {
-        return dsl.select(IMAGE.ID)
-                .from(IMAGE)
-                .stream()
-                .map(r -> r.get(IMAGE.ID))
-                .toList();
+    /**
+     * <p>Loads the IDs of all images.</p>
+     *
+     * @return all persisted image IDs
+     */
+    public @NotNull List<@NotNull UUID> getAllImageIds() {
+        return imageStore.getAllImageIds();
     }
 
-    public List<ImageDto> getAllImages() {
-        return dsl.selectFrom(IMAGE)
-                .fetchInto(ImageDto.class);
+    /**
+     * <p>Loads all images.</p>
+     *
+     * <p>This method is functionally equivalent to {@link #getImages()} and is used by export workflows.</p>
+     *
+     * @return all persisted image DTOs
+     */
+    public @NotNull List<@NotNull ImageDto> getAllImages() {
+        return imageStore.getAllImages();
     }
 
+    /**
+     * <p>Deletes an image record and its file if present.</p>
+     *
+     * <p>The file deletion is attempted first. If file deletion fails, the error is logged and
+     * database deletion is still attempted.</p>
+     *
+     * @param image the image to delete
+     * @return {@code true} if a database record was deleted; otherwise {@code false}
+     */
     public boolean deleteImage(final @NotNull ImageDto image) {
         final var path = ImageUtil.resolveImagePath(image);
         if (path != null) {
@@ -140,9 +161,7 @@ public final class ImageService {
             }
         }
 
-        return dsl.delete(Tables.IMAGE)
-                .where(Tables.IMAGE.ID.eq(image.id()))
-                .execute() > 0;
+        return imageStore.deleteImage(image) > 0;
     }
 
 }

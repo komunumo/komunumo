@@ -15,20 +15,23 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package app.komunumo.domain.core.image.entity;
+package app.komunumo.domain.core.image.control;
 
+import app.komunumo.test.KaribuTest;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.UUID;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public record ImageDto(
-        @Nullable UUID id,
-        @NotNull ContentType contentType
-) {
+class ImageServiceKT extends KaribuTest {
 
-    public @NotNull String name() {
-        return id == null ? "" : "%s%s".formatted(id.toString(), contentType.getExtension());
+    @Autowired
+    private @NotNull ImageService imageService;
+
+    @Test
+    void getImageWithNullUuidReturnsEmpty() {
+        assertThat(imageService.getImage(null)).isEmpty();
     }
 
 }

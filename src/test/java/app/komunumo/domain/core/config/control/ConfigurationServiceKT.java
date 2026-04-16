@@ -19,7 +19,6 @@ package app.komunumo.domain.core.config.control;
 
 import app.komunumo.domain.core.config.entity.ConfigurationSetting;
 import app.komunumo.test.KaribuTest;
-import org.jooq.DSLContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -42,13 +41,13 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 class ConfigurationServiceKT extends KaribuTest {
 
     @Autowired
-    private DSLContext dsl;
-
     private ConfigurationService configurationService;
+
+    @Autowired
+    private ConfigurationStore configurationStore;
 
     @BeforeEach
     void cleanSetUp() {
-        configurationService = new ConfigurationService(dsl);
         configurationService.deleteAllConfigurations();
     }
 
@@ -150,8 +149,9 @@ class ConfigurationServiceKT extends KaribuTest {
         configurationService.setConfiguration(INSTANCE_NAME, "Custom Komunumo");
         assertThat(configurationService.getConfiguration(INSTANCE_NAME)).isEqualTo("Custom Komunumo");
 
-        configurationService.deleteConfiguration(INSTANCE_NAME);
+        final var deleted = configurationService.deleteConfiguration(INSTANCE_NAME);
 
+        assertThat(deleted).isTrue();
         final var value = configurationService.getConfiguration(INSTANCE_NAME);
         assertThat(value).isEqualTo("Your Instance Name");
     }
@@ -165,8 +165,9 @@ class ConfigurationServiceKT extends KaribuTest {
         assertThat(configurationService.getConfiguration(INSTANCE_SLOGAN, GERMAN))
                 .isEqualTo("Deutscher Slogan");
 
-        configurationService.deleteConfiguration(INSTANCE_SLOGAN, GERMAN);
+        final var deleted = configurationService.deleteConfiguration(INSTANCE_SLOGAN, GERMAN);
 
+        assertThat(deleted).isTrue();
         assertThat(configurationService.getConfiguration(INSTANCE_SLOGAN, GERMAN))
                 .isEqualTo("English Slogan"); // Fallback
         assertThat(configurationService.getConfiguration(INSTANCE_SLOGAN, ENGLISH))
@@ -179,8 +180,9 @@ class ConfigurationServiceKT extends KaribuTest {
         assertThat(configurationService.getConfiguration(INSTANCE_SLOGAN, ENGLISH))
                 .isEqualTo("English Slogan");
 
-        configurationService.deleteConfiguration(INSTANCE_SLOGAN, ENGLISH);
+        final var deleted = configurationService.deleteConfiguration(INSTANCE_SLOGAN, ENGLISH);
 
+        assertThat(deleted).isTrue();
         assertThat(configurationService.getConfiguration(INSTANCE_SLOGAN, ENGLISH))
                 .isEqualTo("Your Instance Slogan");
     }
@@ -192,9 +194,10 @@ class ConfigurationServiceKT extends KaribuTest {
                 .isEqualTo("Deutscher Slogan");
 
         final var swissGerman = of("de", "CH");
-        configurationService.deleteConfiguration(INSTANCE_SLOGAN, swissGerman);
+        final var deleted = configurationService.deleteConfiguration(INSTANCE_SLOGAN, swissGerman);
 
         // The entry for "de" is considered deleted, therefore fallback to default
+        assertThat(deleted).isTrue();
         assertThat(configurationService.getConfiguration(INSTANCE_SLOGAN, swissGerman))
                 .isEqualTo("Your Instance Slogan");
     }
@@ -202,8 +205,9 @@ class ConfigurationServiceKT extends KaribuTest {
     @Test
     void deletingNonExistingConfigurationIsNoOp() {
         // Nothing set → Deletion must not fail
-        configurationService.deleteConfiguration(INSTANCE_NAME);
+        final var deleted = configurationService.deleteConfiguration(INSTANCE_NAME);
 
+        assertThat(deleted).isFalse();
         final var value = configurationService.getConfiguration(INSTANCE_NAME);
         assertThat(value).isEqualTo("Your Instance Name");
     }
@@ -213,8 +217,9 @@ class ConfigurationServiceKT extends KaribuTest {
         configurationService.setConfiguration(INSTANCE_NAME, "Neutral");
         assertThat(configurationService.getConfiguration(INSTANCE_NAME)).isEqualTo("Neutral");
 
-        configurationService.deleteConfiguration(INSTANCE_NAME, null);
+        final var deleted = configurationService.deleteConfiguration(INSTANCE_NAME, null);
 
+        assertThat(deleted).isTrue();
         assertThat(configurationService.getConfiguration(INSTANCE_NAME)).isEqualTo("Your Instance Name");
     }
 
@@ -246,6 +251,54 @@ class ConfigurationServiceKT extends KaribuTest {
         )
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Unsupported type: interface java.util.List");
+    }
+
+    @Test
+    void getConfigurationCountShouldReflectStoredRows() {
+        assertThat(configurationService.getConfigurationCount()).isZero();
+
+        configurationService.setConfiguration(INSTANCE_NAME, "My Instance");
+        configurationService.setConfiguration(INSTANCE_SLOGAN, ENGLISH, "English Slogan");
+        configurationService.setConfiguration(INSTANCE_SLOGAN, GERMAN, "Deutscher Slogan");
+
+        assertThat(configurationService.getConfigurationCount()).isEqualTo(3);
+    }
+
+    @Test
+    void getConfigurationWithoutFallbackShouldReturnDefaultWhenRequestedLocaleIsMissing() {
+        configurationService.setConfiguration(INSTANCE_SLOGAN, ENGLISH, "English Slogan");
+
+        final var result = configurationService.getConfigurationWithoutFallback(INSTANCE_SLOGAN, FRENCH);
+
+        assertThat(result).isEqualTo("Your Instance Slogan");
+    }
+
+    @Test
+    void clearCacheShouldReloadValuesFromDatabase() {
+        configurationService.setConfiguration(INSTANCE_NAME, "First Value");
+        assertThat(configurationService.getConfiguration(INSTANCE_NAME)).isEqualTo("First Value");
+
+        configurationStore.upsertConfigurationValue(INSTANCE_NAME, "", "Changed Directly In Store");
+
+        assertThat(configurationService.getConfiguration(INSTANCE_NAME)).isEqualTo("First Value");
+
+        configurationService.clearCache();
+
+        assertThat(configurationService.getConfiguration(INSTANCE_NAME)).isEqualTo("Changed Directly In Store");
+    }
+
+    @Test
+    void deleteAllConfigurationsShouldRemoveAllRowsAndResetToDefault() {
+        configurationService.setConfiguration(INSTANCE_NAME, "Configured Name");
+        configurationService.setConfiguration(INSTANCE_SLOGAN, ENGLISH, "Configured Slogan");
+        assertThat(configurationService.getConfigurationCount()).isEqualTo(2);
+
+        final var deleted = configurationService.deleteAllConfigurations();
+
+        assertThat(deleted).isTrue();
+        assertThat(configurationService.getConfigurationCount()).isZero();
+        assertThat(configurationService.getConfiguration(INSTANCE_NAME)).isEqualTo("Your Instance Name");
+        assertThat(configurationService.getConfiguration(INSTANCE_SLOGAN, ENGLISH)).isEqualTo("Your Instance Slogan");
     }
 
 }

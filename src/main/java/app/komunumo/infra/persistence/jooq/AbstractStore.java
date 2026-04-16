@@ -27,7 +27,7 @@ import java.time.ZonedDateTime;
  * <p>Provides generic persistence functionality for database records that
  * include timestamp fields such as {@code created} and {@code updated}.</p>
  *
- * <p>The {@link StorageService} handles both insert and update operations:
+ * <p>The {@link AbstractStore} handles both insert and update operations:
  * it determines whether a record is new or existing, assigns a unique ID
  * if necessary, and updates the relevant timestamps accordingly before
  * storing the record through jOOQ.</p>
@@ -35,7 +35,7 @@ import java.time.ZonedDateTime;
  * <p>This service ensures a consistent handling of record metadata across
  * all entities managed by Komunumo.</p>
  */
-public abstract class StorageService {
+public abstract class AbstractStore {
 
     /**
      * <p>The generator used to create unique identifiers for new records.</p>
@@ -43,12 +43,12 @@ public abstract class StorageService {
     private final @NotNull UniqueIdGenerator idGenerator;
 
     /**
-     * <p>Creates a new {@link StorageService} instance.</p>
+     * <p>Creates a new {@link AbstractStore} instance.</p>
      *
      * @param idGenerator the unique ID generator used for assigning identifiers
      *                    to newly created records
      */
-    protected StorageService(final @NotNull UniqueIdGenerator idGenerator) {
+    protected AbstractStore(final @NotNull UniqueIdGenerator idGenerator) {
         this.idGenerator = idGenerator;
     }
 

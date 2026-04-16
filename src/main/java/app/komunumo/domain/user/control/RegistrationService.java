@@ -41,20 +41,60 @@ import java.util.Map;
 
 import static app.komunumo.domain.core.config.entity.ConfigurationSetting.INSTANCE_REGISTRATION_ALLOWED;
 
+/**
+ * <p>Provides registration use cases including confirmation flow, account upsert, and post-registration login.</p>
+ */
 @Service
 public final class RegistrationService {
 
+    /**
+     * <p>Logger used for operational registration diagnostics.</p>
+     */
     private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(RegistrationService.class);
+    /**
+     * <p>Confirmation-context key holding the entered display name.</p>
+     */
     private static final @NotNull String CONTEXT_REGISTRATION_NAME = "name";
+    /**
+     * <p>Target location used after successful registration.</p>
+     */
     private static final @NotNull String REGISTRATION_SUCCESS_REDIRECT = "/settings/profile";
 
+    /**
+     * <p>Service used to read registration-related configuration values.</p>
+     */
     private final @NotNull ConfigurationService configurationService;
+    /**
+     * <p>Service used to load and persist user data.</p>
+     */
     private final @NotNull UserService userService;
+    /**
+     * <p>Service used to create an authenticated session after registration.</p>
+     */
     private final @NotNull LoginService loginService;
+    /**
+     * <p>Service used to send registration-related mails.</p>
+     */
     private final @NotNull MailService mailService;
+    /**
+     * <p>Service used to drive the email confirmation flow.</p>
+     */
     private final @NotNull ConfirmationService confirmationService;
+    /**
+     * <p>Provider used for localized registration texts.</p>
+     */
     private final @NotNull TranslationProvider translationProvider;
 
+    /**
+     * <p>Creates a new registration service.</p>
+     *
+     * @param configurationService service for registration feature flags
+     * @param userService service for user lookup and persistence
+     * @param loginService service for post-registration login
+     * @param mailService service for registration success mails
+     * @param confirmationService service for confirmation-process handling
+     * @param translationProvider provider for localized confirmation texts
+     */
     public RegistrationService(final @NotNull ConfigurationService configurationService,
                                final @NotNull UserService userService,
                                final @NotNull LoginService loginService,
@@ -70,6 +110,15 @@ public final class RegistrationService {
         this.translationProvider = translationProvider;
     }
 
+    /**
+     * <p>Starts the registration confirmation process.</p>
+     *
+     * <p>If registration is disabled, the request is ignored and logged.</p>
+     *
+     * @param name the display name entered during registration
+     * @param email the email address to register
+     * @param locale the locale used for translated confirmation texts
+     */
     public void startRegistrationProcess(final @NotNull String name,
                                          final @NotNull String email,
                                          final @NotNull Locale locale) {
@@ -90,6 +139,17 @@ public final class RegistrationService {
         confirmationService.sendConfirmationMail(email, confirmationRequest);
     }
 
+    /**
+     * <p>Handles the confirmed passwordless registration action.</p>
+     *
+     * <p>Creates a new local user when missing or upgrades an existing non-local user to local.
+     * Afterwards it sends a registration-success mail and logs the user in.</p>
+     *
+     * @param email the confirmed email address
+     * @param context the confirmation context containing optional registration data
+     * @param locale the locale used for translated messages and templates
+     * @return a success response including redirect target
+     */
     private @NotNull ConfirmationResponse passwordlessRegistrationHandler(final @NotNull String email,
                                                                           final @NotNull ConfirmationContext context,
                                                                           final @NotNull Locale locale) {
@@ -110,7 +170,14 @@ public final class RegistrationService {
         return new ConfirmationResponse(status, message, REGISTRATION_SUCCESS_REDIRECT);
     }
 
-    private UserDto createNewLocalUser(final @NotNull String name, final @NotNull String email) {
+    /**
+     * <p>Creates and stores a new local user for registration.</p>
+     *
+     * @param name the display name to assign
+     * @param email the email address to assign
+     * @return the persisted local user
+     */
+    private @NotNull UserDto createNewLocalUser(final @NotNull String name, final @NotNull String email) {
         return userService.storeUser(new UserDto(null, null, null, null, email, name, "", null,
                 UserRole.USER, UserType.LOCAL));
     }

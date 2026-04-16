@@ -17,47 +17,58 @@
  */
 package app.komunumo.domain.user.control;
 
+import app.komunumo.data.db.tables.records.UserRecord;
 import app.komunumo.domain.user.entity.UserDto;
-import app.komunumo.domain.user.entity.UserRole;
 import app.komunumo.domain.user.entity.UserType;
+import app.komunumo.infra.persistence.jooq.AbstractStore;
+import app.komunumo.infra.persistence.jooq.UniqueIdGenerator;
 import org.jetbrains.annotations.NotNull;
+import org.jooq.DSLContext;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static app.komunumo.data.db.tables.User.USER;
+
 /**
- * <p>Provides user-related business operations and delegates persistence to {@link UserStore}.</p>
+ * <p>Handles persistence operations for users.</p>
  *
- * <p>This service forms the control-layer API for user use cases while database access concerns
- * are encapsulated in the store implementation.</p>
+ * <p>This store encapsulates all jOOQ database access for creating, updating, loading,
+ * counting, and deleting users.</p>
  */
 @Service
-public final class UserService {
+final class UserStore extends AbstractStore {
 
     /**
-     * <p>Store responsible for user persistence and query operations.</p>
+     * <p>jOOQ DSL context used for all database operations in this store.</p>
      */
-    private final @NotNull UserStore userStore;
+    private final @NotNull DSLContext dsl;
 
     /**
-     * <p>Creates a new user service.</p>
+     * <p>Creates a new user store.</p>
      *
-     * @param userStore the store used for user persistence access
+     * @param dsl the jOOQ DSL context used for database access
+     * @param idGenerator the unique ID generator used by {@link AbstractStore}
      */
-    UserService(final @NotNull UserStore userStore) {
-        this.userStore = userStore;
+    UserStore(final @NotNull DSLContext dsl,
+              final @NotNull UniqueIdGenerator idGenerator) {
+        super(idGenerator);
+        this.dsl = dsl;
     }
 
     /**
-     * <p>Creates or updates a user.</p>
+     * <p>Creates or updates a user record.</p>
      *
      * @param user the user data to persist
      * @return the persisted user
      */
     public @NotNull UserDto storeUser(final @NotNull UserDto user) {
-        return userStore.storeUser(user);
+        final UserRecord userRecord = dsl.fetchOptional(USER, USER.ID.eq(user.id()))
+                .orElse(dsl.newRecord(USER));
+        createOrUpdate(USER, user, userRecord);
+        return userRecord.into(UserDto.class);
     }
 
     /**
@@ -66,7 +77,8 @@ public final class UserService {
      * @return all persisted users
      */
     public @NotNull List<@NotNull UserDto> getAllUsers() {
-        return userStore.getAllUsers();
+        return dsl.selectFrom(USER)
+                .fetchInto(UserDto.class);
     }
 
     /**
@@ -75,7 +87,12 @@ public final class UserService {
      * @return the number of admin users; never negative
      */
     public int getAdminCount() {
-        return userStore.getAdminCount();
+        return Optional.ofNullable(
+                dsl.selectCount()
+                        .from(USER)
+                        .where(USER.ROLE.eq("admin"))
+                        .fetchOne(0, Integer.class)
+        ).orElse(0);
     }
 
     /**
@@ -84,7 +101,12 @@ public final class UserService {
      * @return the number of regular users; never negative
      */
     public int getUserCount() {
-        return userStore.getUserCount();
+        return Optional.ofNullable(
+                dsl.selectCount()
+                        .from(USER)
+                        .where(USER.ROLE.eq("user"))
+                        .fetchOne(0, Integer.class)
+        ).orElse(0);
     }
 
     /**
@@ -94,7 +116,9 @@ public final class UserService {
      * @return an optional containing the user if found; otherwise empty
      */
     public @NotNull Optional<UserDto> getUserById(final @NotNull UUID id) {
-        return userStore.getUserById(id);
+        return dsl.selectFrom(USER)
+                .where(USER.ID.eq(id))
+                .fetchOptionalInto(UserDto.class);
     }
 
     /**
@@ -104,54 +128,33 @@ public final class UserService {
      * @return an optional containing the user if found; otherwise empty
      */
     public @NotNull Optional<UserDto> getUserByEmail(final @NotNull String email) {
-        return userStore.getUserByEmail(email);
-    }
-
-    /**
-     * <p>Creates and stores an anonymous user for the given email address.</p>
-     *
-     * @param email the email address to assign to the anonymous user
-     * @return the persisted anonymous user
-     */
-    public @NotNull UserDto createAnonymousUserWithEmail(final @NotNull String email) {
-        final var user = new UserDto(null, null, null,
-                null, email, "", "", null,
-                UserRole.USER, UserType.ANONYMOUS);
-        return storeUser(user);
+        return dsl.selectFrom(USER)
+                .where(USER.EMAIL.eq(email))
+                .fetchOptionalInto(UserDto.class);
     }
 
     /**
      * <p>Deletes a user.</p>
      *
      * @param user the user to delete
-     * @return {@code true} if the user was deleted; otherwise {@code false}
+     * @return the number of deleted rows
      */
-    public boolean deleteUser(final @NotNull UserDto user) {
-        return userStore.deleteUser(user) > 0;
+    public int deleteUser(final @NotNull UserDto user) {
+        return dsl.delete(USER)
+                .where(USER.ID.eq(user.id()))
+                .execute();
     }
 
     /**
-     * <p>Changes the type of existing user and returns the updated user.</p>
+     * <p>Changes the type of existing user.</p>
      *
      * @param user the user whose type should be changed
-     * @param userType the new user type
-     * @return the updated user after persistence
+     * @param userType the new user type to persist
      */
-    public @NotNull UserDto changeUserType(final @NotNull UserDto user, final @NotNull UserType userType) {
-        if (user.id() == null) {
-            throw new IllegalArgumentException("User ID must not be null! Maybe the user is not stored yet?");
-        }
-        userStore.changeUserType(user, userType);
-        return getUserById(user.id()).orElseThrow();
-    }
-
-    /**
-     * <p>Checks whether a user's profile is complete.</p>
-     *
-     * @param user the user to validate
-     * @return {@code true} if profile-relevant fields are complete; otherwise {@code false}
-     */
-    public boolean isProfileComplete(final @NotNull UserDto user) {
-        return !user.name().isBlank();
+    public void changeUserType(final @NotNull UserDto user, final @NotNull UserType userType) {
+        dsl.update(USER)
+                .set(USER.TYPE, userType.name())
+                .where(USER.ID.eq(user.id()))
+                .execute();
     }
 }

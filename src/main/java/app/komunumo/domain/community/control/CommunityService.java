@@ -17,115 +17,141 @@
  */
 package app.komunumo.domain.community.control;
 
-import app.komunumo.data.db.Tables;
-import app.komunumo.data.db.tables.records.CommunityRecord;
 import app.komunumo.domain.community.entity.CommunityDto;
 import app.komunumo.domain.community.entity.CommunityWithImageDto;
-import app.komunumo.domain.core.image.entity.ImageDto;
 import app.komunumo.domain.user.entity.UserDto;
-import app.komunumo.infra.persistence.jooq.StorageService;
-import app.komunumo.infra.persistence.jooq.UniqueIdGenerator;
+import app.komunumo.domain.user.entity.UserRole;
 import org.jetbrains.annotations.NotNull;
-import org.jooq.DSLContext;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static app.komunumo.data.db.Tables.MEMBER;
-import static app.komunumo.data.db.tables.Community.COMMUNITY;
-import static app.komunumo.data.db.tables.Image.IMAGE;
-import static app.komunumo.domain.member.entity.MemberRole.ORGANIZER;
-import static app.komunumo.domain.member.entity.MemberRole.OWNER;
-
+/**
+ * <p>Provides community-related business operations and delegates persistence to {@link CommunityStore}.</p>
+ *
+ * <p>This service forms the control-layer API for community use cases and keeps data access
+ * concerns encapsulated in the store implementation.</p>
+ */
 @Service
-public final class CommunityService extends StorageService {
+public final class CommunityService {
 
-    private final @NotNull DSLContext dsl;
+    /**
+     * <p>Store responsible for all community persistence operations.</p>
+     */
+    private final @NotNull CommunityStore communityStore;
 
-    public CommunityService(final @NotNull DSLContext dsl,
-                            final @NotNull UniqueIdGenerator idGenerator) {
-        super(idGenerator);
-        this.dsl = dsl;
+    /**
+     * <p>Creates a new community service.</p>
+     *
+     * @param communityStore the store used for community persistence access
+     */
+    CommunityService(final @NotNull CommunityStore communityStore) {
+        this.communityStore = communityStore;
     }
 
+    /**
+     * <p>Creates or updates a community.</p>
+     *
+     * @param community the community data to persist
+     * @return the persisted community
+     */
     public @NotNull CommunityDto storeCommunity(final @NotNull CommunityDto community) {
-        final CommunityRecord communityRecord = dsl.fetchOptional(COMMUNITY, COMMUNITY.ID.eq(community.id()))
-                .orElse(dsl.newRecord(COMMUNITY));
-        createOrUpdate(COMMUNITY, community, communityRecord);
-        return communityRecord.into(CommunityDto.class);
+        return communityStore.storeCommunity(community);
     }
 
+    /**
+     * <p>Loads a community by its unique identifier.</p>
+     *
+     * @param id the community ID
+     * @return an optional containing the community if found; otherwise empty
+     */
     public @NotNull Optional<CommunityDto> getCommunity(final @NotNull UUID id) {
-        return dsl.selectFrom(COMMUNITY)
-                .where(COMMUNITY.ID.eq(id))
-                .fetchOptionalInto(CommunityDto.class);
+        return communityStore.getCommunity(id);
     }
 
+    /**
+     * <p>Loads a community by profile and includes optional image data.</p>
+     *
+     * @param profile the community profile slug/name
+     * @return an optional containing the community with optional image data if found; otherwise empty
+     */
     public @NotNull Optional<CommunityWithImageDto> getCommunityWithImage(final @NotNull String profile) {
-        return dsl.select()
-                .from(Tables.COMMUNITY)
-                .leftJoin(IMAGE).on(Tables.COMMUNITY.IMAGE_ID.eq(IMAGE.ID))
-                .where(COMMUNITY.PROFILE.eq(profile))
-                .fetchOptional()
-                .map(rec -> new CommunityWithImageDto(
-                        rec.into(COMMUNITY).into(CommunityDto.class),
-                        rec.get(IMAGE.ID) != null ? rec.into(IMAGE).into(ImageDto.class) : null
-                ));
+        return communityStore.getCommunityWithImage(profile);
     }
 
+    /**
+     * <p>Loads all communities ordered by name.</p>
+     *
+     * @return all communities
+     */
     public @NotNull List<@NotNull CommunityDto> getCommunities() {
-        return dsl.selectFrom(COMMUNITY)
-                .orderBy(COMMUNITY.NAME)
-                .fetchInto(CommunityDto.class);
+        return communityStore.getCommunities();
     }
 
+    /**
+     * <p>Loads all communities with optional image data ordered by name.</p>
+     *
+     * @return all communities including optional image projection
+     */
     public @NotNull List<@NotNull CommunityWithImageDto> getCommunitiesWithImage() {
-        return dsl.select()
-                .from(COMMUNITY)
-                .leftJoin(IMAGE).on(COMMUNITY.IMAGE_ID.eq(IMAGE.ID))
-                .orderBy(COMMUNITY.NAME.asc())
-                .fetch(rec -> new CommunityWithImageDto(
-                        rec.into(COMMUNITY).into(CommunityDto.class),
-                        rec.get(IMAGE.ID) != null ? rec.into(IMAGE).into(ImageDto.class) : null
-                ));
+        return communityStore.getCommunitiesWithImage();
     }
 
-    public @NotNull List<@NotNull CommunityDto> getCommunitiesForOrganizer(final @NotNull UserDto user) {
-        return dsl.select(COMMUNITY.fields())
-                .from(COMMUNITY)
-                .join(MEMBER).on(MEMBER.COMMUNITY_ID.eq(COMMUNITY.ID))
-                .where(MEMBER.USER_ID.eq(user.id())
-                        .and(MEMBER.ROLE.in(OWNER.name(), ORGANIZER.name())))
-                .orderBy(COMMUNITY.NAME)
-                .fetchInto(CommunityDto.class);
+    /**
+     * <p>Loads all communities where the given user has manager permissions.</p>
+     *
+     * @param user the user whose manageable communities should be loaded
+     * @return all communities the user can manage
+     */
+    public @NotNull List<@NotNull CommunityDto> getCommunitiesForManager(final @NotNull UserDto user) {
+        return communityStore.getCommunitiesForManager(user);
     }
 
+    /**
+     * <p>Counts all persisted communities.</p>
+     *
+     * @return the total number of communities; never negative
+     */
     public int getCommunityCount() {
-        return Optional.ofNullable(
-                dsl.selectCount()
-                        .from(COMMUNITY)
-                        .fetchOne(0, Integer.class)
-        ).orElse(0);
+        return communityStore.getCommunityCount();
     }
 
+    /**
+     * <p>Checks whether the given profile name is available for a new community.</p>
+     *
+     * @param profile the profile name to validate
+     * @return {@code true} if the profile name is available; otherwise {@code false}
+     */
     public boolean isProfileNameAvailable(final @NotNull String profile) {
-        return dsl.fetchCount(COMMUNITY, COMMUNITY.PROFILE.eq(profile)) == 0;
+        return communityStore.getCommunityCount(profile) == 0;
     }
 
+    /**
+     * <p>Deletes the given community.</p>
+     *
+     * @param community the community to delete
+     * @return {@code true} if the community was deleted; otherwise {@code false}
+     */
     public boolean deleteCommunity(final @NotNull CommunityDto community) {
-        // Clean-up members that are associated with the Community
-        dsl.delete(MEMBER)
-                .where(MEMBER.COMMUNITY_ID.eq(community.id()))
-                .execute();
-
-        return dsl.delete(COMMUNITY)
-                .where(COMMUNITY.ID.eq(community.id()))
-                .execute() > 0;
+        return communityStore.deleteCommunity(community) > 0;
     }
 
-    public boolean canCreateNewEvents(final @NotNull UserDto user) {
-        return !getCommunitiesForOrganizer(user).isEmpty();
+    /**
+     * <p>Checks whether the given user is a manager in at least one community.</p>
+     *
+     * <p>Administrators always have permission. Other users need manager permissions
+     * on at least one community.</p>
+     *
+     * @param user the user to check
+     * @return {@code true} if the user has community manager permissions; otherwise {@code false}
+     */
+    public boolean isCommunityManager(final @NotNull UserDto user) {
+        if (user.role() == UserRole.ADMIN) {
+            return true;
+        }
+
+        return !communityStore.getCommunitiesForManager(user).isEmpty();
     }
 }

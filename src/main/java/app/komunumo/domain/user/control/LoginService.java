@@ -65,11 +65,26 @@ import java.util.UUID;
 @Service
 public final class LoginService {
 
+    /**
+     * <p>Logger used for operational login and logout diagnostics.</p>
+     */
     private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(LoginService.class);
+    /**
+     * <p>Validity window for login confirmation links.</p>
+     */
     private static final @NotNull Duration CONFIRMATION_TIMEOUT = Duration.ofMinutes(5);
+    /**
+     * <p>Query parameter name carrying the confirmation identifier.</p>
+     */
     public static final @NotNull String CONFIRMATION_PARAMETER = "confirm";
 
+    /**
+     * <p>Shared authentication state used by the UI layer.</p>
+     */
     private final @NotNull AuthenticationState authenticationState;
+    /**
+     * <p>Service used to load users during login and confirmation handling.</p>
+     */
     private final @NotNull UserService userService;
 
     /**
@@ -82,8 +97,14 @@ public final class LoginService {
             .expireAfterWrite(CONFIRMATION_TIMEOUT)
             .maximumSize(1_000) // prevent memory overflow (DDOS attack)
             .build();
-    private final ConfigurationService configurationService;
-    private final MailService mailService;
+    /**
+     * <p>Service used to resolve instance configuration values.</p>
+     */
+    private final @NotNull ConfigurationService configurationService;
+    /**
+     * <p>Service used to send login confirmation mails.</p>
+     */
+    private final @NotNull MailService mailService;
 
     /**
      * <p>Creates a new login service instance.</p>

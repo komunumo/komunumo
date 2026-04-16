@@ -17,7 +17,7 @@
  */
 package app.komunumo.domain.home.boundary;
 
-import app.komunumo.domain.event.boundary.EventGridView;
+import app.komunumo.domain.event.boundary.UpcomingEventsView;
 import app.komunumo.infra.ui.vaadin.layout.WebsiteLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -36,7 +36,7 @@ public final class HomeView extends VerticalLayout implements BeforeEnterObserve
 
     @Override
     public void beforeEnter(final @NotNull BeforeEnterEvent beforeEnterEvent) {
-        beforeEnterEvent.forwardTo(EventGridView.class);
+        beforeEnterEvent.forwardTo(UpcomingEventsView.class);
     }
 
 }

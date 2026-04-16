@@ -37,39 +37,71 @@ import app.komunumo.infra.ui.vaadin.control.LinkUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.annotations.VisibleForTesting;
-import org.jooq.DSLContext;
 import org.springframework.stereotype.Service;
 
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import static app.komunumo.data.db.Tables.MEMBER;
-
+/**
+ * <p>Provides membership-related business operations and delegates persistence to {@link MemberStore}.</p>
+ *
+ * <p>This service forms the control-layer API for member use cases and keeps database access
+ * concerns encapsulated in the store implementation.</p>
+ */
 @Service
 public final class MemberService {
 
+    /**
+     * <p>Context key used during confirmation flows to store the target community.</p>
+     */
     @VisibleForTesting
     static final @NotNull String CONTEXT_KEY_COMMUNITY = "community";
 
-    private final @NotNull DSLContext dsl;
+    /**
+     * <p>Store responsible for all member persistence operations.</p>
+     */
+    private final @NotNull MemberStore memberStore;
+    /**
+     * <p>Service used for sending confirmation and notification mails.</p>
+     */
     private final @NotNull MailService mailService;
+    /**
+     * <p>Service used for loading and creating users.</p>
+     */
     private final @NotNull UserService userService;
+    /**
+     * <p>Service used for accessing the currently logged-in user.</p>
+     */
     private final @NotNull LoginService loginService;
+    /**
+     * <p>Service used for starting and executing confirmation processes.</p>
+     */
     private final @NotNull ConfirmationService confirmationService;
+    /**
+     * <p>Provider used for localized translation texts.</p>
+     */
     private final @NotNull TranslationProvider translationProvider;
 
-    public MemberService(final @NotNull DSLContext dsl,
+    /**
+     * <p>Creates a new member service.</p>
+     *
+     * @param memberStore the store used for member persistence access
+     * @param mailService the mail service for notifications
+     * @param userService the user service for user retrieval and creation
+     * @param loginService the login service for current-user context
+     * @param confirmationService the confirmation service for join flows
+     * @param translationProvider the translation provider for localized texts
+     */
+    MemberService(final @NotNull MemberStore memberStore,
                          final @NotNull MailService mailService,
                          final @NotNull UserService userService,
                          final @NotNull LoginService loginService,
                          final @NotNull ConfirmationService confirmationService,
                          final @NotNull TranslationProvider translationProvider) {
-        this.dsl = dsl;
+        this.memberStore = memberStore;
         this.mailService = mailService;
         this.userService = userService;
         this.loginService = loginService;
@@ -87,9 +119,7 @@ public final class MemberService {
      * @return {@code true} if the user is a member of the community, otherwise {@code false}
      */
     public boolean isMember(final @NotNull UserDto user, final @NotNull CommunityDto community) {
-        return dsl.fetchExists(dsl.selectFrom(MEMBER)
-                .where(MEMBER.USER_ID.eq(user.id())
-                        .and(MEMBER.COMMUNITY_ID.eq(community.id()))));
+        return memberStore.isMember(user, community);
     }
 
     /**
@@ -113,52 +143,50 @@ public final class MemberService {
      * @return the persisted Member information in DTO form
      */
     public @NotNull MemberDto storeMember(final @NotNull MemberDto memberDto) {
-        final var memberRecord = dsl.fetchOptional(MEMBER,
-                        MEMBER.USER_ID.eq(memberDto.userId())
-                                .and(MEMBER.COMMUNITY_ID.eq(memberDto.communityId())))
-                .orElse(dsl.newRecord(MEMBER));
-
-        memberRecord.setUserId(memberDto.userId());
-        memberRecord.setCommunityId(memberDto.communityId());
-        memberRecord.setRole(memberDto.role().name());
-
-        if (memberRecord.getSince() == null && memberDto.since() != null) {
-            memberRecord.setSince(memberDto.since());
-        } else if (memberRecord.getSince() == null) {
-            memberRecord.setSince(ZonedDateTime.now(ZoneOffset.UTC));
-        }
-
-        memberRecord.store();
-
-        return memberRecord.into(MemberDto.class);
+        return memberStore.storeMember(memberDto);
     }
 
+    /**
+     * <p>Loads all members.</p>
+     *
+     * @return all members
+     */
     public @NotNull List<@NotNull MemberDto> getMembers() {
-        return dsl.selectFrom(MEMBER)
-                .fetchInto(MemberDto.class);
+        return memberStore.getMembers();
     }
 
+    /**
+     * <p>Loads one member by user and community.</p>
+     *
+     * @param user the user to lookup
+     * @param community the community to lookup
+     * @return an optional containing the member if found; otherwise empty
+     */
     public Optional<MemberDto> getMember(final @NotNull UserDto user,
                                          final @NotNull CommunityDto community) {
-        return dsl.selectFrom(MEMBER)
-                .where(MEMBER.USER_ID.eq(user.id())
-                        .and(MEMBER.COMMUNITY_ID.eq(community.id())))
-                .fetchOptionalInto(MemberDto.class);
+        return memberStore.getMember(user, community);
     }
 
+    /**
+     * <p>Loads all members of a community.</p>
+     *
+     * @param communityId the community ID
+     * @return all members of the community
+     */
     public @NotNull List<@NotNull MemberDto> getMembersByCommunityId(final @NotNull UUID communityId) {
-        return dsl.selectFrom(MEMBER)
-                .where(MEMBER.COMMUNITY_ID.eq(communityId))
-                .fetchInto(MemberDto.class);
+        return memberStore.getMembersByCommunityId(communityId);
     }
 
+    /**
+     * <p>Loads all members of a community with the given role.</p>
+     *
+     * @param communityId the community ID
+     * @param role the member role to filter by
+     * @return all matching members ordered by membership date descending
+     */
     public @NotNull List<@NotNull MemberDto> getMembersByCommunityId(final @NotNull UUID communityId,
                                                                      final @NotNull MemberRole role) {
-        return dsl.selectFrom(MEMBER)
-                .where(MEMBER.COMMUNITY_ID.eq(communityId)
-                        .and(MEMBER.ROLE.eq(role.name())))
-                .orderBy(MEMBER.SINCE.desc())
-                .fetchInto(MemberDto.class);
+        return memberStore.getMembersByCommunityId(communityId, role);
     }
 
     /**
@@ -167,17 +195,25 @@ public final class MemberService {
      * @return The total count of members; never negative.
      */
     public int getMemberCount() {
-        return Optional.ofNullable(
-                dsl.selectCount()
-                        .from(MEMBER)
-                        .fetchOne(0, Integer.class)
-        ).orElse(0);
+        return memberStore.getMemberCount();
     }
 
+    /**
+     * <p>Counts members in a specific community.</p>
+     *
+     * @param communityId the community ID to filter by
+     * @return the number of members in the given community; never negative
+     */
     public int getMemberCount(final @Nullable UUID communityId) {
-        return dsl.fetchCount(MEMBER, MEMBER.COMMUNITY_ID.eq(communityId));
+        return memberStore.getMemberCount(communityId);
     }
 
+    /**
+     * <p>Starts the confirmation flow for joining a community.</p>
+     *
+     * @param community the community the user wants to join
+     * @param locale the locale used for translated messages
+     */
     public void joinCommunityStartConfirmationProcess(final @NotNull CommunityDto community,
                                                       final @NotNull Locale locale) {
         final var actionMessage = translationProvider.getTranslation(
@@ -193,6 +229,16 @@ public final class MemberService {
         confirmationService.startConfirmationProcess(confirmationRequest);
     }
 
+    /**
+     * <p>Handles a confirmed community join action by email address.</p>
+     *
+     * <p>If the user does not exist yet, an anonymous user account is created first.</p>
+     *
+     * @param email the email address from the confirmation flow
+     * @param context the confirmation context holding the target community
+     * @param locale the locale used for translated messages
+     * @return the confirmation response containing status, message, and redirect location
+     */
     private @NotNull ConfirmationResponse joinCommunityWithEmail(final @NotNull String email,
                                                                  final @NotNull ConfirmationContext context,
                                                                  final @NotNull Locale locale) {
@@ -210,6 +256,13 @@ public final class MemberService {
         return new ConfirmationResponse(status, message, communityLink);
     }
 
+    /**
+     * <p>Joins a user to a community and sends the corresponding notification mails.</p>
+     *
+     * @param user the user that joins the community
+     * @param community the community to join
+     * @param locale the locale used for translated and templated mails
+     */
     public void joinCommunityWithUser(final @NotNull UserDto user,
                                       final @NotNull CommunityDto community,
                                       final @NotNull Locale locale) {
@@ -244,6 +297,15 @@ public final class MemberService {
                 });
     }
 
+    /**
+     * <p>Removes a user from a community.</p>
+     *
+     * <p>Owners cannot leave via this operation.</p>
+     *
+     * @param userDto the user that wants to leave
+     * @param community the community to leave
+     * @return {@code true} if the member was removed; otherwise {@code false}
+     */
     public boolean leaveCommunity(final @NotNull UserDto userDto, final @NotNull CommunityDto community) {
         return getMember(userDto, community)
                 .map(member -> {
@@ -255,11 +317,14 @@ public final class MemberService {
                 .orElse(false);
     }
 
+    /**
+     * <p>Deletes a member relation.</p>
+     *
+     * @param member the member relation to delete
+     * @return {@code true} if a relation was deleted; otherwise {@code false}
+     */
     public boolean deleteMember(final @NotNull MemberDto member) {
-        return dsl.delete(MEMBER)
-                .where(MEMBER.USER_ID.eq(member.userId())
-                        .and(MEMBER.COMMUNITY_ID.eq(member.communityId())))
-                .execute() > 0;
+        return memberStore.deleteMember(member) > 0;
     }
 
 }

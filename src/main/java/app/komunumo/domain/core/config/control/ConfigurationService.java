@@ -24,18 +24,15 @@ import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jooq.DSLContext;
 import org.springframework.stereotype.Service;
 
 import java.util.Locale;
 import java.util.Optional;
 
-import static app.komunumo.data.db.tables.Config.CONFIG;
-
 /**
  * <p>Service for reading and writing instance configuration values.</p>
  *
- * <p>Values are stored in the {@code config} table and optionally cached in-memory using Caffeine.
+ * <p>Values are loaded and persisted through {@link ConfigurationStore} and optionally cached in-memory using Caffeine.
  * Language-dependent lookups fall back to English and then to the neutral (language-independent)
  * value before returning the setting’s default.</p>
  */
@@ -43,9 +40,9 @@ import static app.komunumo.data.db.tables.Config.CONFIG;
 public class ConfigurationService {
 
     /**
-     * <p>jOOQ context used for database access.</p>
+     * <p>Store responsible for configuration persistence access.</p>
      */
-    private final @NotNull DSLContext dsl;
+    private final @NotNull ConfigurationStore configurationStore;
 
     /**
      * <p>In-memory cache keyed by setting and language code, storing optional string values.</p>
@@ -53,13 +50,13 @@ public class ConfigurationService {
     private final @NotNull Cache<@NotNull CacheKey, @NotNull Optional<@NotNull String>> cache;
 
     /**
-     * <p>Creates a new configuration service backed by the given jOOQ context.</p>
+     * <p>Creates a new configuration service backed by the given store.</p>
      *
-     * @param dsl the jOOQ context used for database operations
+     * @param configurationStore the store used for configuration persistence access
      */
-    public ConfigurationService(final @NotNull DSLContext dsl) {
+    ConfigurationService(final @NotNull ConfigurationStore configurationStore) {
         super();
-        this.dsl = dsl;
+        this.configurationStore = configurationStore;
         this.cache = Caffeine.newBuilder()
                 .maximumSize(1_000)
                 .build();
@@ -72,11 +69,7 @@ public class ConfigurationService {
      * @return The total count of configurations; never negative.
      */
     public int getConfigurationCount() {
-        return Optional.ofNullable(
-                dsl.selectCount()
-                        .from(CONFIG)
-                        .fetchOne(0, Integer.class)
-        ).orElse(0);
+        return configurationStore.getConfigurationCount();
     }
 
     /**
@@ -185,11 +178,7 @@ public class ConfigurationService {
     private @NotNull Optional<String> getFromCacheOrDb(final @NotNull ConfigurationSetting setting,
                                                        final @NotNull String language) {
         return cache.get(new CacheKey(setting, language), cacheKey ->
-                dsl.select(CONFIG.VALUE)
-                        .from(CONFIG)
-                        .where(CONFIG.SETTING.eq(cacheKey.setting.setting()))
-                        .and(CONFIG.LANGUAGE.eq(language))
-                        .fetchOptional(CONFIG.VALUE)
+                configurationStore.getConfigurationValue(cacheKey.setting, language)
         );
     }
 
@@ -224,13 +213,7 @@ public class ConfigurationService {
         final var dbValue = value.toString();
         final var languageCode = LocaleUtil.getLanguageCode(locale);
 
-        dsl.insertInto(CONFIG)
-                .set(CONFIG.SETTING, setting.setting())
-                .set(CONFIG.LANGUAGE, languageCode)
-                .set(CONFIG.VALUE, dbValue)
-                .onDuplicateKeyUpdate()
-                .set(CONFIG.VALUE, dbValue)
-                .execute();
+        configurationStore.upsertConfigurationValue(setting, languageCode, dbValue);
 
         cache.asMap().keySet().removeIf(cacheKey -> cacheKey.setting().equals(setting));
     }
@@ -248,9 +231,10 @@ public class ConfigurationService {
      * <p>Only administrators are allowed to delete configuration values.</p>
      *
      * @param setting the configuration setting to delete
+     * @return {@code true} if at least one row was deleted; otherwise {@code false}
      */
-    public void deleteConfiguration(final @NotNull ConfigurationSetting setting) {
-        deleteConfiguration(setting, null);
+    public boolean deleteConfiguration(final @NotNull ConfigurationSetting setting) {
+        return deleteConfiguration(setting, null);
     }
 
     /**
@@ -260,18 +244,17 @@ public class ConfigurationService {
      *
      * @param setting the configuration setting to delete
      * @param locale the locale of the value to delete, {@code null} for language-independent
+     * @return {@code true} if at least one row was deleted; otherwise {@code false}
      */
-    public void deleteConfiguration(final @NotNull ConfigurationSetting setting,
-                                    final @Nullable Locale locale) {
+    public boolean deleteConfiguration(final @NotNull ConfigurationSetting setting,
+                                       final @Nullable Locale locale) {
         checkLocale(setting, locale);
         final var languageCode = LocaleUtil.getLanguageCode(locale);
 
-        dsl.deleteFrom(CONFIG)
-                .where(CONFIG.SETTING.eq(setting.setting()))
-                .and(CONFIG.LANGUAGE.eq(languageCode))
-                .execute();
+        final var deletedRows = configurationStore.deleteConfigurationValue(setting, languageCode);
 
         cache.asMap().keySet().removeIf(cacheKey -> cacheKey.setting().equals(setting));
+        return deletedRows > 0;
     }
 
 
@@ -279,10 +262,13 @@ public class ConfigurationService {
      * <p>Deletes all configuration rows and clears the cache.</p>
      *
      * <p>Only administrators are allowed to perform full deletion.</p>
+     *
+     * @return {@code true} if at least one row was deleted; otherwise {@code false}
      */
-    public void deleteAllConfigurations() {
-        dsl.delete(CONFIG).execute();
+    public boolean deleteAllConfigurations() {
+        final var deletedRows = configurationStore.deleteAllConfigurations();
         clearCache();
+        return deletedRows > 0;
     }
 
     /**

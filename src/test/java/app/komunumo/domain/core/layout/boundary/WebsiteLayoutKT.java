@@ -17,7 +17,7 @@
  */
 package app.komunumo.domain.core.layout.boundary;
 
-import app.komunumo.domain.event.boundary.EventGridView;
+import app.komunumo.domain.event.boundary.UpcomingEventsView;
 import app.komunumo.domain.home.boundary.HomeView;
 import app.komunumo.domain.user.control.UserService;
 import app.komunumo.domain.user.entity.UserDto;
@@ -165,9 +165,9 @@ class WebsiteLayoutKT extends KaribuTest {
                 UserRole.USER, UserType.LOCAL));
         login(user);
 
-        UI.getCurrentOrThrow().navigate(EventGridView.class);
+        UI.getCurrentOrThrow().navigate(UpcomingEventsView.class);
 
-        final var eventGrids = _find(EventGridView.class);
+        final var eventGrids = _find(UpcomingEventsView.class);
         assertThat(eventGrids).hasSize(1);
     }
 
@@ -178,9 +178,9 @@ class WebsiteLayoutKT extends KaribuTest {
                 UserRole.USER, UserType.LOCAL));
         login(user);
 
-        UI.getCurrentOrThrow().navigate(EventGridView.class);
+        UI.getCurrentOrThrow().navigate(UpcomingEventsView.class);
 
-        final var eventGrids = _find(EventGridView.class);
+        final var eventGrids = _find(UpcomingEventsView.class);
         assertThat(eventGrids).isEmpty();
 
         final var titles = _find(H2.class, spec -> spec.withText("My Profile"));

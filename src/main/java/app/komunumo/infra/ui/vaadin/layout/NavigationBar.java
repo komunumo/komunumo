@@ -25,7 +25,7 @@ import app.komunumo.domain.core.exporter.boundary.ExporterView;
 import app.komunumo.domain.core.image.boundary.OrphanedImagesView;
 import app.komunumo.domain.core.importer.boundary.ImporterView;
 import app.komunumo.domain.event.boundary.CreateEventView;
-import app.komunumo.domain.event.boundary.EventGridView;
+import app.komunumo.domain.event.boundary.UpcomingEventsView;
 import app.komunumo.domain.page.control.GlobalPageService;
 import app.komunumo.domain.user.boundary.EditProfileView;
 import app.komunumo.domain.user.boundary.LoginView;
@@ -71,7 +71,7 @@ public final class NavigationBar extends HorizontalLayout {
                                        final @NotNull GlobalPageService globalPageService) {
         final var menuBar = new Nav();
         menuBar.addClassName("menu-bar");
-        menuBar.add(new RouterLink(ui.getTranslation("vaadin.components.NavigationBar.events"), EventGridView.class));
+        menuBar.add(new RouterLink(ui.getTranslation("vaadin.components.NavigationBar.events"), UpcomingEventsView.class));
 
         if (!configurationService.getConfiguration(INSTANCE_HIDE_COMMUNITIES, Boolean.class)) {
             menuBar.add(new RouterLink(ui.getTranslation("vaadin.components.NavigationBar.communities"), CommunityGridView.class));

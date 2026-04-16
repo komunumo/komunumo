@@ -120,7 +120,7 @@ public final class CreateEventView extends AbstractView implements AfterNavigati
     public void afterNavigation(final @NotNull AfterNavigationEvent afterNavigationEvent) {
         removeAll();
         final var loggedInUser = loginService.getLoggedInUser().orElseThrow();
-        final var communities = communityService.getCommunitiesForOrganizer(loggedInUser);
+        final var communities = communityService.getCommunitiesForManager(loggedInUser);
         if (communities.isEmpty()) {
             showAccessDeniedMessage();
         } else {

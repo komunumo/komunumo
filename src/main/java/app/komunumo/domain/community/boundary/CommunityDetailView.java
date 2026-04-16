@@ -174,7 +174,7 @@ public final class CommunityDetailView extends AbstractView implements BeforeEnt
         loginService.getLoggedInUser()
                 .ifPresent(
                         user -> {
-                            if (communityService.canCreateNewEvents(user)) {
+                            if (communityService.isCommunityManager(user)) {
                                 pageContent.add(new Button(
                                         getTranslation("community.boundary.CommunityDetailView.createEventButton"),
                                         _ -> {

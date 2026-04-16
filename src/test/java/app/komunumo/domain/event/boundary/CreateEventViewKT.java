@@ -121,7 +121,7 @@ class CreateEventViewKT extends KaribuTest {
     @SuppressWarnings({"unchecked"})
     void testCreate_successfulSubmission_withoutImage() {
         final var testUser = getTestUser(UserRole.USER);
-        final var communityWithoutImage = communityService.getCommunitiesForOrganizer(testUser)
+        final var communityWithoutImage = communityService.getCommunitiesForManager(testUser)
                 .stream()
                 .filter(community -> community.imageId() == null)
                 .findFirst()
@@ -179,7 +179,7 @@ class CreateEventViewKT extends KaribuTest {
     @SuppressWarnings({"unchecked", "DataFlowIssue"})
     void testCreate_successfulSubmission_withoutImageUsesCommunityImage() {
         final var testUser = getTestUser(UserRole.USER);
-        final var communityWithImage = communityService.getCommunitiesForOrganizer(testUser)
+        final var communityWithImage = communityService.getCommunitiesForManager(testUser)
                 .stream()
                 .filter(community -> community.imageId() != null)
                 .findFirst()
@@ -239,7 +239,7 @@ class CreateEventViewKT extends KaribuTest {
         final var imageId = imageService.getAllImageIds().getFirst();
         final var imageDto = imageService.getImage(imageId).orElseThrow();
         final var testUser = getTestUser(UserRole.USER);
-        final var community = communityService.getCommunitiesForOrganizer(testUser).getFirst();
+        final var community = communityService.getCommunitiesForManager(testUser).getFirst();
         login(testUser);
         UI.getCurrent().navigate(CreateEventView.class);
 
@@ -297,7 +297,7 @@ class CreateEventViewKT extends KaribuTest {
         final var imageId = imageService.getAllImageIds().getFirst();
         final var imageDto = imageService.getImage(imageId).orElseThrow();
         final var testUser = getTestUser(UserRole.USER);
-        final var communityWithoutImage = communityService.getCommunitiesForOrganizer(testUser)
+        final var communityWithoutImage = communityService.getCommunitiesForManager(testUser)
                 .stream()
                 .filter(community -> community.imageId() == null)
                 .findFirst()
@@ -405,7 +405,7 @@ class CreateEventViewKT extends KaribuTest {
     @SuppressWarnings({"unchecked", "DataFlowIssue"})
     void testCreate_prefillCommunityFromUrl() {
         final var testUser = getTestUser(UserRole.USER);
-        final var community = communityService.getCommunitiesForOrganizer(testUser).getFirst();
+        final var community = communityService.getCommunitiesForManager(testUser).getFirst();
         login(testUser);
         UI.getCurrent().navigate(CreateEventView.class, QueryParameters.of("communityId", community.id().toString()));
 
@@ -430,7 +430,7 @@ class CreateEventViewKT extends KaribuTest {
     @SuppressWarnings("unchecked")
     void sessionTimeout() {
         final var testUser = getTestUser(UserRole.USER);
-        final var communityWithoutImage = communityService.getCommunitiesForOrganizer(testUser)
+        final var communityWithoutImage = communityService.getCommunitiesForManager(testUser)
                 .stream()
                 .filter(community -> community.imageId() == null)
                 .findFirst()

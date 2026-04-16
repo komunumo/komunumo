@@ -22,10 +22,8 @@ import app.komunumo.domain.core.mail.entity.MailFormat;
 import app.komunumo.domain.core.mail.entity.MailTemplate;
 import app.komunumo.domain.core.mail.entity.MailTemplateId;
 import app.komunumo.infra.config.AppConfig;
-import app.komunumo.util.LocaleUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -39,7 +37,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
-import static app.komunumo.data.db.tables.MailTemplate.MAIL_TEMPLATE;
 import static app.komunumo.domain.core.config.entity.ConfigurationSetting.INSTANCE_NAME;
 import static app.komunumo.domain.core.config.entity.ConfigurationSetting.INSTANCE_URL;
 import static app.komunumo.domain.core.mail.entity.MailFormat.HTML;
@@ -47,26 +44,68 @@ import static app.komunumo.domain.core.mail.entity.MailFormat.MARKDOWN;
 import static app.komunumo.util.MarkdownUtil.convertMarkdownToHtml;
 import static app.komunumo.util.TemplateUtil.replaceVariables;
 
+/**
+ * <p>Provides mail-related use cases and delegates persistence operations to {@link MailStore}.</p>
+ *
+ * <p>This service encapsulates mail composition and delivery behavior while database access
+ * for mail templates remains in the store implementation.</p>
+ */
 @Service
 public final class MailService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(MailService.class);
+    /**
+     * <p>Logger used to record successful and failed mail delivery attempts.</p>
+     */
+    private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(MailService.class);
 
+    /**
+     * <p>Application configuration containing sender and reply-to addresses.</p>
+     */
     private final @NotNull AppConfig appConfig;
+    /**
+     * <p>Service used to resolve instance-wide configuration values for templates.</p>
+     */
     private final @NotNull ConfigurationService configurationService;
+    /**
+     * <p>Mail sender used to create and dispatch MIME messages.</p>
+     */
     private final @NotNull JavaMailSender mailSender;
-    private final @NotNull DSLContext dsl;
+    /**
+     * <p>Store responsible for loading and persisting mail templates.</p>
+     */
+    private final @NotNull MailStore mailStore;
 
-    public MailService(final @NotNull AppConfig appConfig,
-                       final @NotNull ConfigurationService configurationService,
-                       final @NotNull JavaMailSender mailSender,
-                       final @NotNull DSLContext dsl) {
+    /**
+     * <p>Creates a new mail service.</p>
+     *
+     * @param appConfig the application configuration containing mail sender settings
+     * @param configurationService the configuration service used for template variables
+     * @param mailSender the mail sender used to dispatch messages
+     * @param mailStore the store used to load and persist mail templates
+     */
+    MailService(final @NotNull AppConfig appConfig,
+                final @NotNull ConfigurationService configurationService,
+                final @NotNull JavaMailSender mailSender,
+                final @NotNull MailStore mailStore) {
         this.appConfig = appConfig;
         this.configurationService = configurationService;
         this.mailSender = mailSender;
-        this.dsl = dsl;
+        this.mailStore = mailStore;
     }
 
+    /**
+     * <p>Sends a mail based on the requested template, locale, and output format.</p>
+     *
+     * <p>Template variables are enriched with instance-level variables ({@code instanceName},
+     * {@code instanceUrl}) before rendering subject and body.</p>
+     *
+     * @param mailTemplateId the template identifier
+     * @param locale the locale used to resolve the template language
+     * @param format the desired output format for the mail body
+     * @param variables optional template variables provided by the caller
+     * @param emailAddresses one or more recipient addresses
+     * @return {@code true} if sending succeeded; otherwise {@code false}
+     */
     public boolean sendMail(final @NotNull MailTemplateId mailTemplateId,
                             final @NotNull Locale locale,
                             final @NotNull MailFormat format,
@@ -116,41 +155,35 @@ public final class MailService {
         }
     }
 
+    /**
+     * <p>Loads a mail template by template ID and locale.</p>
+     *
+     * @param mailTemplateId the template identifier
+     * @param locale the locale used to resolve the language variant
+     * @return an optional containing the template if found; otherwise empty
+     */
     public @NotNull Optional<MailTemplate> getMailTemplate(final @NotNull MailTemplateId mailTemplateId,
                                                             final @NotNull Locale locale) {
-        final var languageCode = LocaleUtil.getLanguageCode(locale);
-        return dsl.selectFrom(MAIL_TEMPLATE)
-                .where(MAIL_TEMPLATE.ID.eq(mailTemplateId.name()))
-                .and(MAIL_TEMPLATE.LANGUAGE.eq(languageCode))
-                .fetchOptionalInto(MailTemplate.class);
+        return mailStore.getMailTemplate(mailTemplateId, locale);
     }
 
+    /**
+     * <p>Stores or updates a mail template.</p>
+     *
+     * @param mailTemplate the template to persist
+     * @return the persisted template
+     */
     public @NotNull MailTemplate storeMailTemplate(final @NotNull MailTemplate mailTemplate) {
-        final var languageCode = LocaleUtil.getLanguageCode(mailTemplate.language());
-        final var mailTemplateRecord = dsl.selectFrom(MAIL_TEMPLATE)
-                .where(MAIL_TEMPLATE.ID.eq(mailTemplate.id().name()))
-                .and(MAIL_TEMPLATE.LANGUAGE.eq(languageCode))
-                .fetchOptional()
-                .orElse(dsl.newRecord(MAIL_TEMPLATE));
-        mailTemplateRecord.setId(mailTemplate.id().name());
-        mailTemplateRecord.setLanguage(languageCode);
-        mailTemplateRecord.setSubject(mailTemplate.subject());
-        mailTemplateRecord.setMarkdown(mailTemplate.markdown());
-        mailTemplateRecord.store();
-        return mailTemplateRecord.into(MailTemplate.class);
+        return mailStore.storeMailTemplate(mailTemplate);
     }
 
     /**
      * <p>Counts the total number of mail templates.</p>
      *
-     * @return The total count of mail templates; never negative.
+     * @return the total count of mail templates; never negative
      */
     public int getMailTemplateCount() {
-        return Optional.ofNullable(
-                dsl.selectCount()
-                        .from(MAIL_TEMPLATE)
-                        .fetchOne(0, Integer.class)
-        ).orElse(0);
+        return mailStore.getMailTemplateCount();
     }
 
     /**
@@ -162,13 +195,6 @@ public final class MailService {
      * @return a list of all mail templates
      */
     public @NotNull List<@NotNull MailTemplate> getAllMailTemplates() {
-        return dsl.selectFrom(MAIL_TEMPLATE)
-                .fetch()
-                .map(record -> new MailTemplate(
-                        MailTemplateId.valueOf(record.get(MAIL_TEMPLATE.ID)),
-                        Locale.forLanguageTag(record.get(MAIL_TEMPLATE.LANGUAGE)),
-                        record.get(MAIL_TEMPLATE.SUBJECT),
-                        record.get(MAIL_TEMPLATE.MARKDOWN)
-                ));
+        return mailStore.getAllMailTemplates();
     }
 }
