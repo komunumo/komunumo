@@ -17,7 +17,7 @@
  */
 package app.komunumo.domain.home.boundary;
 
-import app.komunumo.domain.event.boundary.UpcomingEventsView;
+import app.komunumo.domain.event.boundary.EventsView;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import org.junit.jupiter.api.Test;
 
@@ -36,7 +36,7 @@ class HomeViewTest {
         view.beforeEnter(event);
 
         // Assert
-        verify(event).forwardTo(UpcomingEventsView.class);
+        verify(event).forwardTo(EventsView.class);
     }
 
 }

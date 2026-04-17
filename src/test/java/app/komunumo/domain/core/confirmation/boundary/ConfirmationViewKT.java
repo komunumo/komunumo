@@ -20,7 +20,7 @@ package app.komunumo.domain.core.confirmation.boundary;
 import app.komunumo.domain.core.confirmation.control.ConfirmationService;
 import app.komunumo.domain.core.confirmation.entity.ConfirmationResponse;
 import app.komunumo.domain.core.confirmation.entity.ConfirmationStatus;
-import app.komunumo.domain.event.boundary.UpcomingEventsView;
+import app.komunumo.domain.event.boundary.EventsView;
 import app.komunumo.infra.ui.vaadin.components.PersistentNotification;
 import app.komunumo.test.KaribuTest;
 import com.github.mvysny.kaributesting.v10.MockVaadin;
@@ -73,7 +73,7 @@ class ConfirmationViewKT extends KaribuTest {
             final var h2 = _get(main, H2.class);
             assertThat(h2.getText()).isEqualTo("Confirmation of your email address");
         } else {
-            assertThat(currentViewClass()).isEqualTo(UpcomingEventsView.class);
+            assertThat(currentViewClass()).isEqualTo(EventsView.class);
         }
 
         expectNotifications("This is a success message.");
@@ -99,7 +99,7 @@ class ConfirmationViewKT extends KaribuTest {
             final var h2 = _get(main, H2.class);
             assertThat(h2.getText()).isEqualTo("Confirmation of your email address");
         } else {
-            assertThat(currentViewClass()).isEqualTo(UpcomingEventsView.class);
+            assertThat(currentViewClass()).isEqualTo(EventsView.class);
         }
 
         final var notification = _get(PersistentNotification.class);

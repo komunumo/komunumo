@@ -18,7 +18,7 @@
 package app.komunumo.domain.user.boundary;
 
 import app.komunumo.domain.community.boundary.CommunityGrid;
-import app.komunumo.domain.event.boundary.UpcomingEventsView;
+import app.komunumo.domain.event.boundary.EventsView;
 import app.komunumo.domain.user.control.UserService;
 import app.komunumo.domain.user.entity.UserDto;
 import app.komunumo.domain.user.entity.UserRole;
@@ -144,9 +144,9 @@ class EditProfileViewKT extends KaribuTest {
                 UserRole.USER, UserType.LOCAL));
         login(user);
 
-        UI.getCurrentOrThrow().navigate(UpcomingEventsView.class);
+        UI.getCurrentOrThrow().navigate(EventsView.class);
 
-        final var eventGrids = _find(UpcomingEventsView.class);
+        final var eventGrids = _find(EventsView.class);
         assertThat(eventGrids).isEmpty();
 
         final var titles = _find(H2.class, spec -> spec.withText("My Profile"));

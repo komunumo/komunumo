@@ -49,31 +49,31 @@ class TranslationProviderTest {
 
     @Test
     void testGetMessageInEnglish() {
-        assertThat(translationProvider.getTranslation("event.boundary.UpcomingEventsView.title", ENGLISH))
+        assertThat(translationProvider.getTranslation("event.boundary.EventsView.upcomingEvents", ENGLISH))
                 .isEqualTo("Upcoming Events");
     }
 
     @Test
     void testTranslationInGerman() {
-        assertThat(translationProvider.getTranslation("event.boundary.UpcomingEventsView.title", GERMAN))
+        assertThat(translationProvider.getTranslation("event.boundary.EventsView.upcomingEvents", GERMAN))
                 .isEqualTo("Geplante Veranstaltungen");
     }
 
     @Test
     void testSwissGermanFallbackToGerman() {
-        assertThat(translationProvider.getTranslation("event.boundary.UpcomingEventsView.title", Locale.forLanguageTag("de-CH")))
+        assertThat(translationProvider.getTranslation("event.boundary.EventsView.upcomingEvents", Locale.forLanguageTag("de-CH")))
                 .isEqualTo("Geplante Veranstaltungen");
     }
 
     @Test
     void testFallbackToEnglish() {
-        assertThat(translationProvider.getTranslation("event.boundary.UpcomingEventsView.title", Locale.ITALIAN))
+        assertThat(translationProvider.getTranslation("event.boundary.EventsView.upcomingEvents", Locale.ITALIAN))
                 .isEqualTo("Upcoming Events");
     }
 
     @Test
     void testFallbackWhenLocaleIsNull() {
-        assertThat(translationProvider.getTranslation("event.boundary.UpcomingEventsView.title", null))
+        assertThat(translationProvider.getTranslation("event.boundary.EventsView.upcomingEvents", null))
                 .isEqualTo("Upcoming Events");
     }
 
@@ -110,7 +110,7 @@ class TranslationProviderTest {
 
     @Test
     void testMissingPlaceholder() {
-        assertThat(translationProvider.getTranslation("event.boundary.UpcomingEventsView.title", ENGLISH, "foobar"))
+        assertThat(translationProvider.getTranslation("event.boundary.EventsView.upcomingEvents", ENGLISH, "foobar"))
                 .isEqualTo("Upcoming Events");
     }
 

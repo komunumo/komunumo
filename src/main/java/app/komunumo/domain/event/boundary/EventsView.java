@@ -21,28 +21,40 @@ import app.komunumo.domain.core.config.control.ConfigurationService;
 import app.komunumo.domain.event.control.EventService;
 import app.komunumo.infra.ui.vaadin.layout.AbstractView;
 import app.komunumo.infra.ui.vaadin.layout.WebsiteLayout;
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import org.jetbrains.annotations.NotNull;
 
-@Route(value = "events", layout = WebsiteLayout.class)
 @AnonymousAllowed
-public final class UpcomingEventsView extends AbstractView {
+@Route(value = "events", layout = WebsiteLayout.class)
+public final class EventsView extends AbstractView {
 
-    public UpcomingEventsView(final @NotNull ConfigurationService configurationService,
-                              final @NotNull EventService eventService) {
+    public EventsView(final @NotNull ConfigurationService configurationService,
+                      final @NotNull EventService eventService) {
         super(configurationService);
-        setId("upcoming-events-view");
-        add(new H3(getViewTitle()));
-        final var events = eventService.getUpcomingEventsWithImage();
-        add(new EventGrid(events));
+        setId("events-view");
+
+        final var upcomingEventsGrid = new EventGrid(eventService.getUpcomingEventsWithImage());
+        upcomingEventsGrid.addClassName("upcoming-events-grid");
+
+        final var pastEventsGrid = new EventGrid(eventService.getPastEventsWithImage());
+        pastEventsGrid.addClassName("past-events-grid");
+
+        final var eventsTabSheet = new TabSheet();
+        eventsTabSheet.add(
+                getTranslation("event.boundary.EventsView.upcomingEvents"),
+                upcomingEventsGrid);
+        eventsTabSheet.add(
+                getTranslation("event.boundary.EventsView.pastEvents"),
+                pastEventsGrid);
+        eventsTabSheet.setWidthFull();
+        add(eventsTabSheet);
     }
 
     @Override
     protected @NotNull String getViewTitle() {
-        return getTranslation(UI.getCurrent().getLocale(), "event.boundary.UpcomingEventsView.title");
+        return getTranslation("event.boundary.EventsView.title");
     }
 
 }
