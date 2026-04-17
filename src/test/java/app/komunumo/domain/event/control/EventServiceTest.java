@@ -27,6 +27,8 @@ import app.komunumo.domain.user.entity.UserRole;
 import app.komunumo.domain.user.entity.UserType;
 import org.junit.jupiter.api.Test;
 
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -226,10 +228,69 @@ class EventServiceTest {
         verify(eventStore).hasManagementPermission(event, user);
     }
 
+    @Test
+    void isRegistrationAllowedReturnsTrueForPublishedUpcomingEvent() {
+        final var eventStore = mock(EventStore.class);
+        final var eventService = new EventService(eventStore);
+        final var event = createEvent(
+                ZonedDateTime.now(ZoneOffset.UTC).plusHours(1),
+                EventStatus.PUBLISHED);
+
+        final var result = eventService.isRegistrationAllowed(event);
+
+        assertThat(result).isTrue();
+        verifyNoInteractions(eventStore);
+    }
+
+    @Test
+    void isRegistrationAllowedReturnsFalseForEventWithoutBegin() {
+        final var eventStore = mock(EventStore.class);
+        final var eventService = new EventService(eventStore);
+        final var event = createEvent(null, EventStatus.PUBLISHED);
+
+        final var result = eventService.isRegistrationAllowed(event);
+
+        assertThat(result).isFalse();
+        verifyNoInteractions(eventStore);
+    }
+
+    @Test
+    void isRegistrationAllowedReturnsFalseForNonPublishedEvent() {
+        final var eventStore = mock(EventStore.class);
+        final var eventService = new EventService(eventStore);
+        final var event = createEvent(
+                ZonedDateTime.now(ZoneOffset.UTC).plusHours(1),
+                EventStatus.DRAFT);
+
+        final var result = eventService.isRegistrationAllowed(event);
+
+        assertThat(result).isFalse();
+        verifyNoInteractions(eventStore);
+    }
+
+    @Test
+    void isRegistrationAllowedReturnsFalseForPastEvent() {
+        final var eventStore = mock(EventStore.class);
+        final var eventService = new EventService(eventStore);
+        final var event = createEvent(
+                ZonedDateTime.now(ZoneOffset.UTC).minusHours(1),
+                EventStatus.PUBLISHED);
+
+        final var result = eventService.isRegistrationAllowed(event);
+
+        assertThat(result).isFalse();
+        verifyNoInteractions(eventStore);
+    }
+
     private static EventDto createEvent() {
+        return createEvent(null, EventStatus.PUBLISHED);
+    }
+
+    private static EventDto createEvent(final ZonedDateTime begin,
+                                        final EventStatus status) {
         return new EventDto(UUID.randomUUID(), UUID.randomUUID(), null, null,
-                "Test Event", "Description", "Location", null, null,
-                null, true, EventVisibility.PUBLIC, EventStatus.PUBLISHED);
+                "Test Event", "Description", "Location", begin, null,
+                null, true, EventVisibility.PUBLIC, status);
     }
 
     private static CommunityDto createCommunity() {

@@ -20,6 +20,7 @@ package app.komunumo.domain.event.boundary;
 import app.komunumo.domain.event.control.EventService;
 import app.komunumo.domain.event.entity.EventDto;
 import app.komunumo.domain.participant.control.ParticipantService;
+import app.komunumo.domain.participant.entity.ParticipantDto;
 import app.komunumo.domain.user.control.UserService;
 import app.komunumo.domain.user.entity.UserDto;
 import app.komunumo.test.BrowserTest;
@@ -37,7 +38,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class EventCancelRegistrationFlowBT extends BrowserTest {
 
-    protected static final UUID UUID_EVENT = UUID.fromString("07fe5b04-0ea1-43b7-a63a-f4d8b8c29ed6");
+    protected static final UUID UUID_EVENT = UUID.fromString("3609c5c1-536a-46b6-8b6b-7834d9cc9669");
     protected static final UUID UUID_USER = UUID.fromString("c9fc8b0a-6ff7-4c00-a6f2-d85f5829edff");
 
     private static final String CANCEL_REGISTRATION_BUTTON_SELECTOR = "vaadin-button:has-text('Cancel Registration')";
@@ -58,6 +59,7 @@ class EventCancelRegistrationFlowBT extends BrowserTest {
     void setUp() {
         demoEvent = eventService.getEvent(UUID_EVENT).orElseThrow();
         demoUser = userService.getUserById(UUID_USER).orElseThrow();
+        participantService.storeParticipant(new ParticipantDto(UUID_EVENT, UUID_USER, null));
     }
 
     @Test
@@ -74,7 +76,7 @@ class EventCancelRegistrationFlowBT extends BrowserTest {
 
         // user is a member
         assertThat(participantService.isParticipant(demoUser, demoEvent)).isTrue();
-        assertThatLocator(page.locator(".event-participant-count")).hasText("3 participants");
+        assertThatLocator(page.locator(".event-participant-count")).hasText("one participant");
 
         // click on registration button
         page.click(CANCEL_REGISTRATION_BUTTON_SELECTOR);
@@ -89,7 +91,7 @@ class EventCancelRegistrationFlowBT extends BrowserTest {
 
         // user is still a member
         assertThat(participantService.isParticipant(demoUser, demoEvent)).isTrue();
-        assertThatLocator(page.locator(".event-participant-count")).hasText("3 participants");
+        assertThatLocator(page.locator(".event-participant-count")).hasText("one participant");
 
         // logout the test user
         logout();
@@ -109,7 +111,7 @@ class EventCancelRegistrationFlowBT extends BrowserTest {
 
         // user is a member
         assertThat(participantService.isParticipant(demoUser, demoEvent)).isTrue();
-        assertThatLocator(page.locator(".event-participant-count")).hasText("3 participants");
+        assertThatLocator(page.locator(".event-participant-count")).hasText("one participant");
 
         // click on registration button
         page.click(CANCEL_REGISTRATION_BUTTON_SELECTOR);
@@ -124,7 +126,7 @@ class EventCancelRegistrationFlowBT extends BrowserTest {
 
         // user is not a member anymore
         assertThat(participantService.isParticipant(demoUser, demoEvent)).isFalse();
-        assertThatLocator(page.locator(".event-participant-count")).hasText("2 participants");
+        assertThatLocator(page.locator(".event-participant-count")).hasText("no participants");
 
         // wait for unregistration confirmation mail
         final var successMessage = getEmailBySubject("[Komunumo Test] You canceled your registration");

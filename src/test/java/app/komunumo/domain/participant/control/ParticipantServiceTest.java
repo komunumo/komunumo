@@ -24,6 +24,7 @@ import app.komunumo.domain.core.confirmation.entity.ConfirmationStatus;
 import app.komunumo.domain.core.mail.control.MailService;
 import app.komunumo.domain.core.mail.entity.MailFormat;
 import app.komunumo.domain.core.mail.entity.MailTemplateId;
+import app.komunumo.domain.event.control.EventService;
 import app.komunumo.domain.event.entity.EventDto;
 import app.komunumo.domain.event.entity.EventStatus;
 import app.komunumo.domain.event.entity.EventVisibility;
@@ -153,9 +154,11 @@ class ParticipantServiceTest {
     @Test
     void registerForEventReturnsFalseWhenEventIdIsNull() {
         final var participantStore = mock(ParticipantStore.class);
-        final var service = createService(participantStore);
+        final var eventService = mock(EventService.class);
+        final var service = createService(participantStore, eventService);
         final var event = createEvent(null, UUID.randomUUID(), "Meetup");
         final var user = createUser(UUID.randomUUID(), "member@example.org", "Alice");
+        when(eventService.isRegistrationAllowed(event)).thenReturn(true);
 
         final var result = service.registerForEvent(event, user, Locale.ENGLISH);
 
@@ -166,9 +169,26 @@ class ParticipantServiceTest {
     @Test
     void registerForEventReturnsFalseWhenUserIdIsNull() {
         final var participantStore = mock(ParticipantStore.class);
-        final var service = createService(participantStore);
+        final var eventService = mock(EventService.class);
+        final var service = createService(participantStore, eventService);
         final var event = createEvent(UUID.randomUUID(), UUID.randomUUID(), "Meetup");
         final var user = createUser(null, "member@example.org", "Alice");
+        when(eventService.isRegistrationAllowed(event)).thenReturn(true);
+
+        final var result = service.registerForEvent(event, user, Locale.ENGLISH);
+
+        assertThat(result).isFalse();
+        verifyNoInteractions(participantStore);
+    }
+
+    @Test
+    void registerForEventReturnsFalseWhenRegistrationIsNotAllowed() {
+        final var participantStore = mock(ParticipantStore.class);
+        final var eventService = mock(EventService.class);
+        final var service = createService(participantStore, eventService);
+        final var event = createEvent(UUID.randomUUID(), UUID.randomUUID(), "Meetup");
+        final var user = createUser(UUID.randomUUID(), "member@example.org", "Alice");
+        when(eventService.isRegistrationAllowed(event)).thenReturn(false);
 
         final var result = service.registerForEvent(event, user, Locale.ENGLISH);
 
@@ -547,14 +567,22 @@ class ParticipantServiceTest {
     }
 
     private static ParticipantService createService(final ParticipantStore participantStore) {
-        return createService(participantStore, mock(MailService.class), mock(UserService.class),
+        return createService(participantStore, mock(EventService.class));
+    }
+
+    private static ParticipantService createService(final ParticipantStore participantStore,
+                                                    final EventService eventService) {
+        when(eventService.isRegistrationAllowed(any(EventDto.class))).thenReturn(true);
+        return createService(participantStore, mock(MailService.class), eventService, mock(UserService.class),
                 mock(LoginService.class), mock(ConfirmationService.class), mock(TranslationProvider.class));
     }
 
     private static ParticipantService createService(final ParticipantStore participantStore,
                                                     final ConfirmationService confirmationService,
                                                     final TranslationProvider translationProvider) {
-        return createService(participantStore, mock(MailService.class), mock(UserService.class),
+        final var eventService = mock(EventService.class);
+        when(eventService.isRegistrationAllowed(any(EventDto.class))).thenReturn(true);
+        return createService(participantStore, mock(MailService.class), eventService, mock(UserService.class),
                 mock(LoginService.class), confirmationService, translationProvider);
     }
 
@@ -564,7 +592,21 @@ class ParticipantServiceTest {
                                                     final LoginService loginService,
                                                     final ConfirmationService confirmationService,
                                                     final TranslationProvider translationProvider) {
-        return new ParticipantService(participantStore, mailService, userService,
+        final var eventService = mock(EventService.class);
+        when(eventService.isRegistrationAllowed(any(EventDto.class))).thenReturn(true);
+        return createService(participantStore, mailService, eventService, userService,
+                loginService, confirmationService, translationProvider);
+    }
+
+    private static ParticipantService createService(final ParticipantStore participantStore,
+                                                    final MailService mailService,
+                                                    final EventService eventService,
+                                                    final UserService userService,
+                                                    final LoginService loginService,
+                                                    final ConfirmationService confirmationService,
+                                                    final TranslationProvider translationProvider) {
+        when(eventService.isRegistrationAllowed(any(EventDto.class))).thenReturn(true);
+        return new ParticipantService(participantStore, mailService, eventService, userService,
                 loginService, confirmationService, translationProvider);
     }
 

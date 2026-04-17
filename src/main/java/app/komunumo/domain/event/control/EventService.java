@@ -19,6 +19,7 @@ package app.komunumo.domain.event.control;
 
 import app.komunumo.domain.community.entity.CommunityDto;
 import app.komunumo.domain.event.entity.EventDto;
+import app.komunumo.domain.event.entity.EventStatus;
 import app.komunumo.domain.event.entity.EventWithImageDto;
 import app.komunumo.domain.user.entity.UserDto;
 import app.komunumo.domain.user.entity.UserRole;
@@ -26,6 +27,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -165,5 +168,20 @@ public final class EventService {
         }
 
         return eventStore.hasManagementPermission(event, user);
+    }
+
+    /**
+     * <p>Checks whether registration is currently allowed for the given event.</p>
+     *
+     * <p>Registration is only allowed for published events with a defined begin date/time
+     * that is not in the past.</p>
+     *
+     * @param event the event to check
+     * @return {@code true} if registration is allowed; otherwise {@code false}
+     */
+    public boolean isRegistrationAllowed(final @NotNull EventDto event) {
+        return event.status() == EventStatus.PUBLISHED
+                && event.begin() != null
+                && !event.begin().isBefore(ZonedDateTime.now(ZoneOffset.UTC));
     }
 }

@@ -26,6 +26,7 @@ import app.komunumo.domain.core.confirmation.entity.ConfirmationStatus;
 import app.komunumo.domain.core.mail.control.MailService;
 import app.komunumo.domain.core.mail.entity.MailFormat;
 import app.komunumo.domain.core.mail.entity.MailTemplateId;
+import app.komunumo.domain.event.control.EventService;
 import app.komunumo.domain.event.entity.EventDto;
 import app.komunumo.domain.participant.entity.ParticipantDto;
 import app.komunumo.domain.participant.entity.RegisteredParticipantDto;
@@ -74,6 +75,10 @@ public final class ParticipantService {
      */
     private final @NotNull MailService mailService;
     /**
+     * <p>Service used for event-related validation checks.</p>
+     */
+    private final @NotNull EventService eventService;
+    /**
      * <p>Service used to resolve and create users by email.</p>
      */
     private final @NotNull UserService userService;
@@ -95,19 +100,22 @@ public final class ParticipantService {
      *
      * @param participantStore the store used for participant persistence access
      * @param mailService the mail service for notifications
+     * @param eventService the event service for registration eligibility checks
      * @param userService the user service for user retrieval and creation
      * @param loginService the login service for current-user context
      * @param confirmationService the confirmation service for registration flows
      * @param translationProvider the translation provider for localized texts
      */
     ParticipantService(final @NotNull ParticipantStore participantStore,
-                              final @NotNull MailService mailService,
-                              final @NotNull UserService userService,
-                              final @NotNull LoginService loginService,
-                              final @NotNull ConfirmationService confirmationService,
-                              final @NotNull TranslationProvider translationProvider) {
+                       final @NotNull MailService mailService,
+                       final @NotNull EventService eventService,
+                       final @NotNull UserService userService,
+                       final @NotNull LoginService loginService,
+                       final @NotNull ConfirmationService confirmationService,
+                       final @NotNull TranslationProvider translationProvider) {
         this.participantStore = participantStore;
         this.mailService = mailService;
+        this.eventService = eventService;
         this.userService = userService;
         this.loginService = loginService;
         this.confirmationService = confirmationService;
@@ -180,6 +188,11 @@ public final class ParticipantService {
     public boolean registerForEvent(final @NotNull EventDto event,
                                     final @NotNull UserDto user,
                                     final @NotNull Locale locale) {
+        if (!eventService.isRegistrationAllowed(event)) {
+            LOGGER.warn("Attempted to register for an event where registration is not allowed. Event: {}", event);
+            return false;
+        }
+
         if (event.id() == null) {
             LOGGER.warn("Attempted to register for an event where the event ID is NULL. Event: {}", event);
             return false;

@@ -226,4 +226,24 @@ class EventDetailViewKT extends KaribuTest {
 
         assertThat(registerDialog.isOpened()).isFalse();
     }
+
+    @Test
+    void pastEventShowsNoRegistrationControls() {
+        final var testEvent = eventService.getPastEventsWithImage()
+                .stream()
+                .map(EventWithImageDto::event)
+                .findAny()
+                .orElseThrow();
+
+        UI.getCurrent().navigate("events/" + testEvent.id());
+
+        final var registerButton = _find(Button.class, spec -> spec.withClasses("registration-button"));
+        assertThat(registerButton).isEmpty();
+
+        final var unregisterButton = _find(Button.class, spec -> spec.withClasses("leave-button"));
+        assertThat(unregisterButton).isEmpty();
+
+        final var registrationHint = _find(KomunumoMessageBox.class, spec -> spec.withClasses("registration-required-hint"));
+        assertThat(registrationHint).isEmpty();
+    }
 }

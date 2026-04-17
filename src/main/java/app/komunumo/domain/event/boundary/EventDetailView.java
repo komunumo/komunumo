@@ -140,7 +140,9 @@ public final class EventDetailView extends AbstractView implements BeforeEnterOb
             pageContent.add(participantParagraph);
         }
 
-        createRegistrationButtons(eventWithImage, locale);
+        if (eventService.isRegistrationAllowed(event)) {
+            createRegistrationButtons(eventWithImage, locale);
+        }
     }
 
     private void createRegistrationButtons(final @NotNull EventWithImageDto eventWithImage, final @NonNull Locale locale) {
