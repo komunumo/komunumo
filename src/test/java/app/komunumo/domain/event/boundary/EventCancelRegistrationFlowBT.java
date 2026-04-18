@@ -41,7 +41,7 @@ class EventCancelRegistrationFlowBT extends BrowserTest {
     protected static final UUID UUID_EVENT = UUID.fromString("3609c5c1-536a-46b6-8b6b-7834d9cc9669");
     protected static final UUID UUID_USER = UUID.fromString("c9fc8b0a-6ff7-4c00-a6f2-d85f5829edff");
 
-    private static final String CANCEL_REGISTRATION_BUTTON_SELECTOR = "vaadin-button:has-text('Cancel Registration')";
+    private static final String CANCEL_REGISTRATION_BUTTON_SELECTOR = "vaadin-button:has-text('Cancel RSVP')";
 
     @Autowired
     private @NotNull EventService eventService;

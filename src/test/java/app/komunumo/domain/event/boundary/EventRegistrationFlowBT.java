@@ -39,7 +39,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class EventRegistrationFlowBT extends BrowserTest {
 
-    private static final String REGISTRATION_BUTTON_SELECTOR = "vaadin-button:has-text('Register')";
+    private static final String REGISTRATION_BUTTON_SELECTOR = "vaadin-button:has-text('RSVP')";
 
     @Autowired
     private @NotNull EventService eventService;
