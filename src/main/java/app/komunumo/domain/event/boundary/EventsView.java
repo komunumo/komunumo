@@ -26,9 +26,14 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import org.jetbrains.annotations.NotNull;
 
+import static app.komunumo.domain.event.boundary.EventsView.EVENTS_PATH;
+
 @AnonymousAllowed
-@Route(value = "events", layout = WebsiteLayout.class)
+@Route(value = EVENTS_PATH, layout = WebsiteLayout.class)
 public final class EventsView extends AbstractView {
+
+    static final String EVENTS_PATH = "events";
+    static final String PAST_EVENTS_PATH = "events/past";
 
     public EventsView(final @NotNull ConfigurationService configurationService,
                       final @NotNull EventService eventService) {
@@ -42,12 +47,19 @@ public final class EventsView extends AbstractView {
         pastEventsGrid.addClassName("past-events-grid");
 
         final var eventsTabSheet = new TabSheet();
-        eventsTabSheet.add(
+        final var upcomingEventsTab = eventsTabSheet.add(
                 getTranslation("event.boundary.EventsView.upcomingEvents"),
                 upcomingEventsGrid);
-        eventsTabSheet.add(
+        final var pastEventsTab = eventsTabSheet.add(
                 getTranslation("event.boundary.EventsView.pastEvents"),
                 pastEventsGrid);
+
+        eventsTabSheet.addSelectedChangeListener(event -> {
+            final var path = event.getSelectedTab() == pastEventsTab ? PAST_EVENTS_PATH : EVENTS_PATH;
+            getUI().ifPresent(ui -> ui.getPage().getHistory().replaceState(null, path));
+        });
+
+        eventsTabSheet.setSelectedTab(upcomingEventsTab);
         eventsTabSheet.setWidthFull();
         add(eventsTabSheet);
     }

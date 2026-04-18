@@ -27,6 +27,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Map;
 
+import static app.komunumo.domain.event.boundary.EventsView.EVENTS_PATH;
+import static app.komunumo.domain.event.boundary.EventsView.PAST_EVENTS_PATH;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class EventsViewBT extends BrowserTest {
@@ -38,10 +40,11 @@ class EventsViewBT extends BrowserTest {
     void checkUpcomingEvents() {
         final var page = getPage();
 
-        page.navigate(getInstanceUrl() + "events/");
+        page.navigate(getInstanceUrl() + EVENTS_PATH + "/");
         page.waitForSelector(getInstanceNameSelector());
         captureScreenshot("upcoming-events-view");
         assertThat(page.title()).isEqualTo("Events – Komunumo Test");
+        assertThat(page.url()).matches(".*/" + EVENTS_PATH + "/?$");
 
         assertThat(page.locator("a[href='events']").getAttribute("highlight")).isNotNull().isBlank();
 
@@ -61,11 +64,15 @@ class EventsViewBT extends BrowserTest {
     void checkPastEvents() {
         final var page = getPage();
 
-        page.navigate(getInstanceUrl() + "events");
+        page.navigate(getInstanceUrl() + EVENTS_PATH);
         page.waitForSelector(getInstanceNameSelector());
         switchToPastEventsTab(page);
         captureScreenshot("past-events-view");
         assertThat(page.title()).isEqualTo("Events – Komunumo Test");
+        assertThat(page.url()).matches(".*/" + PAST_EVENTS_PATH + "/?$");
+
+        switchToUpcomingEventsTab(page);
+        assertThat(page.url()).matches(".*/" + EVENTS_PATH + "/?$");
 
         assertThat(page.locator("a[href='events']").getAttribute("highlight")).isNotNull().isBlank();
 
@@ -91,9 +98,10 @@ class EventsViewBT extends BrowserTest {
 
         final var page = getPage();
 
-        page.navigate(getInstanceUrl() + "events");
+        page.navigate(getInstanceUrl() + EVENTS_PATH);
         page.waitForSelector(getInstanceNameSelector());
         captureScreenshot("event-grid-view");
+        assertThat(page.url()).matches(".*/" + EVENTS_PATH + "/?$");
 
         final var eventCards = page.locator(".upcoming-events-grid vaadin-card");
         assertThat(eventCards.count()).isNotZero();
@@ -121,10 +129,11 @@ class EventsViewBT extends BrowserTest {
 
         final var page = getPage();
 
-        page.navigate(getInstanceUrl() + "events");
+        page.navigate(getInstanceUrl() + EVENTS_PATH);
         page.waitForSelector(getInstanceNameSelector());
         switchToPastEventsTab(page);
         captureScreenshot("past-event-grid-view");
+        assertThat(page.url()).matches(".*/" + PAST_EVENTS_PATH + "/?$");
 
         final var eventCards = page.locator(".past-events-grid vaadin-card");
         assertThat(eventCards.count()).isNotZero();
@@ -143,6 +152,12 @@ class EventsViewBT extends BrowserTest {
 
     private void switchToPastEventsTab(final @NotNull Page page) {
         page.locator("vaadin-tab:has-text('Past Events')").click();
+        page.waitForURL("**/" + PAST_EVENTS_PATH);
+    }
+
+    private void switchToUpcomingEventsTab(final @NotNull Page page) {
+        page.locator("vaadin-tab:has-text('Upcoming Events')").click();
+        page.waitForURL("**/" + EVENTS_PATH);
     }
 
     private void assertEventCard(final @NotNull Locator eventCard, final int number) {
