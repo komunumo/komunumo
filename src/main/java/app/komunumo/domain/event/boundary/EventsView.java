@@ -21,19 +21,29 @@ import app.komunumo.domain.core.config.control.ConfigurationService;
 import app.komunumo.domain.event.control.EventService;
 import app.komunumo.infra.ui.vaadin.layout.AbstractView;
 import app.komunumo.infra.ui.vaadin.layout.WebsiteLayout;
+import com.vaadin.flow.component.tabs.Tab;
 import com.vaadin.flow.component.tabs.TabSheet;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import org.jetbrains.annotations.NotNull;
 
 import static app.komunumo.domain.event.boundary.EventsView.EVENTS_PATH;
+import static app.komunumo.domain.event.boundary.EventsView.PAST_EVENTS_PATH;
 
 @AnonymousAllowed
 @Route(value = EVENTS_PATH, layout = WebsiteLayout.class)
-public final class EventsView extends AbstractView {
+@RouteAlias(value = PAST_EVENTS_PATH, layout = WebsiteLayout.class)
+public final class EventsView extends AbstractView implements BeforeEnterObserver {
 
-    static final String EVENTS_PATH = "events";
-    static final String PAST_EVENTS_PATH = "events/past";
+    static final @NotNull String EVENTS_PATH = "events";
+    static final @NotNull String PAST_EVENTS_PATH = "events/past";
+
+    private final @NotNull TabSheet eventsTabSheet;
+    private final @NotNull Tab pastEventsTab;
+    private final @NotNull Tab upcomingEventsTab;
 
     public EventsView(final @NotNull ConfigurationService configurationService,
                       final @NotNull EventService eventService) {
@@ -46,11 +56,11 @@ public final class EventsView extends AbstractView {
         final var pastEventsGrid = new EventGrid(eventService.getPastEventsWithImage());
         pastEventsGrid.addClassName("past-events-grid");
 
-        final var eventsTabSheet = new TabSheet();
-        final var upcomingEventsTab = eventsTabSheet.add(
+        eventsTabSheet = new TabSheet();
+        upcomingEventsTab = eventsTabSheet.add(
                 getTranslation("event.boundary.EventsView.upcomingEvents"),
                 upcomingEventsGrid);
-        final var pastEventsTab = eventsTabSheet.add(
+        pastEventsTab = eventsTabSheet.add(
                 getTranslation("event.boundary.EventsView.pastEvents"),
                 pastEventsGrid);
 
@@ -62,6 +72,15 @@ public final class EventsView extends AbstractView {
         eventsTabSheet.setSelectedTab(upcomingEventsTab);
         eventsTabSheet.setWidthFull();
         add(eventsTabSheet);
+    }
+
+    @Override
+    public void beforeEnter(final @NotNull BeforeEnterEvent event) {
+        if (PAST_EVENTS_PATH.equals(event.getLocation().getPath())) {
+            eventsTabSheet.setSelectedTab(pastEventsTab);
+        } else {
+            eventsTabSheet.setSelectedTab(upcomingEventsTab);
+        }
     }
 
     @Override

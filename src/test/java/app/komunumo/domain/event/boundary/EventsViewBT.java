@@ -64,9 +64,8 @@ class EventsViewBT extends BrowserTest {
     void checkPastEvents() {
         final var page = getPage();
 
-        page.navigate(getInstanceUrl() + EVENTS_PATH);
+        page.navigate(getInstanceUrl() + PAST_EVENTS_PATH);
         page.waitForSelector(getInstanceNameSelector());
-        switchToPastEventsTab(page);
         captureScreenshot("past-events-view");
         assertThat(page.title()).isEqualTo("Events – Komunumo Test");
         assertThat(page.url()).matches(".*/" + PAST_EVENTS_PATH + "/?$");
