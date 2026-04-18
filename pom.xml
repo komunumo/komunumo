@@ -77,7 +77,7 @@
 
     <properties>
         <java.version>25</java.version>
-        <jooq.version>3.21.1</jooq.version>
+        <jooq.version>3.21.2</jooq.version>
         <flyway.version>12.3.0</flyway.version>
         <maven.version>3.9.9</maven.version>
         <mockito.version>5.23.0</mockito.version>
