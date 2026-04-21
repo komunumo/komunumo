@@ -1,0 +1,127 @@
+/*
+ * Komunumo - Open Source Community Manager
+ * Copyright (C) Marcus Fihlon and the individual contributors to Komunumo.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
+package app.komunumo.domain.core.activitypub.control;
+
+import app.komunumo.data.db.tables.records.ActorHandleRecord;
+import app.komunumo.domain.core.activitypub.entity.ActorHandleDto;
+import org.jetbrains.annotations.NotNull;
+import org.jooq.DSLContext;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import static app.komunumo.data.db.tables.ActorHandle.ACTOR_HANDLE;
+
+/**
+ * <p>Handles persistence operations for actor handles.</p>
+ *
+ * <p>This store encapsulates all jOOQ database access for creating, updating,
+ * loading, and deleting actor handle records.</p>
+ */
+@Service
+final class ActorHandleStore {
+
+    /**
+     * <p>jOOQ DSL context used for all database operations in this store.</p>
+     */
+    private final @NotNull DSLContext dsl;
+
+    /**
+     * <p>Creates a new actor handle store.</p>
+     *
+     * @param dsl the jOOQ DSL context used for database access
+     */
+    ActorHandleStore(final @NotNull DSLContext dsl) {
+        this.dsl = dsl;
+    }
+
+    /**
+     * <p>Stores or updates an actor handle record.</p>
+     *
+     * @param actorHandle the actor handle DTO to persist
+     * @return the persisted actor handle DTO
+     */
+    public @NotNull ActorHandleDto storeActorHandle(final @NotNull ActorHandleDto actorHandle) {
+        final ActorHandleRecord actorHandleRecord = dsl.fetchOptional(ACTOR_HANDLE, ACTOR_HANDLE.HANDLE.eq(actorHandle.handle()))
+                .orElse(dsl.newRecord(ACTOR_HANDLE));
+        actorHandleRecord.from(actorHandle);
+        actorHandleRecord.store();
+        return actorHandleRecord.into(ActorHandleDto.class);
+    }
+
+    /**
+     * <p>Loads all actor handles ordered by handle.</p>
+     *
+     * @return all persisted actor handles
+     */
+    public @NotNull List<@NotNull ActorHandleDto> getActorHandles() {
+        return dsl.selectFrom(ACTOR_HANDLE)
+                .orderBy(ACTOR_HANDLE.HANDLE)
+                .fetchInto(ActorHandleDto.class);
+    }
+
+    /**
+     * <p>Loads an actor handle by its federated handle.</p>
+     *
+     * @param handle the federated handle to look up
+     * @return an optional containing the actor handle if found; otherwise empty
+     */
+    public @NotNull Optional<ActorHandleDto> getActorHandle(final @NotNull String handle) {
+        return dsl.selectFrom(ACTOR_HANDLE)
+                .where(ACTOR_HANDLE.HANDLE.eq(handle))
+                .fetchOptionalInto(ActorHandleDto.class);
+    }
+
+    /**
+     * <p>Loads an actor handle by user ID.</p>
+     *
+     * @param userId the user ID to look up
+     * @return an optional containing the actor handle if found; otherwise empty
+     */
+    public @NotNull Optional<ActorHandleDto> getActorHandleByUserId(final @NotNull UUID userId) {
+        return dsl.selectFrom(ACTOR_HANDLE)
+                .where(ACTOR_HANDLE.USER_ID.eq(userId))
+                .fetchOptionalInto(ActorHandleDto.class);
+    }
+
+    /**
+     * <p>Loads an actor handle by community ID.</p>
+     *
+     * @param communityId the community ID to look up
+     * @return an optional containing the actor handle if found; otherwise empty
+     */
+    public @NotNull Optional<ActorHandleDto> getActorHandleByCommunityId(final @NotNull UUID communityId) {
+        return dsl.selectFrom(ACTOR_HANDLE)
+                .where(ACTOR_HANDLE.COMMUNITY_ID.eq(communityId))
+                .fetchOptionalInto(ActorHandleDto.class);
+    }
+
+    /**
+     * <p>Deletes an actor handle.</p>
+     *
+     * @param actorHandle the actor handle to delete
+     * @return the number of deleted rows
+     */
+    public int deleteActorHandle(final @NotNull ActorHandleDto actorHandle) {
+        return dsl.delete(ACTOR_HANDLE)
+                .where(ACTOR_HANDLE.HANDLE.eq(actorHandle.handle()))
+                .execute();
+    }
+}
