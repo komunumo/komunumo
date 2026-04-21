@@ -59,7 +59,8 @@ final class ActorHandleStore {
      * @return the persisted actor handle DTO
      */
     public @NotNull ActorHandleDto storeActorHandle(final @NotNull ActorHandleDto actorHandle) {
-        final ActorHandleRecord actorHandleRecord = dsl.fetchOptional(ACTOR_HANDLE, ACTOR_HANDLE.HANDLE.eq(actorHandle.handle()))
+        final ActorHandleRecord actorHandleRecord = fetchByActorReference(actorHandle)
+                .or(() -> dsl.fetchOptional(ACTOR_HANDLE, ACTOR_HANDLE.HANDLE.eq(actorHandle.handle())))
                 .orElse(dsl.newRecord(ACTOR_HANDLE));
         actorHandleRecord.from(actorHandle);
         actorHandleRecord.store();
@@ -123,5 +124,39 @@ final class ActorHandleStore {
         return dsl.delete(ACTOR_HANDLE)
                 .where(ACTOR_HANDLE.HANDLE.eq(actorHandle.handle()))
                 .execute();
+    }
+
+    /**
+     * <p>Deletes an actor handle by user ID.</p>
+     *
+     * @param userId the user ID whose actor handle should be deleted
+     * @return the number of deleted rows
+     */
+    public int deleteActorHandleByUserId(final @NotNull UUID userId) {
+        return dsl.delete(ACTOR_HANDLE)
+                .where(ACTOR_HANDLE.USER_ID.eq(userId))
+                .execute();
+    }
+
+    /**
+     * <p>Deletes an actor handle by community ID.</p>
+     *
+     * @param communityId the community ID whose actor handle should be deleted
+     * @return the number of deleted rows
+     */
+    public int deleteActorHandleByCommunityId(final @NotNull UUID communityId) {
+        return dsl.delete(ACTOR_HANDLE)
+                .where(ACTOR_HANDLE.COMMUNITY_ID.eq(communityId))
+                .execute();
+    }
+
+    private @NotNull Optional<ActorHandleRecord> fetchByActorReference(final @NotNull ActorHandleDto actorHandle) {
+        if (actorHandle.userId() != null) {
+            return dsl.fetchOptional(ACTOR_HANDLE, ACTOR_HANDLE.USER_ID.eq(actorHandle.userId()));
+        }
+        if (actorHandle.communityId() != null) {
+            return dsl.fetchOptional(ACTOR_HANDLE, ACTOR_HANDLE.COMMUNITY_ID.eq(actorHandle.communityId()));
+        }
+        return Optional.empty();
     }
 }

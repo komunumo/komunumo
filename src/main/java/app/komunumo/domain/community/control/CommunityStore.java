@@ -27,6 +27,7 @@ import app.komunumo.infra.persistence.jooq.AbstractStore;
 import app.komunumo.infra.persistence.jooq.UniqueIdGenerator;
 import org.jetbrains.annotations.NotNull;
 import org.jooq.DSLContext;
+import org.jooq.Record;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -34,6 +35,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static app.komunumo.data.db.Tables.MEMBER;
+import static app.komunumo.data.db.tables.ActorHandle.ACTOR_HANDLE;
 import static app.komunumo.data.db.tables.Community.COMMUNITY;
 import static app.komunumo.data.db.tables.Image.IMAGE;
 import static app.komunumo.domain.member.entity.MemberRole.ORGANIZER;
@@ -78,7 +80,7 @@ final class CommunityStore extends AbstractStore {
         final CommunityRecord communityRecord = dsl.fetchOptional(COMMUNITY, COMMUNITY.ID.eq(community.id()))
                 .orElse(dsl.newRecord(COMMUNITY));
         createOrUpdate(COMMUNITY, community, communityRecord);
-        return communityRecord.into(CommunityDto.class);
+        return getCommunity(communityRecord.getId()).orElseThrow();
     }
 
     /**
@@ -88,9 +90,12 @@ final class CommunityStore extends AbstractStore {
      * @return an optional containing the community if found; otherwise empty
      */
     public @NotNull Optional<CommunityDto> getCommunity(final @NotNull UUID id) {
-        return dsl.selectFrom(COMMUNITY)
+        return dsl.select(COMMUNITY.fields())
+                .select(ACTOR_HANDLE.HANDLE)
+                .from(COMMUNITY)
+                .leftJoin(ACTOR_HANDLE).on(ACTOR_HANDLE.COMMUNITY_ID.eq(COMMUNITY.ID))
                 .where(COMMUNITY.ID.eq(id))
-                .fetchOptionalInto(CommunityDto.class);
+                .fetchOptional(this::toCommunityDto);
     }
 
     /**
@@ -102,11 +107,12 @@ final class CommunityStore extends AbstractStore {
     public @NotNull Optional<CommunityWithImageDto> getCommunityWithImage(final @NotNull String profile) {
         return dsl.select()
                 .from(Tables.COMMUNITY)
+                .leftJoin(ACTOR_HANDLE).on(ACTOR_HANDLE.COMMUNITY_ID.eq(COMMUNITY.ID))
                 .leftJoin(IMAGE).on(Tables.COMMUNITY.IMAGE_ID.eq(IMAGE.ID))
                 .where(COMMUNITY.PROFILE.eq(profile))
                 .fetchOptional()
                 .map(rec -> new CommunityWithImageDto(
-                        rec.into(COMMUNITY).into(CommunityDto.class),
+                        toCommunityDto(rec),
                         rec.get(IMAGE.ID) != null ? rec.into(IMAGE).into(ImageDto.class) : null
                 ));
     }
@@ -117,9 +123,12 @@ final class CommunityStore extends AbstractStore {
      * @return all communities
      */
     public @NotNull List<@NotNull CommunityDto> getCommunities() {
-        return dsl.selectFrom(COMMUNITY)
+        return dsl.select(COMMUNITY.fields())
+                .select(ACTOR_HANDLE.HANDLE)
+                .from(COMMUNITY)
+                .leftJoin(ACTOR_HANDLE).on(ACTOR_HANDLE.COMMUNITY_ID.eq(COMMUNITY.ID))
                 .orderBy(COMMUNITY.NAME)
-                .fetchInto(CommunityDto.class);
+                .fetch(this::toCommunityDto);
     }
 
     /**
@@ -130,10 +139,11 @@ final class CommunityStore extends AbstractStore {
     public @NotNull List<@NotNull CommunityWithImageDto> getCommunitiesWithImage() {
         return dsl.select()
                 .from(COMMUNITY)
+                .leftJoin(ACTOR_HANDLE).on(ACTOR_HANDLE.COMMUNITY_ID.eq(COMMUNITY.ID))
                 .leftJoin(IMAGE).on(COMMUNITY.IMAGE_ID.eq(IMAGE.ID))
                 .orderBy(COMMUNITY.NAME.asc())
                 .fetch(rec -> new CommunityWithImageDto(
-                        rec.into(COMMUNITY).into(CommunityDto.class),
+                        toCommunityDto(rec),
                         rec.get(IMAGE.ID) != null ? rec.into(IMAGE).into(ImageDto.class) : null
                 ));
     }
@@ -149,12 +159,14 @@ final class CommunityStore extends AbstractStore {
      */
     public @NotNull List<@NotNull CommunityDto> getCommunitiesForManager(final @NotNull UserDto user) {
         return dsl.select(COMMUNITY.fields())
+                .select(ACTOR_HANDLE.HANDLE)
                 .from(COMMUNITY)
+                .leftJoin(ACTOR_HANDLE).on(ACTOR_HANDLE.COMMUNITY_ID.eq(COMMUNITY.ID))
                 .join(MEMBER).on(MEMBER.COMMUNITY_ID.eq(COMMUNITY.ID))
                 .where(MEMBER.USER_ID.eq(user.id())
                         .and(MEMBER.ROLE.in(OWNER.name(), ORGANIZER.name())))
                 .orderBy(COMMUNITY.NAME)
-                .fetchInto(CommunityDto.class);
+                .fetch(this::toCommunityDto);
     }
 
     /**
@@ -199,5 +211,20 @@ final class CommunityStore extends AbstractStore {
         return dsl.delete(COMMUNITY)
                 .where(COMMUNITY.ID.eq(community.id()))
                 .execute();
+    }
+
+    private @NotNull CommunityDto toCommunityDto(final @NotNull Record record) {
+        final var community = record.into(COMMUNITY).into(CommunityDto.class);
+        final var handle = Optional.ofNullable(record.get(ACTOR_HANDLE.HANDLE)).orElse(community.profile());
+        return new CommunityDto(
+                community.id(),
+                community.profile(),
+                handle,
+                community.created(),
+                community.updated(),
+                community.name(),
+                community.description(),
+                community.imageId()
+        );
     }
 }

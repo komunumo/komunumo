@@ -24,6 +24,7 @@ import app.komunumo.infra.persistence.jooq.AbstractStore;
 import app.komunumo.infra.persistence.jooq.UniqueIdGenerator;
 import org.jetbrains.annotations.NotNull;
 import org.jooq.DSLContext;
+import org.jooq.Record;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -31,6 +32,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static app.komunumo.data.db.tables.User.USER;
+import static app.komunumo.data.db.tables.ActorHandle.ACTOR_HANDLE;
 
 /**
  * <p>Handles persistence operations for users.</p>
@@ -68,7 +70,7 @@ final class UserStore extends AbstractStore {
         final UserRecord userRecord = dsl.fetchOptional(USER, USER.ID.eq(user.id()))
                 .orElse(dsl.newRecord(USER));
         createOrUpdate(USER, user, userRecord);
-        return userRecord.into(UserDto.class);
+        return getUserById(userRecord.getId()).orElseThrow();
     }
 
     /**
@@ -77,8 +79,11 @@ final class UserStore extends AbstractStore {
      * @return all persisted users
      */
     public @NotNull List<@NotNull UserDto> getAllUsers() {
-        return dsl.selectFrom(USER)
-                .fetchInto(UserDto.class);
+        return dsl.select(USER.fields())
+                .select(ACTOR_HANDLE.HANDLE)
+                .from(USER)
+                .leftJoin(ACTOR_HANDLE).on(ACTOR_HANDLE.USER_ID.eq(USER.ID))
+                .fetch(this::toUserDto);
     }
 
     /**
@@ -116,9 +121,12 @@ final class UserStore extends AbstractStore {
      * @return an optional containing the user if found; otherwise empty
      */
     public @NotNull Optional<UserDto> getUserById(final @NotNull UUID id) {
-        return dsl.selectFrom(USER)
+        return dsl.select(USER.fields())
+                .select(ACTOR_HANDLE.HANDLE)
+                .from(USER)
+                .leftJoin(ACTOR_HANDLE).on(ACTOR_HANDLE.USER_ID.eq(USER.ID))
                 .where(USER.ID.eq(id))
-                .fetchOptionalInto(UserDto.class);
+                .fetchOptional(this::toUserDto);
     }
 
     /**
@@ -128,9 +136,12 @@ final class UserStore extends AbstractStore {
      * @return an optional containing the user if found; otherwise empty
      */
     public @NotNull Optional<UserDto> getUserByEmail(final @NotNull String email) {
-        return dsl.selectFrom(USER)
+        return dsl.select(USER.fields())
+                .select(ACTOR_HANDLE.HANDLE)
+                .from(USER)
+                .leftJoin(ACTOR_HANDLE).on(ACTOR_HANDLE.USER_ID.eq(USER.ID))
                 .where(USER.EMAIL.eq(email))
-                .fetchOptionalInto(UserDto.class);
+                .fetchOptional(this::toUserDto);
     }
 
     /**
@@ -156,5 +167,22 @@ final class UserStore extends AbstractStore {
                 .set(USER.TYPE, userType.name())
                 .where(USER.ID.eq(user.id()))
                 .execute();
+    }
+
+    private @NotNull UserDto toUserDto(final @NotNull Record record) {
+        final var user = record.into(USER).into(UserDto.class);
+        return new UserDto(
+                user.id(),
+                user.created(),
+                user.updated(),
+                user.profile(),
+                record.get(ACTOR_HANDLE.HANDLE),
+                user.email(),
+                user.name(),
+                user.bio(),
+                user.imageId(),
+                user.role(),
+                user.type()
+        );
     }
 }

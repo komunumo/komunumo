@@ -19,6 +19,8 @@ package app.komunumo.domain.community.control;
 
 import app.komunumo.domain.community.entity.CommunityDto;
 import app.komunumo.domain.community.entity.CommunityWithImageDto;
+import app.komunumo.domain.core.activitypub.control.ActorHandleService;
+import app.komunumo.domain.core.activitypub.entity.ActorHandleDto;
 import app.komunumo.domain.user.entity.UserDto;
 import app.komunumo.domain.user.entity.UserRole;
 import app.komunumo.domain.user.entity.UserType;
@@ -38,20 +40,24 @@ class CommunityServiceTest {
     @Test
     void storeCommunityDelegatesToStore() {
         final var communityStore = mock(CommunityStore.class);
-        final var communityService = new CommunityService(communityStore);
+        final var actorHandleService = mock(ActorHandleService.class);
+        final var communityService = new CommunityService(communityStore, actorHandleService);
         final var community = createCommunity();
         when(communityStore.storeCommunity(community)).thenReturn(community);
+        assertThat(community.id()).isNotNull();
+        when(communityStore.getCommunity(community.id())).thenReturn(Optional.of(community));
 
         final var result = communityService.storeCommunity(community);
 
         assertThat(result).isEqualTo(community);
         verify(communityStore).storeCommunity(community);
+        verify(actorHandleService).storeActorHandle(new ActorHandleDto(community.handle(), null, community.id()));
     }
 
     @Test
     void getCommunityDelegatesToStore() {
         final var communityStore = mock(CommunityStore.class);
-        final var communityService = new CommunityService(communityStore);
+        final var communityService = new CommunityService(communityStore, mock(ActorHandleService.class));
         final var id = UUID.randomUUID();
         final var expected = Optional.of(createCommunity());
         when(communityStore.getCommunity(id)).thenReturn(expected);
@@ -65,7 +71,7 @@ class CommunityServiceTest {
     @Test
     void getCommunityWithImageDelegatesToStore() {
         final var communityStore = mock(CommunityStore.class);
-        final var communityService = new CommunityService(communityStore);
+        final var communityService = new CommunityService(communityStore, mock(ActorHandleService.class));
         final var profile = "community-profile";
         final var expected = Optional.of(new CommunityWithImageDto(createCommunity(), null));
         when(communityStore.getCommunityWithImage(profile)).thenReturn(expected);
@@ -79,7 +85,7 @@ class CommunityServiceTest {
     @Test
     void getCommunitiesDelegatesToStore() {
         final var communityStore = mock(CommunityStore.class);
-        final var communityService = new CommunityService(communityStore);
+        final var communityService = new CommunityService(communityStore, mock(ActorHandleService.class));
         final var expected = List.of(createCommunity());
         when(communityStore.getCommunities()).thenReturn(expected);
 
@@ -92,7 +98,7 @@ class CommunityServiceTest {
     @Test
     void getCommunitiesWithImageDelegatesToStore() {
         final var communityStore = mock(CommunityStore.class);
-        final var communityService = new CommunityService(communityStore);
+        final var communityService = new CommunityService(communityStore, mock(ActorHandleService.class));
         final var expected = List.of(new CommunityWithImageDto(createCommunity(), null));
         when(communityStore.getCommunitiesWithImage()).thenReturn(expected);
 
@@ -105,7 +111,7 @@ class CommunityServiceTest {
     @Test
     void getCommunitiesForManagerDelegatesToStore() {
         final var communityStore = mock(CommunityStore.class);
-        final var communityService = new CommunityService(communityStore);
+        final var communityService = new CommunityService(communityStore, mock(ActorHandleService.class));
         final var user = createUser();
         final var expected = List.of(createCommunity());
         when(communityStore.getCommunitiesForManager(user)).thenReturn(expected);
@@ -119,7 +125,7 @@ class CommunityServiceTest {
     @Test
     void getCommunityCountDelegatesToStore() {
         final var communityStore = mock(CommunityStore.class);
-        final var communityService = new CommunityService(communityStore);
+        final var communityService = new CommunityService(communityStore, mock(ActorHandleService.class));
         when(communityStore.getCommunityCount()).thenReturn(42);
 
         final var result = communityService.getCommunityCount();
@@ -131,7 +137,7 @@ class CommunityServiceTest {
     @Test
     void isProfileNameAvailableReturnsTrueIfNoCommunityMatchesProfile() {
         final var communityStore = mock(CommunityStore.class);
-        final var communityService = new CommunityService(communityStore);
+        final var communityService = new CommunityService(communityStore, mock(ActorHandleService.class));
         final var profile = "available-profile";
         when(communityStore.getCommunityCount(profile)).thenReturn(0);
 
@@ -144,7 +150,7 @@ class CommunityServiceTest {
     @Test
     void isProfileNameAvailableReturnsFalseIfCommunityExistsWithProfile() {
         final var communityStore = mock(CommunityStore.class);
-        final var communityService = new CommunityService(communityStore);
+        final var communityService = new CommunityService(communityStore, mock(ActorHandleService.class));
         final var profile = "used-profile";
         when(communityStore.getCommunityCount(profile)).thenReturn(1);
 
@@ -157,33 +163,37 @@ class CommunityServiceTest {
     @Test
     void deleteCommunityReturnsTrueIfDeleteCountIsPositive() {
         final var communityStore = mock(CommunityStore.class);
-        final var communityService = new CommunityService(communityStore);
+        final var actorHandleService = mock(ActorHandleService.class);
+        final var communityService = new CommunityService(communityStore, actorHandleService);
         final var community = createCommunity();
         when(communityStore.deleteCommunity(community)).thenReturn(1);
 
         final var result = communityService.deleteCommunity(community);
 
         assertThat(result).isTrue();
+        verify(actorHandleService).deleteActorHandleByCommunityId(community.id());
         verify(communityStore).deleteCommunity(community);
     }
 
     @Test
     void deleteCommunityReturnsFalseIfDeleteCountIsZero() {
         final var communityStore = mock(CommunityStore.class);
-        final var communityService = new CommunityService(communityStore);
+        final var actorHandleService = mock(ActorHandleService.class);
+        final var communityService = new CommunityService(communityStore, actorHandleService);
         final var community = createCommunity();
         when(communityStore.deleteCommunity(community)).thenReturn(0);
 
         final var result = communityService.deleteCommunity(community);
 
         assertThat(result).isFalse();
+        verify(actorHandleService).deleteActorHandleByCommunityId(community.id());
         verify(communityStore).deleteCommunity(community);
     }
 
     @Test
     void isCommunityManagerReturnsTrueIfUserHasManagerCommunity() {
         final var communityStore = mock(CommunityStore.class);
-        final var communityService = new CommunityService(communityStore);
+        final var communityService = new CommunityService(communityStore, mock(ActorHandleService.class));
         final var user = createUser();
         when(communityStore.getCommunitiesForManager(user)).thenReturn(List.of(createCommunity()));
 
@@ -196,7 +206,7 @@ class CommunityServiceTest {
     @Test
     void isCommunityManagerReturnsFalseIfUserHasNoManagerCommunity() {
         final var communityStore = mock(CommunityStore.class);
-        final var communityService = new CommunityService(communityStore);
+        final var communityService = new CommunityService(communityStore, mock(ActorHandleService.class));
         final var user = createUser();
         when(communityStore.getCommunitiesForManager(user)).thenReturn(List.of());
 

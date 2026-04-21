@@ -17,11 +17,14 @@
  */
 package app.komunumo.domain.user.control;
 
+import app.komunumo.domain.core.activitypub.control.ActorHandleService;
+import app.komunumo.domain.core.activitypub.entity.ActorHandleDto;
 import app.komunumo.domain.user.entity.UserDto;
 import app.komunumo.domain.user.entity.UserRole;
 import app.komunumo.domain.user.entity.UserType;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -34,7 +37,7 @@ import java.util.UUID;
  * are encapsulated in the store implementation.</p>
  */
 @Service
-public final class UserService {
+public class UserService {
 
     /**
      * <p>Store responsible for user persistence and query operations.</p>
@@ -42,12 +45,20 @@ public final class UserService {
     private final @NotNull UserStore userStore;
 
     /**
+     * <p>Service responsible for persistence and validation of actor handles.</p>
+     */
+    private final @NotNull ActorHandleService actorHandleService;
+
+    /**
      * <p>Creates a new user service.</p>
      *
      * @param userStore the store used for user persistence access
+     * @param actorHandleService the actor handle service used for user handle persistence
      */
-    UserService(final @NotNull UserStore userStore) {
+    UserService(final @NotNull UserStore userStore,
+                final @NotNull ActorHandleService actorHandleService) {
         this.userStore = userStore;
+        this.actorHandleService = actorHandleService;
     }
 
     /**
@@ -56,8 +67,22 @@ public final class UserService {
      * @param user the user data to persist
      * @return the persisted user
      */
+    @Transactional
     public @NotNull UserDto storeUser(final @NotNull UserDto user) {
-        return userStore.storeUser(user);
+        final var handle = user.handle();
+        final var storedUser = userStore.storeUser(user);
+        final var userId = storedUser.id();
+        if (userId == null) {
+            throw new IllegalStateException("Stored user must have a user ID.");
+        }
+
+        if (storedUser.type() == UserType.LOCAL && handle != null && !handle.isBlank()) {
+            actorHandleService.storeActorHandle(new ActorHandleDto(handle, userId, null));
+        } else {
+            actorHandleService.deleteActorHandleByUserId(userId);
+        }
+
+        return userStore.getUserById(userId).orElseThrow();
     }
 
     /**
@@ -126,7 +151,12 @@ public final class UserService {
      * @param user the user to delete
      * @return {@code true} if the user was deleted; otherwise {@code false}
      */
+    @Transactional
     public boolean deleteUser(final @NotNull UserDto user) {
+        if (user.id() == null) {
+            throw new IllegalArgumentException("User ID must not be null! Maybe the user is not stored yet?");
+        }
+        actorHandleService.deleteActorHandleByUserId(user.id());
         return userStore.deleteUser(user) > 0;
     }
 

@@ -109,6 +109,26 @@ public final class ActorHandleService {
     }
 
     /**
+     * <p>Deletes an actor handle by user ID.</p>
+     *
+     * @param userId the user ID whose actor handle should be deleted
+     * @return {@code true} if an actor handle was deleted; otherwise {@code false}
+     */
+    public boolean deleteActorHandleByUserId(final @NotNull UUID userId) {
+        return actorHandleStore.deleteActorHandleByUserId(userId) > 0;
+    }
+
+    /**
+     * <p>Deletes an actor handle by community ID.</p>
+     *
+     * @param communityId the community ID whose actor handle should be deleted
+     * @return {@code true} if an actor handle was deleted; otherwise {@code false}
+     */
+    public boolean deleteActorHandleByCommunityId(final @NotNull UUID communityId) {
+        return actorHandleStore.deleteActorHandleByCommunityId(communityId) > 0;
+    }
+
+    /**
      * <p>Validates an actor handle DTO before persistence.</p>
      *
      * <p>The handle must not be blank and exactly one actor reference must be present:

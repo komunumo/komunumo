@@ -19,10 +19,13 @@ package app.komunumo.domain.community.control;
 
 import app.komunumo.domain.community.entity.CommunityDto;
 import app.komunumo.domain.community.entity.CommunityWithImageDto;
+import app.komunumo.domain.core.activitypub.control.ActorHandleService;
+import app.komunumo.domain.core.activitypub.entity.ActorHandleDto;
 import app.komunumo.domain.user.entity.UserDto;
 import app.komunumo.domain.user.entity.UserRole;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -35,7 +38,7 @@ import java.util.UUID;
  * concerns encapsulated in the store implementation.</p>
  */
 @Service
-public final class CommunityService {
+public class CommunityService {
 
     /**
      * <p>Store responsible for all community persistence operations.</p>
@@ -43,12 +46,20 @@ public final class CommunityService {
     private final @NotNull CommunityStore communityStore;
 
     /**
+     * <p>Service responsible for persistence and validation of actor handles.</p>
+     */
+    private final @NotNull ActorHandleService actorHandleService;
+
+    /**
      * <p>Creates a new community service.</p>
      *
      * @param communityStore the store used for community persistence access
+     * @param actorHandleService the actor handle service used for community handle persistence
      */
-    CommunityService(final @NotNull CommunityStore communityStore) {
+    CommunityService(final @NotNull CommunityStore communityStore,
+                     final @NotNull ActorHandleService actorHandleService) {
         this.communityStore = communityStore;
+        this.actorHandleService = actorHandleService;
     }
 
     /**
@@ -57,8 +68,16 @@ public final class CommunityService {
      * @param community the community data to persist
      * @return the persisted community
      */
+    @Transactional
     public @NotNull CommunityDto storeCommunity(final @NotNull CommunityDto community) {
-        return communityStore.storeCommunity(community);
+        final var handle = community.handle();
+        final var communityId = communityStore.storeCommunity(community).id();
+        if (communityId == null) {
+            throw new IllegalStateException("Stored community must have a community ID.");
+        }
+
+        actorHandleService.storeActorHandle(new ActorHandleDto(handle, null, communityId));
+        return communityStore.getCommunity(communityId).orElseThrow();
     }
 
     /**
@@ -134,7 +153,12 @@ public final class CommunityService {
      * @param community the community to delete
      * @return {@code true} if the community was deleted; otherwise {@code false}
      */
+    @Transactional
     public boolean deleteCommunity(final @NotNull CommunityDto community) {
+        if (community.id() == null) {
+            throw new IllegalArgumentException("Community ID must not be null! Maybe the community is not stored yet?");
+        }
+        actorHandleService.deleteActorHandleByCommunityId(community.id());
         return communityStore.deleteCommunity(community) > 0;
     }
 
