@@ -138,6 +138,7 @@ public class UserService {
      * @param email the email address to assign to the anonymous user
      * @return the persisted anonymous user
      */
+    @Transactional
     public @NotNull UserDto createAnonymousUserWithEmail(final @NotNull String email) {
         final var user = new UserDto(null, null, null,
                 null, email, "", "", null,
