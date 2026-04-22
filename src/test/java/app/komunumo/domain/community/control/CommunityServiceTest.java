@@ -45,7 +45,7 @@ class CommunityServiceTest {
         final var actorHandleService = mock(ActorHandleService.class);
         final var communityService = new CommunityService(communityStore, actorHandleService);
         final var community = createCommunity();
-        when(communityStore.storeCommunity(community)).thenReturn(community);
+        when(communityStore.storeCommunity(community)).thenReturn(community.id());
         assertThat(community.id()).isNotNull();
         when(communityStore.getCommunity(community.id())).thenReturn(Optional.of(community));
 
@@ -62,9 +62,7 @@ class CommunityServiceTest {
         final var actorHandleService = mock(ActorHandleService.class);
         final var communityService = new CommunityService(communityStore, actorHandleService);
         final var input = createCommunity();
-        final var storedWithoutId = new CommunityDto(null, input.handle(), null, null,
-                input.name(), input.description(), input.imageId());
-        when(communityStore.storeCommunity(input)).thenReturn(storedWithoutId);
+        when(communityStore.storeCommunity(input)).thenReturn(null);
 
         assertThatThrownBy(() -> communityService.storeCommunity(input))
                 .isInstanceOf(IllegalStateException.class)

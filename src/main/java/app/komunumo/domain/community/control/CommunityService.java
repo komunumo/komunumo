@@ -71,7 +71,7 @@ public class CommunityService {
     @Transactional
     public @NotNull CommunityDto storeCommunity(final @NotNull CommunityDto community) {
         final var handle = community.handle();
-        final var communityId = communityStore.storeCommunity(community).id();
+        final var communityId = communityStore.storeCommunity(community);
         if (communityId == null) {
             throw new IllegalStateException("Stored community must have a community ID.");
         }
