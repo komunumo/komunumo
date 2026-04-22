@@ -17,7 +17,6 @@
  */
 package app.komunumo.domain.community.control;
 
-import app.komunumo.data.db.tables.records.CommunityRecord;
 import app.komunumo.domain.community.entity.CommunityDto;
 import app.komunumo.domain.community.entity.CommunityWithImageDto;
 import app.komunumo.domain.core.image.entity.ImageDto;
