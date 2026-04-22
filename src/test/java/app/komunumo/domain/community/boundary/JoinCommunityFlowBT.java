@@ -132,9 +132,9 @@ public class JoinCommunityFlowBT extends CommunityFlowBT {
     @Test
     void joinCommunityWhenLoggedIn() throws MessagingException {
         final var localUserEmail = getRandomEmailAddress();
-        final var profile = localUserEmail.split("@")[0];
+        final var handle = localUserEmail.split("@")[0];
         final var localUser = userService.storeUser(new UserDto(null, null, null,
-                profile, localUserEmail,"Join Community Test", "", null, UserRole.USER, UserType.LOCAL));
+                handle, localUserEmail,"Join Community Test", "", null, UserRole.USER, UserType.LOCAL));
         login(localUser);
 
         final var demoCommunityNameSelector = "h2.community-name";

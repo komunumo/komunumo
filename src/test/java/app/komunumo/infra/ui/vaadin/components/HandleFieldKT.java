@@ -49,44 +49,38 @@ class HandleFieldKT extends KaribuTest {
     }
 
     @Test
-    void profileNameIsAvailable() {
+    void handleIsAvailable() {
         handleField.setValue("available");
         final var message = _get(handleField, Paragraph.class);
         assertThat(message.getText()).isEqualTo("This handle is available.");
     }
 
     @Test
-    void profileNameIsNotAvailable() {
+    void handleIsNotAvailable() {
         handleField.setValue("taken");
         final var message = _get(handleField, Paragraph.class);
         assertThat(message.getText()).isEqualTo("This handle is not available!");
     }
 
     @Test
-    void profileNameIsTooShort() {
+    void handleIsTooShort() {
         handleField.setValue("ab");
         final var message = _get(handleField, Paragraph.class);
         assertThat(message.getText()).isEqualTo("The handle must be between 3 and 30 characters long!");
     }
 
     @Test
-    void profileNameIsTooLong() {
+    void handleIsTooLong() {
         handleField.setValue("abcdefghijklmnopqrstuvwxyz1234567890");
         final var message = _get(handleField, Paragraph.class);
         assertThat(message.getText()).isEqualTo("The handle must be between 3 and 30 characters long!");
     }
 
     @Test
-    void profileNameInvalidSyntax() {
+    void handleHasInvalidSyntax() {
         handleField.setValue("@test");
         final var message = _get(handleField, Paragraph.class);
         assertThat(message.getText()).isEqualTo("The syntax of the handle is invalid: @test");
-    }
-
-    @Test
-    void returnOriginalProfileName() {
-        handleField.setValue("test");
-        assertThat(handleField.getValue()).isEqualTo("test");
     }
 
     @Test

@@ -33,6 +33,32 @@ import java.util.UUID;
 public final class ActorHandleService {
 
     /**
+     * <p>Minimum allowed handle length.</p>
+     */
+    public static final int HANDLE_MIN_LENGTH = 3;
+
+    /**
+     * <p>Maximum allowed handle length.</p>
+     */
+    public static final int HANDLE_MAX_LENGTH = 30;
+
+    /**
+     * <p>Regex fragment for a single allowed handle character.</p>
+     */
+    public static final String HANDLE_PATTERN = "[a-zA-Z0-9_]";
+
+    /**
+     * <p>Regex pattern that matches complete handle values with allowed characters.</p>
+     */
+    public static final String HANDLE_ALLOWED_CHARACTERS_PATTERN = "^%s+$".formatted(HANDLE_PATTERN);
+
+    /**
+     * <p>Regex pattern that matches complete handle values with allowed characters and valid length.</p>
+     */
+    public static final String HANDLE_ALLOWED_CHARACTERS_AND_LENGTH_PATTERN =
+            "^%s{%d,%d}$".formatted(HANDLE_PATTERN, HANDLE_MIN_LENGTH, HANDLE_MAX_LENGTH);
+
+    /**
      * <p>Store responsible for actor handle persistence and query operations.</p>
      */
     private final @NotNull ActorHandleStore actorHandleStore;
@@ -51,7 +77,8 @@ public final class ActorHandleService {
      *
      * @param actorHandle the actor handle data to persist
      * @return the persisted actor handle
-     * @throws IllegalArgumentException if the handle is blank or if neither/both actor references are set
+     * @throws IllegalArgumentException if the handle is blank, contains invalid characters,
+     *                                  has invalid length, or if neither/both actor references are set
      */
     public @NotNull ActorHandleDto storeActorHandle(final @NotNull ActorHandleDto actorHandle) {
         validateActorHandle(actorHandle);
@@ -105,11 +132,23 @@ public final class ActorHandleService {
      * either {@code userId} or {@code communityId}.</p>
      *
      * @param actorHandle the actor handle to validate
-     * @throws IllegalArgumentException if the handle is blank or if neither/both references are set
+     * @throws IllegalArgumentException if the handle is blank, contains invalid characters,
+     *                                  has invalid length, or if neither/both references are set
      */
     private void validateActorHandle(final @NotNull ActorHandleDto actorHandle) {
-        if (actorHandle.handle().isBlank()) {
+        final var handle = actorHandle.handle();
+
+        if (handle.isBlank()) {
             throw new IllegalArgumentException("Actor handle must not be blank.");
+        }
+
+        if (!handle.matches(HANDLE_ALLOWED_CHARACTERS_AND_LENGTH_PATTERN)) {
+            if (!handle.matches(HANDLE_ALLOWED_CHARACTERS_PATTERN)) {
+                throw new IllegalArgumentException("Actor handle contains invalid characters.");
+            }
+            throw new IllegalArgumentException(
+                    "Actor handle length must be between %d and %d characters."
+                            .formatted(HANDLE_MIN_LENGTH, HANDLE_MAX_LENGTH));
         }
 
         final var hasUserReference = actorHandle.userId() != null;

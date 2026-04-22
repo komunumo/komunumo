@@ -35,7 +35,7 @@ class ActorHandleServiceTest {
     void storeActorHandleDelegatesToStoreForUserReference() {
         final var actorHandleStore = mock(ActorHandleStore.class);
         final var actorHandleService = new ActorHandleService(actorHandleStore);
-        final var actorHandle = createActorHandleForUser("@alice@example.org");
+        final var actorHandle = createActorHandleForUser("alice_123");
         when(actorHandleStore.storeActorHandle(actorHandle)).thenReturn(actorHandle);
 
         final var result = actorHandleService.storeActorHandle(actorHandle);
@@ -72,7 +72,7 @@ class ActorHandleServiceTest {
     void storeActorHandleThrowsWhenBothReferencesAreSet() {
         final var actorHandleStore = mock(ActorHandleStore.class);
         final var actorHandleService = new ActorHandleService(actorHandleStore);
-        final var actorHandle = new ActorHandleDto("@invalid@example.org", UUID.randomUUID(), UUID.randomUUID());
+        final var actorHandle = new ActorHandleDto("validHandle", UUID.randomUUID(), UUID.randomUUID());
 
         assertThatThrownBy(() -> actorHandleService.storeActorHandle(actorHandle))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -83,11 +83,73 @@ class ActorHandleServiceTest {
     void storeActorHandleThrowsWhenNoReferenceIsSet() {
         final var actorHandleStore = mock(ActorHandleStore.class);
         final var actorHandleService = new ActorHandleService(actorHandleStore);
-        final var actorHandle = new ActorHandleDto("@invalid@example.org", null, null);
+        final var actorHandle = new ActorHandleDto("validHandle", null, null);
 
         assertThatThrownBy(() -> actorHandleService.storeActorHandle(actorHandle))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("Exactly one of userId or communityId must be set.");
+    }
+
+    @Test
+    void storeActorHandleThrowsForHandleWithInvalidCharacters() {
+        final var actorHandleStore = mock(ActorHandleStore.class);
+        final var actorHandleService = new ActorHandleService(actorHandleStore);
+        final var actorHandle = new ActorHandleDto("invalid-handle", UUID.randomUUID(), null);
+
+        assertThatThrownBy(() -> actorHandleService.storeActorHandle(actorHandle))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Actor handle contains invalid characters.");
+    }
+
+    @Test
+    void storeActorHandleThrowsForHandleThatIsTooShort() {
+        final var actorHandleStore = mock(ActorHandleStore.class);
+        final var actorHandleService = new ActorHandleService(actorHandleStore);
+        final var actorHandle = new ActorHandleDto("ab", UUID.randomUUID(), null);
+
+        assertThatThrownBy(() -> actorHandleService.storeActorHandle(actorHandle))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Actor handle length must be between 3 and 30 characters.");
+    }
+
+    @Test
+    void storeActorHandleThrowsForHandleThatIsTooLong() {
+        final var actorHandleStore = mock(ActorHandleStore.class);
+        final var actorHandleService = new ActorHandleService(actorHandleStore);
+        final var actorHandle = new ActorHandleDto("a".repeat(ActorHandleService.HANDLE_MAX_LENGTH + 1),
+                UUID.randomUUID(), null);
+
+        assertThatThrownBy(() -> actorHandleService.storeActorHandle(actorHandle))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Actor handle length must be between 3 and 30 characters.");
+    }
+
+    @Test
+    void storeActorHandleAcceptsHandleWithMinimumLength() {
+        final var actorHandleStore = mock(ActorHandleStore.class);
+        final var actorHandleService = new ActorHandleService(actorHandleStore);
+        final var actorHandle = new ActorHandleDto("a".repeat(ActorHandleService.HANDLE_MIN_LENGTH),
+                UUID.randomUUID(), null);
+        when(actorHandleStore.storeActorHandle(actorHandle)).thenReturn(actorHandle);
+
+        final var result = actorHandleService.storeActorHandle(actorHandle);
+
+        assertThat(result).isEqualTo(actorHandle);
+        verify(actorHandleStore).storeActorHandle(actorHandle);
+    }
+
+    @Test
+    void storeActorHandleAcceptsHandleWithMaximumLength() {
+        final var actorHandleStore = mock(ActorHandleStore.class);
+        final var actorHandleService = new ActorHandleService(actorHandleStore);
+        final var actorHandle = new ActorHandleDto("a".repeat(ActorHandleService.HANDLE_MAX_LENGTH),
+                UUID.randomUUID(), null);
+        when(actorHandleStore.storeActorHandle(actorHandle)).thenReturn(actorHandle);
+
+        final var result = actorHandleService.storeActorHandle(actorHandle);
+
+        assertThat(result).isEqualTo(actorHandle);
+        verify(actorHandleStore).storeActorHandle(actorHandle);
     }
 
     @Test

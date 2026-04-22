@@ -235,7 +235,7 @@ public abstract class IntegrationTest {
      * @return a randomly generated email address
      */
     protected String getRandomEmailAddress() {
-        return "user-" + System.currentTimeMillis() + "@example.com";
+        return "user_" + System.currentTimeMillis() + "@example.com";
     }
 
 }

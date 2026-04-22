@@ -118,7 +118,7 @@ class EventRegistrationFlowBT extends BrowserTest {
 
         // prepare a test user
         final var testUser = userService.storeUser(new UserDto(null, null, null,
-                "@test@example.com", "test@example.com", "Test User", "This is a test user.", null,
+                "test123", "test@example.com", "Test User", "This is a test user.", null,
                 UserRole.USER, UserType.LOCAL));
 
         // log in as the test user

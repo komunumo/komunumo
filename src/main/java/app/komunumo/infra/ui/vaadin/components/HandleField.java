@@ -29,13 +29,12 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import static app.komunumo.domain.core.activitypub.control.ActorHandleService.HANDLE_ALLOWED_CHARACTERS_PATTERN;
+import static app.komunumo.domain.core.activitypub.control.ActorHandleService.HANDLE_MAX_LENGTH;
+import static app.komunumo.domain.core.activitypub.control.ActorHandleService.HANDLE_MIN_LENGTH;
+import static app.komunumo.domain.core.activitypub.control.ActorHandleService.HANDLE_PATTERN;
+
 public final class HandleField extends CustomField<String> implements HasValueChangeMode {
-
-    private static final String HANDLE_PATTERN = "[a-zA-Z0-9_]";
-    private static final String HANDLE_VALUE_PATTERN = "^" + HANDLE_PATTERN + "+$";
-
-    private static final int MIN_LENGTH = 3;
-    private static final int MAX_LENGTH = 30;
 
     private final TextField textField = new TextField();
     private final Paragraph message = new Paragraph();
@@ -49,8 +48,8 @@ public final class HandleField extends CustomField<String> implements HasValueCh
         message.setClassName("handle-message");
         final var domainName = configurationService.getConfiguration(ConfigurationSetting.INSTANCE_DOMAIN);
 
-        textField.setMinLength(MIN_LENGTH);
-        textField.setMaxLength(MAX_LENGTH);
+        textField.setMinLength(HANDLE_MIN_LENGTH);
+        textField.setMaxLength(HANDLE_MAX_LENGTH);
         textField.setAllowedCharPattern(HANDLE_PATTERN);
 
         textField.setPrefixComponent(new Span("@"));
@@ -60,8 +59,10 @@ public final class HandleField extends CustomField<String> implements HasValueCh
         textField.setValueChangeMode(ValueChangeMode.EAGER);
         textField.addValueChangeListener(valueChangeEvent -> {
             final var value = valueChangeEvent.getValue();
-            if (value.length() < MIN_LENGTH || value.length() > MAX_LENGTH) {
-                showErrorMessage(getTranslation("vaadin.components.HandleField.errorLength", MIN_LENGTH, MAX_LENGTH));
+            if (value.length() < HANDLE_MIN_LENGTH
+                    || value.length() > HANDLE_MAX_LENGTH) {
+                showErrorMessage(getTranslation("vaadin.components.HandleField.errorLength",
+                        HANDLE_MIN_LENGTH, HANDLE_MAX_LENGTH));
             } else if (actorHandleService.isHandleAvailable(value)) {
                 showSuccessMessage(getTranslation("vaadin.components.HandleField.handleAvailable"));
             } else {
@@ -124,7 +125,7 @@ public final class HandleField extends CustomField<String> implements HasValueCh
 
     @Override
     public void setValue(final @NotNull String value) {
-        if (!value.matches(HANDLE_VALUE_PATTERN)) {
+        if (!value.matches(HANDLE_ALLOWED_CHARACTERS_PATTERN)) {
             showErrorMessage(getTranslation("vaadin.components.HandleField.syntaxError", value));
             return;
         }
