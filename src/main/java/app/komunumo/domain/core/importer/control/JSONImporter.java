@@ -211,7 +211,7 @@ public final class JSONImporter {
             root.get("communities").forEach(node -> {
                 try {
                     final var communityId = UUID.fromString(node.path("communityId").asString());
-                    final var handle = node.path("handle").asString().trim();
+                    final var handle = getHandle(node);
                     final var name = node.path("name").asString().trim();
                     final var description = node.path("description").asString().trim();
                     final var imageId = parseUUID(node.path("imageId").asString());
