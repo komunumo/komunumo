@@ -62,7 +62,7 @@ public class LeaveCommunityFlowBT extends CommunityFlowBT {
         // navigate to community detail page
         final var page = getPage();
         page.navigate(LinkUtil.getLink(demoCommunity, true));
-        page.waitForURL("**/communities/" + demoCommunity.profile());
+        page.waitForURL("**/communities/@" + demoCommunity.handle());
         page.waitForSelector(DEMO_COMMUNITY_NAME_SELECTOR);
         captureScreenshot("leaveCommunityWhenLoggedIn_confirmNo_detailViewLoaded");
 
@@ -93,7 +93,7 @@ public class LeaveCommunityFlowBT extends CommunityFlowBT {
         // navigate to community detail page
         final var page = getPage();
         page.navigate(LinkUtil.getLink(demoCommunity, true));
-        page.waitForURL("**/communities/" + demoCommunity.profile());
+        page.waitForURL("**/communities/@" + demoCommunity.handle());
         page.waitForSelector(DEMO_COMMUNITY_NAME_SELECTOR);
         captureScreenshot("leaveCommunityWhenLoggedIn_confirmYes_detailViewLoaded");
 
@@ -124,7 +124,7 @@ public class LeaveCommunityFlowBT extends CommunityFlowBT {
         // navigate to community detail page
         final var page = getPage();
         page.navigate(LinkUtil.getLink(demoCommunity, true));
-        page.waitForURL("**/communities/" + demoCommunity.profile());
+        page.waitForURL("**/communities/@" + demoCommunity.handle());
         page.waitForSelector(DEMO_COMMUNITY_NAME_SELECTOR);
         captureScreenshot("leaveCommunityWhenLoggedIn_confirmYes_detailViewLoaded");
 

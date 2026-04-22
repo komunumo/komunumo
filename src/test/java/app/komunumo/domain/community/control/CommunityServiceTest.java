@@ -31,8 +31,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 class CommunityServiceTest {
@@ -55,6 +57,24 @@ class CommunityServiceTest {
     }
 
     @Test
+    void storeCommunityThrowsIllegalStateExceptionIfStoredCommunityHasNoId() {
+        final var communityStore = mock(CommunityStore.class);
+        final var actorHandleService = mock(ActorHandleService.class);
+        final var communityService = new CommunityService(communityStore, actorHandleService);
+        final var input = createCommunity();
+        final var storedWithoutId = new CommunityDto(null, input.handle(), null, null,
+                input.name(), input.description(), input.imageId());
+        when(communityStore.storeCommunity(input)).thenReturn(storedWithoutId);
+
+        assertThatThrownBy(() -> communityService.storeCommunity(input))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("Stored community must have a community ID.");
+
+        verify(communityStore).storeCommunity(input);
+        verifyNoInteractions(actorHandleService);
+    }
+
+    @Test
     void getCommunityDelegatesToStore() {
         final var communityStore = mock(CommunityStore.class);
         final var communityService = new CommunityService(communityStore, mock(ActorHandleService.class));
@@ -72,14 +92,14 @@ class CommunityServiceTest {
     void getCommunityWithImageDelegatesToStore() {
         final var communityStore = mock(CommunityStore.class);
         final var communityService = new CommunityService(communityStore, mock(ActorHandleService.class));
-        final var profile = "community-profile";
+        final var handle = "community-handle";
         final var expected = Optional.of(new CommunityWithImageDto(createCommunity(), null));
-        when(communityStore.getCommunityWithImage(profile)).thenReturn(expected);
+        when(communityStore.getCommunityWithImage(handle)).thenReturn(expected);
 
-        final var result = communityService.getCommunityWithImage(profile);
+        final var result = communityService.getCommunityWithImage(handle);
 
         assertThat(result).isEqualTo(expected);
-        verify(communityStore).getCommunityWithImage(profile);
+        verify(communityStore).getCommunityWithImage(handle);
     }
 
     @Test
@@ -135,32 +155,6 @@ class CommunityServiceTest {
     }
 
     @Test
-    void isProfileNameAvailableReturnsTrueIfNoCommunityMatchesProfile() {
-        final var communityStore = mock(CommunityStore.class);
-        final var communityService = new CommunityService(communityStore, mock(ActorHandleService.class));
-        final var profile = "available-profile";
-        when(communityStore.getCommunityCount(profile)).thenReturn(0);
-
-        final var result = communityService.isProfileNameAvailable(profile);
-
-        assertThat(result).isTrue();
-        verify(communityStore).getCommunityCount(profile);
-    }
-
-    @Test
-    void isProfileNameAvailableReturnsFalseIfCommunityExistsWithProfile() {
-        final var communityStore = mock(CommunityStore.class);
-        final var communityService = new CommunityService(communityStore, mock(ActorHandleService.class));
-        final var profile = "used-profile";
-        when(communityStore.getCommunityCount(profile)).thenReturn(1);
-
-        final var result = communityService.isProfileNameAvailable(profile);
-
-        assertThat(result).isFalse();
-        verify(communityStore).getCommunityCount(profile);
-    }
-
-    @Test
     void deleteCommunityReturnsTrueIfDeleteCountIsPositive() {
         final var communityStore = mock(CommunityStore.class);
         final var actorHandleService = mock(ActorHandleService.class);
@@ -188,6 +182,21 @@ class CommunityServiceTest {
         assertThat(result).isFalse();
         verify(actorHandleService).deleteActorHandleByCommunityId(community.id());
         verify(communityStore).deleteCommunity(community);
+    }
+
+    @Test
+    void deleteCommunityThrowsIllegalArgumentExceptionIfCommunityIdIsNull() {
+        final var communityStore = mock(CommunityStore.class);
+        final var actorHandleService = mock(ActorHandleService.class);
+        final var communityService = new CommunityService(communityStore, actorHandleService);
+        final var communityWithoutId = new CommunityDto(null, "test", null, null,
+                "Test Community", "Test Description", null);
+
+        assertThatThrownBy(() -> communityService.deleteCommunity(communityWithoutId))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Community ID must not be null! Maybe the community is not stored yet?");
+
+        verifyNoInteractions(actorHandleService, communityStore);
     }
 
     @Test

@@ -91,13 +91,13 @@ public class CommunityService {
     }
 
     /**
-     * <p>Loads a community by profile and includes optional image data.</p>
+     * <p>Loads a community by handle and includes optional image data.</p>
      *
-     * @param profile the community profile slug/name
+     * @param handle the community handle slug/name
      * @return an optional containing the community with optional image data if found; otherwise empty
      */
-    public @NotNull Optional<CommunityWithImageDto> getCommunityWithImage(final @NotNull String profile) {
-        return communityStore.getCommunityWithImage(profile);
+    public @NotNull Optional<CommunityWithImageDto> getCommunityWithImage(final @NotNull String handle) {
+        return communityStore.getCommunityWithImage(handle);
     }
 
     /**
@@ -135,16 +135,6 @@ public class CommunityService {
      */
     public int getCommunityCount() {
         return communityStore.getCommunityCount();
-    }
-
-    /**
-     * <p>Checks whether the given profile name is available for a new community.</p>
-     *
-     * @param profile the profile name to validate
-     * @return {@code true} if the profile name is available; otherwise {@code false}
-     */
-    public boolean isProfileNameAvailable(final @NotNull String profile) {
-        return communityStore.getCommunityCount(profile) == 0;
     }
 
     /**

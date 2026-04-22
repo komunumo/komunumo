@@ -25,22 +25,10 @@ import java.util.UUID;
 
 public record CommunityDto(
         @Nullable UUID id,
-        @NotNull String profile,
         @NotNull String handle,
         @Nullable ZonedDateTime created,
         @Nullable ZonedDateTime updated,
         @NotNull String name,
         @NotNull String description,
         @Nullable UUID imageId
-) {
-    @SuppressWarnings("checkstyle:ParameterNumber")
-    public CommunityDto(final @Nullable UUID id,
-                        final @NotNull String profile,
-                        final @Nullable ZonedDateTime created,
-                        final @Nullable ZonedDateTime updated,
-                        final @NotNull String name,
-                        final @NotNull String description,
-                        final @Nullable UUID imageId) {
-        this(id, profile, profile, created, updated, name, description, imageId);
-    }
-}
+) { }

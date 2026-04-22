@@ -156,7 +156,7 @@ public final class JSONImporter {
             root.get("users").forEach(node -> {
                 try {
                     final var userId = UUID.fromString(node.path("userId").asString());
-                    final var profile = node.path("profile").asString().trim();
+                    final var handle = getHandle(node);
                     final var email = node.path("email").asString().trim();
                     final var name = node.path("name").asString().trim();
                     final var bio = node.path("bio").asString().trim();
@@ -164,7 +164,7 @@ public final class JSONImporter {
                     final var role = UserRole.valueOf(node.path("role").asString().trim());
                     final var type = UserType.valueOf(node.path("type").asString().trim());
 
-                    final var user = new UserDto(userId, null, null, profile, email, name, bio, imageId,
+                    final var user = new UserDto(userId, null, null, handle, email, name, bio, imageId,
                             role, type);
                     userService.storeUser(user);
                     counter.incrementAndGet();
@@ -211,12 +211,12 @@ public final class JSONImporter {
             root.get("communities").forEach(node -> {
                 try {
                     final var communityId = UUID.fromString(node.path("communityId").asString());
-                    final var profile = node.path("profile").asString().trim();
+                    final var handle = node.path("handle").asString().trim();
                     final var name = node.path("name").asString().trim();
                     final var description = node.path("description").asString().trim();
                     final var imageId = parseUUID(node.path("imageId").asString());
 
-                    final var community = new CommunityDto(communityId, profile, null, null,
+                    final var community = new CommunityDto(communityId, handle, null, null,
                             name, description, imageId);
                     communityService.storeCommunity(community);
                     counter.incrementAndGet();
@@ -228,6 +228,14 @@ public final class JSONImporter {
         } else {
             importerLog.warn("No communities found in JSON data.");
         }
+    }
+
+    private @Nullable String getHandle(final @NotNull JsonNode node) {
+        if (node.hasNonNull("handle")) {
+            final var handle = node.path("handle").asString().trim();
+            return handle.isEmpty() ? null : handle;
+        }
+        return null;
     }
 
     public void importEvents(final @NotNull EventService eventService) {

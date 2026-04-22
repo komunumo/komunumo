@@ -19,9 +19,9 @@ package app.komunumo.domain.community.boundary;
 
 import app.komunumo.domain.core.image.control.ImageService;
 import app.komunumo.domain.user.entity.UserRole;
+import app.komunumo.infra.ui.vaadin.components.HandleField;
 import app.komunumo.infra.ui.vaadin.components.ImageUpload;
 import app.komunumo.infra.ui.vaadin.components.MarkdownEditor;
-import app.komunumo.infra.ui.vaadin.components.ProfileField;
 import app.komunumo.test.KaribuTest;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -52,8 +52,8 @@ public class CreateCommunityViewKT extends KaribuTest {
         final var view = _get(VerticalLayout.class, spec -> spec.withClasses("create-community-view"));
         assertThat(view).isNotNull();
 
-        final var profileField = _get(ProfileField.class, spec -> spec.withClasses("profile-field"));
-        assertThat(profileField).isNotNull();
+        final var handleField = _get(HandleField.class, spec -> spec.withClasses("handle-field"));
+        assertThat(handleField).isNotNull();
 
         final var nameField = _get(TextField.class, spec -> spec.withClasses("name-field"));
         assertThat(nameField).isNotNull();
@@ -86,14 +86,14 @@ public class CreateCommunityViewKT extends KaribuTest {
         UI.getCurrent().navigate(CreateCommunityView.class);
 
         final var view = _get(CreateCommunityView.class);
-        final var profile = _get(ProfileField.class, spec -> spec.withClasses("profile-field"));
-        final var name = _get(TextField.class, spec -> spec.withClasses("name-field"));
-        final var description = _get(MarkdownEditor.class, spec -> spec.withClasses("description-field"));
+        final var handleField = _get(HandleField.class, spec -> spec.withClasses("handle-field"));
+        final var nameField = _get(TextField.class, spec -> spec.withClasses("name-field"));
+        final var descriptionField = _get(MarkdownEditor.class, spec -> spec.withClasses("description-field"));
         final var createButton = _get(Button.class, spec -> spec.withClasses("create-button"));
 
-        profile.setValue("@testCommunity");
-        name.setValue("Test Community");
-        description.setValue("Test Community Description");
+        handleField.setValue("testCommunity");
+        nameField.setValue("Test Community");
+        descriptionField.setValue("Test Community Description");
         assertThat(view.getBinder().isValid()).isTrue();
 
         createButton.click();
@@ -117,16 +117,16 @@ public class CreateCommunityViewKT extends KaribuTest {
         UI.getCurrent().navigate(CreateCommunityView.class);
 
         final var view = _get(CreateCommunityView.class);
-        final var profile = _get(ProfileField.class, spec -> spec.withClasses("profile-field"));
-        final var name = _get(TextField.class, spec -> spec.withClasses("name-field"));
-        final var description = _get(MarkdownEditor.class, spec -> spec.withClasses("description-field"));
-        final var image = _get(ImageUpload.class, spec -> spec.withClasses("image-field"));
+        final var handleField = _get(HandleField.class, spec -> spec.withClasses("handle-field"));
+        final var nameField = _get(TextField.class, spec -> spec.withClasses("name-field"));
+        final var descriptionField = _get(MarkdownEditor.class, spec -> spec.withClasses("description-field"));
+        final var imageField = _get(ImageUpload.class, spec -> spec.withClasses("image-field"));
         final var createButton = _get(Button.class, spec -> spec.withClasses("create-button"));
 
-        profile.setValue("@testCommunity");
-        name.setValue("Test Community");
-        description.setValue("Test Community Description");
-        image.setValue(imageDto);
+        handleField.setValue("testCommunity");
+        nameField.setValue("Test Community");
+        descriptionField.setValue("Test Community Description");
+        imageField.setValue(imageDto);
         assertThat(view.getBinder().isValid()).isTrue();
 
         createButton.click();
@@ -150,17 +150,17 @@ public class CreateCommunityViewKT extends KaribuTest {
         UI.getCurrent().navigate(CreateCommunityView.class);
 
         final var view = _get(CreateCommunityView.class);
-        final var profile = _get(ProfileField.class, spec -> spec.withClasses("profile-field"));
-        final var name = _get(TextField.class, spec -> spec.withClasses("name-field"));
-        final var description = _get(MarkdownEditor.class, spec -> spec.withClasses("description-field"));
-        final var image = _get(ImageUpload.class, spec -> spec.withClasses("image-field"));
+        final var handleField = _get(HandleField.class, spec -> spec.withClasses("handle-field"));
+        final var nameField = _get(TextField.class, spec -> spec.withClasses("name-field"));
+        final var descriptionField = _get(MarkdownEditor.class, spec -> spec.withClasses("description-field"));
+        final var imageField = _get(ImageUpload.class, spec -> spec.withClasses("image-field"));
         final var createButton = _get(Button.class, spec -> spec.withClasses("create-button"));
 
-        profile.setValue("@testCommunity");
-        name.setValue("Test Community");
-        description.setValue("Test Community Description");
-        image.setValue(imageDto);
-        image.setValue(null);
+        handleField.setValue("testCommunity");
+        nameField.setValue("Test Community");
+        descriptionField.setValue("Test Community Description");
+        imageField.setValue(imageDto);
+        imageField.setValue(null);
         assertThat(view.getBinder().isValid()).isTrue();
 
         createButton.click();
@@ -181,12 +181,12 @@ public class CreateCommunityViewKT extends KaribuTest {
         UI.getCurrent().navigate(CreateCommunityView.class);
 
         final var view = _get(CreateCommunityView.class);
-        final var profile = _get(ProfileField.class, spec -> spec.withClasses("profile-field"));
-        final var name = _get(TextField.class, spec -> spec.withClasses("name-field"));
+        final var handleField = _get(HandleField.class, spec -> spec.withClasses("handle-field"));
+        final var nameField = _get(TextField.class, spec -> spec.withClasses("name-field"));
         final var createButton = _get(Button.class, spec -> spec.withClasses("create-button"));
 
-        profile.setValue("Test Profile");
-        name.setValue("Test Name");
+        handleField.setValue("Test Profile");
+        nameField.setValue("Test Name");
         assertThat(view.getBinder().isValid()).isTrue();
 
         logout(); // simulate session timeout by logging out

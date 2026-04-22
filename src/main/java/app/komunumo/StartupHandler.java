@@ -81,7 +81,7 @@ public final class StartupHandler {
         }
 
         final var adminUser = new UserDto(null, null, null,
-                "@admin", adminEmail, "Admin", "", null,
+                "admin", adminEmail, "Admin", "", null,
                 UserRole.ADMIN, UserType.LOCAL);
         userService.storeUser(adminUser);
         LOGGER.info("Initial admin user created with email: {}", adminEmail);

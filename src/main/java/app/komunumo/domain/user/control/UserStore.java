@@ -170,19 +170,17 @@ final class UserStore extends AbstractStore {
     }
 
     private @NotNull UserDto toUserDto(final @NotNull Record record) {
-        final var user = record.into(USER).into(UserDto.class);
         return new UserDto(
-                user.id(),
-                user.created(),
-                user.updated(),
-                user.profile(),
+                record.get(USER.ID),
+                record.get(USER.CREATED),
+                record.get(USER.UPDATED),
                 record.get(ACTOR_HANDLE.HANDLE),
-                user.email(),
-                user.name(),
-                user.bio(),
-                user.imageId(),
-                user.role(),
-                user.type()
+                record.get(USER.EMAIL),
+                record.get(USER.NAME),
+                record.get(USER.BIO),
+                record.get(USER.IMAGE_ID),
+                record.get(USER.ROLE, app.komunumo.domain.user.entity.UserRole.class),
+                record.get(USER.TYPE, UserType.class)
         );
     }
 }

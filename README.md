@@ -141,7 +141,7 @@ The structure of the JSON file must follow the expected format used by *Komunumo
     "users": [
         {
             "userId": "1b7cd51b-4f1b-43d1-a51c-e58043b5d7a4",
-            "profile": "@admin@example.com",
+            "handle": "admin",
             "email": "admin@example.com",
             "name": "Admin User",
             "bio": "The bio of the admin.",
@@ -151,7 +151,7 @@ The structure of the JSON file must follow the expected format used by *Komunumo
         },
         {
             "userId": "025d62be-b564-4bd4-9325-f2f1d8bf2093",
-            "profile": "@user@example.com",
+            "handle": "user",
             "email": "user@example.com",
             "name": "Test User",
             "bio": "The bio of the user.",
@@ -161,7 +161,6 @@ The structure of the JSON file must follow the expected format used by *Komunumo
         },
         {
             "userId": "f309ee0d-519d-4eaa-8781-256f3200f243",
-            "profile": null,
             "email": "anonymous@example.com",
             "name": "",
             "bio": "",
@@ -173,7 +172,7 @@ The structure of the JSON file must follow the expected format used by *Komunumo
     "communities": [
         {
             "communityId": "9a73690b-6dbd-456a-88e9-dc3f77b69aa0",
-            "profile": "@demo@example.com",
+            "handle": "demo",
             "name": "Demo Community",
             "description": "A description of the demo community.",
             "imageId": "0278ec5a-9fe1-4882-85f9-845ca72c2795"

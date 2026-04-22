@@ -27,7 +27,6 @@ public record UserDto(
         @Nullable UUID id,
         @Nullable ZonedDateTime created,
         @Nullable ZonedDateTime updated,
-        @Nullable String profile,
         @Nullable String handle,
         @Nullable String email,
         @NotNull String name,
@@ -35,18 +34,4 @@ public record UserDto(
         @Nullable UUID imageId,
         @NotNull UserRole role,
         @NotNull UserType type
-) {
-    @SuppressWarnings("checkstyle:ParameterNumber")
-    public UserDto(final @Nullable UUID id,
-                   final @Nullable ZonedDateTime created,
-                   final @Nullable ZonedDateTime updated,
-                   final @Nullable String profile,
-                   final @Nullable String email,
-                   final @NotNull String name,
-                   final @NotNull String bio,
-                   final @Nullable UUID imageId,
-                   final @NotNull UserRole role,
-                   final @NotNull UserType type) {
-        this(id, created, updated, profile, profile, email, name, bio, imageId, role, type);
-    }
-}
+) { }

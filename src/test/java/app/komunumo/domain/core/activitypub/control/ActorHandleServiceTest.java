@@ -20,7 +20,6 @@ package app.komunumo.domain.core.activitypub.control;
 import app.komunumo.domain.core.activitypub.entity.ActorHandleDto;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -49,7 +48,7 @@ class ActorHandleServiceTest {
     void storeActorHandleDelegatesToStoreForCommunityReference() {
         final var actorHandleStore = mock(ActorHandleStore.class);
         final var actorHandleService = new ActorHandleService(actorHandleStore);
-        final var actorHandle = createActorHandleForCommunity("@community@example.org");
+        final var actorHandle = createActorHandleForCommunity();
         when(actorHandleStore.storeActorHandle(actorHandle)).thenReturn(actorHandle);
 
         final var result = actorHandleService.storeActorHandle(actorHandle);
@@ -92,19 +91,6 @@ class ActorHandleServiceTest {
     }
 
     @Test
-    void getActorHandlesDelegatesToStore() {
-        final var actorHandleStore = mock(ActorHandleStore.class);
-        final var actorHandleService = new ActorHandleService(actorHandleStore);
-        final var expected = List.of(createActorHandleForUser("@alice@example.org"));
-        when(actorHandleStore.getActorHandles()).thenReturn(expected);
-
-        final var result = actorHandleService.getActorHandles();
-
-        assertThat(result).isEqualTo(expected);
-        verify(actorHandleStore).getActorHandles();
-    }
-
-    @Test
     void getActorHandleDelegatesToStore() {
         final var actorHandleStore = mock(ActorHandleStore.class);
         final var actorHandleService = new ActorHandleService(actorHandleStore);
@@ -119,64 +105,62 @@ class ActorHandleServiceTest {
     }
 
     @Test
-    void getActorHandleByUserIdDelegatesToStore() {
+    void isHandleAvailableReturnsTrueIfNoActorHandleExists() {
         final var actorHandleStore = mock(ActorHandleStore.class);
         final var actorHandleService = new ActorHandleService(actorHandleStore);
-        final var userId = UUID.randomUUID();
-        final var expected = Optional.of(new ActorHandleDto("@alice@example.org", userId, null));
-        when(actorHandleStore.getActorHandleByUserId(userId)).thenReturn(expected);
+        final var handle = "alice";
+        when(actorHandleStore.getActorHandle(handle)).thenReturn(Optional.empty());
 
-        final var result = actorHandleService.getActorHandleByUserId(userId);
+        final var result = actorHandleService.isHandleAvailable(handle);
 
-        assertThat(result).isEqualTo(expected);
-        verify(actorHandleStore).getActorHandleByUserId(userId);
+        assertThat(result).isTrue();
+        verify(actorHandleStore).getActorHandle(handle);
     }
 
     @Test
-    void getActorHandleByCommunityIdDelegatesToStore() {
+    void isHandleAvailableReturnsFalseIfActorHandleExists() {
+        final var actorHandleStore = mock(ActorHandleStore.class);
+        final var actorHandleService = new ActorHandleService(actorHandleStore);
+        final var handle = "alice";
+        when(actorHandleStore.getActorHandle(handle)).thenReturn(Optional.of(createActorHandleForUser(handle)));
+
+        final var result = actorHandleService.isHandleAvailable(handle);
+
+        assertThat(result).isFalse();
+        verify(actorHandleStore).getActorHandle(handle);
+    }
+
+    @Test
+    void deleteActorHandleByCommunityIdReturnsTrueIfDeleteCountIsPositive() {
         final var actorHandleStore = mock(ActorHandleStore.class);
         final var actorHandleService = new ActorHandleService(actorHandleStore);
         final var communityId = UUID.randomUUID();
-        final var expected = Optional.of(new ActorHandleDto("@community@example.org", null, communityId));
-        when(actorHandleStore.getActorHandleByCommunityId(communityId)).thenReturn(expected);
+        when(actorHandleStore.deleteActorHandleByCommunityId(communityId)).thenReturn(1);
 
-        final var result = actorHandleService.getActorHandleByCommunityId(communityId);
-
-        assertThat(result).isEqualTo(expected);
-        verify(actorHandleStore).getActorHandleByCommunityId(communityId);
-    }
-
-    @Test
-    void deleteActorHandleReturnsTrueIfDeleteCountIsPositive() {
-        final var actorHandleStore = mock(ActorHandleStore.class);
-        final var actorHandleService = new ActorHandleService(actorHandleStore);
-        final var actorHandle = createActorHandleForCommunity("@community@example.org");
-        when(actorHandleStore.deleteActorHandle(actorHandle)).thenReturn(1);
-
-        final var result = actorHandleService.deleteActorHandle(actorHandle);
+        final var result = actorHandleService.deleteActorHandleByCommunityId(communityId);
 
         assertThat(result).isTrue();
-        verify(actorHandleStore).deleteActorHandle(actorHandle);
+        verify(actorHandleStore).deleteActorHandleByCommunityId(communityId);
     }
 
     @Test
-    void deleteActorHandleReturnsFalseIfDeleteCountIsZero() {
+    void deleteActorHandleByCommunityIdReturnsFalseIfDeleteCountIsZero() {
         final var actorHandleStore = mock(ActorHandleStore.class);
         final var actorHandleService = new ActorHandleService(actorHandleStore);
-        final var actorHandle = createActorHandleForCommunity("@community@example.org");
-        when(actorHandleStore.deleteActorHandle(actorHandle)).thenReturn(0);
+        final var communityId = UUID.randomUUID();
+        when(actorHandleStore.deleteActorHandleByCommunityId(communityId)).thenReturn(0);
 
-        final var result = actorHandleService.deleteActorHandle(actorHandle);
+        final var result = actorHandleService.deleteActorHandleByCommunityId(communityId);
 
         assertThat(result).isFalse();
-        verify(actorHandleStore).deleteActorHandle(actorHandle);
+        verify(actorHandleStore).deleteActorHandleByCommunityId(communityId);
     }
 
     private static ActorHandleDto createActorHandleForUser(final String handle) {
         return new ActorHandleDto(handle, UUID.randomUUID(), null);
     }
 
-    private static ActorHandleDto createActorHandleForCommunity(final String handle) {
-        return new ActorHandleDto(handle, null, UUID.randomUUID());
+    private static ActorHandleDto createActorHandleForCommunity() {
+        return new ActorHandleDto("testHandle", null, UUID.randomUUID());
     }
 }

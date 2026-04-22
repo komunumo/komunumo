@@ -21,7 +21,6 @@ import app.komunumo.domain.core.activitypub.entity.ActorHandleDto;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -60,15 +59,6 @@ public final class ActorHandleService {
     }
 
     /**
-     * <p>Loads all actor handles ordered by handle.</p>
-     *
-     * @return all persisted actor handles
-     */
-    public @NotNull List<@NotNull ActorHandleDto> getActorHandles() {
-        return actorHandleStore.getActorHandles();
-    }
-
-    /**
      * <p>Loads an actor handle by federated handle.</p>
      *
      * @param handle the handle to look up
@@ -79,33 +69,13 @@ public final class ActorHandleService {
     }
 
     /**
-     * <p>Loads an actor handle by user ID.</p>
+     * <p>Checks whether a handle is currently available.</p>
      *
-     * @param userId the user ID to look up
-     * @return an optional containing the actor handle if found; otherwise empty
+     * @param handle the handle to check
+     * @return {@code true} if no actor handle exists for the given value; otherwise {@code false}
      */
-    public @NotNull Optional<ActorHandleDto> getActorHandleByUserId(final @NotNull UUID userId) {
-        return actorHandleStore.getActorHandleByUserId(userId);
-    }
-
-    /**
-     * <p>Loads an actor handle by community ID.</p>
-     *
-     * @param communityId the community ID to look up
-     * @return an optional containing the actor handle if found; otherwise empty
-     */
-    public @NotNull Optional<ActorHandleDto> getActorHandleByCommunityId(final @NotNull UUID communityId) {
-        return actorHandleStore.getActorHandleByCommunityId(communityId);
-    }
-
-    /**
-     * <p>Deletes an actor handle.</p>
-     *
-     * @param actorHandle the actor handle to delete
-     * @return {@code true} if the actor handle was deleted; otherwise {@code false}
-     */
-    public boolean deleteActorHandle(final @NotNull ActorHandleDto actorHandle) {
-        return actorHandleStore.deleteActorHandle(actorHandle) > 0;
+    public boolean isHandleAvailable(final @NotNull String handle) {
+        return actorHandleStore.getActorHandle(handle).isEmpty();
     }
 
     /**

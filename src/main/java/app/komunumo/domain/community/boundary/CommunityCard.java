@@ -31,7 +31,7 @@ public class CommunityCard extends KomunumoCard {
         addClassName("community-card");
 
         final var community = communityWithImage.community();
-        setSubtitle(new Div(community.profile()));
+        setSubtitle(new Div("@".concat(community.handle())));
         addClickListener((_ -> UI.getCurrent().navigate(LinkUtil.getLink(community))));
     }
 

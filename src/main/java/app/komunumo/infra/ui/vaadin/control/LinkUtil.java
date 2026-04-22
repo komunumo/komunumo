@@ -52,7 +52,7 @@ public final class LinkUtil {
     }
 
     public static @NotNull String getLink(final @NotNull CommunityDto community, final boolean withDomain) {
-        return addLinkPrefix("communities/" + community.profile(), withDomain);
+        return addLinkPrefix("communities/@" + community.handle(), withDomain);
     }
 
     private LinkUtil() {

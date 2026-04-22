@@ -23,7 +23,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -60,22 +59,10 @@ final class ActorHandleStore {
      */
     public @NotNull ActorHandleDto storeActorHandle(final @NotNull ActorHandleDto actorHandle) {
         final ActorHandleRecord actorHandleRecord = fetchByActorReference(actorHandle)
-                .or(() -> dsl.fetchOptional(ACTOR_HANDLE, ACTOR_HANDLE.HANDLE.eq(actorHandle.handle())))
                 .orElse(dsl.newRecord(ACTOR_HANDLE));
         actorHandleRecord.from(actorHandle);
         actorHandleRecord.store();
         return actorHandleRecord.into(ActorHandleDto.class);
-    }
-
-    /**
-     * <p>Loads all actor handles ordered by handle.</p>
-     *
-     * @return all persisted actor handles
-     */
-    public @NotNull List<@NotNull ActorHandleDto> getActorHandles() {
-        return dsl.selectFrom(ACTOR_HANDLE)
-                .orderBy(ACTOR_HANDLE.HANDLE)
-                .fetchInto(ActorHandleDto.class);
     }
 
     /**
@@ -88,42 +75,6 @@ final class ActorHandleStore {
         return dsl.selectFrom(ACTOR_HANDLE)
                 .where(ACTOR_HANDLE.HANDLE.eq(handle))
                 .fetchOptionalInto(ActorHandleDto.class);
-    }
-
-    /**
-     * <p>Loads an actor handle by user ID.</p>
-     *
-     * @param userId the user ID to look up
-     * @return an optional containing the actor handle if found; otherwise empty
-     */
-    public @NotNull Optional<ActorHandleDto> getActorHandleByUserId(final @NotNull UUID userId) {
-        return dsl.selectFrom(ACTOR_HANDLE)
-                .where(ACTOR_HANDLE.USER_ID.eq(userId))
-                .fetchOptionalInto(ActorHandleDto.class);
-    }
-
-    /**
-     * <p>Loads an actor handle by community ID.</p>
-     *
-     * @param communityId the community ID to look up
-     * @return an optional containing the actor handle if found; otherwise empty
-     */
-    public @NotNull Optional<ActorHandleDto> getActorHandleByCommunityId(final @NotNull UUID communityId) {
-        return dsl.selectFrom(ACTOR_HANDLE)
-                .where(ACTOR_HANDLE.COMMUNITY_ID.eq(communityId))
-                .fetchOptionalInto(ActorHandleDto.class);
-    }
-
-    /**
-     * <p>Deletes an actor handle.</p>
-     *
-     * @param actorHandle the actor handle to delete
-     * @return the number of deleted rows
-     */
-    public int deleteActorHandle(final @NotNull ActorHandleDto actorHandle) {
-        return dsl.delete(ACTOR_HANDLE)
-                .where(ACTOR_HANDLE.HANDLE.eq(actorHandle.handle()))
-                .execute();
     }
 
     /**

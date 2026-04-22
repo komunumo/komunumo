@@ -54,7 +54,7 @@ class StartupHandlerTest {
         verify(userService).storeUser(argThat(user ->
                 user.email().equals("admin@example.eu") &&
                         user.role() == UserRole.ADMIN &&
-                        user.profile().equals("@admin")
+                        user.handle().equals("admin")
         ));
     }
 

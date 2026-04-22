@@ -17,6 +17,7 @@
  */
 package app.komunumo.infra.ui.vaadin.components;
 
+import app.komunumo.domain.core.activitypub.control.ActorHandleService;
 import app.komunumo.domain.core.config.control.ConfigurationService;
 import app.komunumo.domain.core.config.entity.ConfigurationSetting;
 import com.vaadin.flow.component.customfield.CustomField;
@@ -28,33 +29,29 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public final class ProfileField extends CustomField<String> implements HasValueChangeMode {
+public final class HandleField extends CustomField<String> implements HasValueChangeMode {
 
-    private static final String USERNAME_PATTERN = "[a-zA-Z0-9_]";
-    private static final String DOMAIN_PATTERN = "[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}";
-    private static final String PROFILE_PATTERN = "^@" + USERNAME_PATTERN + "+@" + DOMAIN_PATTERN + "$";
+    private static final String HANDLE_PATTERN = "[a-zA-Z0-9_]";
+    private static final String HANDLE_VALUE_PATTERN = "^" + HANDLE_PATTERN + "+$";
 
     private static final int MIN_LENGTH = 3;
     private static final int MAX_LENGTH = 30;
 
     private final TextField textField = new TextField();
     private final Paragraph message = new Paragraph();
-    private final String domainName;
 
-    private String originalValue = "";
-
-    public ProfileField(final @NotNull ConfigurationService configurationService,
-                        final @NotNull ProfileNameAvailabilityChecker profileNameAvailabilityChecker) {
+    public HandleField(final @NotNull ConfigurationService configurationService,
+                       final @NotNull ActorHandleService actorHandleService) {
         super();
-        addClassName("profile-field");
+        addClassName("handle-field");
         setWidthFull();
 
-        message.setClassName("profile-message");
-        domainName = configurationService.getConfiguration(ConfigurationSetting.INSTANCE_DOMAIN);
+        message.setClassName("handle-message");
+        final var domainName = configurationService.getConfiguration(ConfigurationSetting.INSTANCE_DOMAIN);
 
         textField.setMinLength(MIN_LENGTH);
         textField.setMaxLength(MAX_LENGTH);
-        textField.setAllowedCharPattern(USERNAME_PATTERN);
+        textField.setAllowedCharPattern(HANDLE_PATTERN);
 
         textField.setPrefixComponent(new Span("@"));
         textField.setSuffixComponent(new Span("@" + domainName));
@@ -62,15 +59,15 @@ public final class ProfileField extends CustomField<String> implements HasValueC
         textField.setWidthFull();
         textField.setValueChangeMode(ValueChangeMode.EAGER);
         textField.addValueChangeListener(valueChangeEvent -> {
-            final var value = textField.getValue();
+            final var value = valueChangeEvent.getValue();
             if (value.length() < MIN_LENGTH || value.length() > MAX_LENGTH) {
-                showErrorMessage(getTranslation("vaadin.components.ProfileField.errorLength", MIN_LENGTH, MAX_LENGTH));
-            } else if (profileNameAvailabilityChecker.isProfileNameAvailable(getValue())) {
-                showSuccessMessage(getTranslation("vaadin.components.ProfileField.usernameAvailable"));
+                showErrorMessage(getTranslation("vaadin.components.HandleField.errorLength", MIN_LENGTH, MAX_LENGTH));
+            } else if (actorHandleService.isHandleAvailable(value)) {
+                showSuccessMessage(getTranslation("vaadin.components.HandleField.handleAvailable"));
             } else {
-                showErrorMessage(getTranslation("vaadin.components.ProfileField.usernameNotAvailable"));
+                showErrorMessage(getTranslation("vaadin.components.HandleField.handleNotAvailable"));
             }
-            setModelValue(valueChangeEvent.getValue(), valueChangeEvent.isFromClient());
+            setModelValue(value, valueChangeEvent.isFromClient());
         });
 
         add(textField, message);
@@ -126,33 +123,13 @@ public final class ProfileField extends CustomField<String> implements HasValueC
     }
 
     @Override
-    public String getValue() {
-        if (textField.isReadOnly()) {
-            return originalValue;
-        }
-        return "@%s@%s".formatted(super.getValue(), domainName);
-    }
-
-    @Override
     public void setValue(final @NotNull String value) {
-        originalValue = value;
-
-        if (!value.matches(PROFILE_PATTERN)) {
-            showErrorMessage(getTranslation("vaadin.components.ProfileField.syntaxError", value));
-            setReadOnly(true);
+        if (!value.matches(HANDLE_VALUE_PATTERN)) {
+            showErrorMessage(getTranslation("vaadin.components.HandleField.syntaxError", value));
             return;
         }
 
-        final var parts = value.split("@", 3);
-        final var localPart = parts[1];
-        final var domainPart = parts[2];
-        if (!domainPart.equals(domainName)) {
-            showErrorMessage(getTranslation("vaadin.components.ProfileField.domainError", domainPart, domainName));
-            textField.setReadOnly(true);
-            return;
-        }
-
-        super.setValue(localPart);
+        super.setValue(value);
     }
 
     @Override
@@ -168,11 +145,6 @@ public final class ProfileField extends CustomField<String> implements HasValueC
     @Override
     public String getEmptyValue() {
         return "";
-    }
-
-    @FunctionalInterface
-    public interface ProfileNameAvailabilityChecker {
-        boolean isProfileNameAvailable(String profileName);
     }
 
 }

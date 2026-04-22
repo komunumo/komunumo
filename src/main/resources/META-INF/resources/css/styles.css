@@ -30,7 +30,7 @@
 @import "components/navigation-bar.css";
 @import "components/page-footer.css";
 @import "components/page-header.css";
-@import "components/profile-field.css";
+@import "components/handle-field.css";
 
 @import "views/confirmation-view.css";
 @import "views/global-page-view.css";

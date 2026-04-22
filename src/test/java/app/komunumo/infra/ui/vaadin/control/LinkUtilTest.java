@@ -69,7 +69,7 @@ class LinkUtilTest {
 
     @Test
     void getCommunityLink() {
-        final var community = new CommunityDto(null, "@test", null, null,
+        final var community = new CommunityDto(null, "test", null, null,
                 "Test Community Name", "Test Community Description", null);
         final var link = LinkUtil.getLink(community);
         assertThat(link).isEqualTo("/communities/@test");
@@ -78,7 +78,7 @@ class LinkUtilTest {
     @Test
     void getCommunityLinkWithConfig() {
         addConfigToLinkUtil();
-        final var community = new CommunityDto(null, "@test", null, null,
+        final var community = new CommunityDto(null, "test", null, null,
                 "Test Community Name", "Test Community Description", null);
         final var link = LinkUtil.getLink(community);
         assertThat(link).isEqualTo("/communities/@test");
@@ -107,7 +107,7 @@ class LinkUtilTest {
 
     @Test
     void getCommunityLinkWithPrefix() {
-        final var community = new CommunityDto(null, "@test", null, null,
+        final var community = new CommunityDto(null, "test", null, null,
                 "Test Community Name", "Test Community Description", null);
         final var link = LinkUtil.getLink(community, true);
         assertThat(link).isEqualTo("/communities/@test");
@@ -116,7 +116,7 @@ class LinkUtilTest {
     @Test
     void getCommunityLinkWithPrefixWithConfig() {
         addConfigToLinkUtil();
-        final var community = new CommunityDto(null, "@test", null, null,
+        final var community = new CommunityDto(null, "test", null, null,
                 "Test Community Name", "Test Community Description", null);
         final var link = LinkUtil.getLink(community, true);
         assertThat(link).isEqualTo("http://localhost:8080/communities/@test");

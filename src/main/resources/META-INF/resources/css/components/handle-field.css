@@ -16,10 +16,10 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-.profile-field .success {
+.handle-field .success {
     color: var(--komunumo-color-success-text);
 }
 
-.profile-field .error {
+.handle-field .error {
     color: var(--komunumo-color-error-text);
 }

@@ -28,6 +28,7 @@ import app.komunumo.domain.member.control.MemberService;
 import app.komunumo.domain.page.control.GlobalPageService;
 import app.komunumo.domain.participant.control.ParticipantService;
 import app.komunumo.domain.user.control.UserService;
+import app.komunumo.domain.user.entity.UserDto;
 import app.komunumo.util.ImageUtil;
 import nl.altindag.log.LogCaptor;
 import org.junit.jupiter.api.Test;
@@ -241,7 +242,31 @@ class JSONImporterTest {
                     "Start importing users...",
                     "...finished importing 5 users.");
             assertThat(logCaptor.getWarnLogs()).containsExactly(
-                    "Skipping user '{\"userId\":\"00000000-0000-0000-0000-000000000000\",\"profile\":\"@duplicate@example.com\",\"email\":\"anonymous@example.com\",\"name\":\"Doris Duplicate\",\"bio\":\"User with duplicate email for integration tests\",\"imageId\":\"\",\"role\":\"USER\",\"type\":\"ANONYMOUS\"}': Simulated failure");
+                    "Skipping user '{\"userId\":\"00000000-0000-0000-0000-000000000000\",\"email\":\"anonymous@example.com\",\"name\":\"Doris Duplicate\",\"bio\":\"User with duplicate email for integration tests\",\"imageId\":\"\",\"role\":\"USER\",\"type\":\"ANONYMOUS\"}': Simulated failure");
+            assertThat(logCaptor.getErrorLogs()).isEmpty();
+        }
+    }
+
+    @Test
+    void testImportUsersWithNullOrMissingHandle() {
+        final var userService = mock(UserService.class);
+        final var importedUsers = new ArrayList<UserDto>();
+        doAnswer(invocation -> {
+            final var user = invocation.getArgument(0, UserDto.class);
+            importedUsers.add(user);
+            return user;
+        }).when(userService).storeUser(any(UserDto.class));
+
+        final var jsonUrl = "http://localhost:8082/import/data-users-optional-handle.json";
+        try (var logCaptor = LogCaptor.forClass(ImporterLog.class)) {
+            final var importer = new JSONImporter(new ImporterLog(null), jsonUrl);
+            importer.importUsers(userService);
+
+            verify(userService, times(3)).storeUser(any(UserDto.class));
+            assertThat(importedUsers).hasSize(3);
+            assertThat(importedUsers).allSatisfy(user -> assertThat(user.handle()).isNull());
+            assertThat(logCaptor.getInfoLogs()).contains("...finished importing 3 users.");
+            assertThat(logCaptor.getWarnLogs()).isEmpty();
             assertThat(logCaptor.getErrorLogs()).isEmpty();
         }
     }
@@ -262,7 +287,7 @@ class JSONImporterTest {
                     "Start importing communities...",
                     "...finished importing 6 communities.");
             assertThat(logCaptor.getWarnLogs()).containsExactly(
-                    "Skipping community '{\"communityId\":\"00000000-0000-0000-0000-000000000000\",\"profile\":\"@demoCommunity1\",\"name\":\"Duplicate Profile Community\",\"description\":\"A community with duplicate profile for integration tests.\",\"imageId\":\"\"}': Simulated failure");
+                    "Skipping community '{\"communityId\":\"00000000-0000-0000-0000-000000000000\",\"handle\":\"demoCommunity1\",\"name\":\"Duplicate Handle Community\",\"description\":\"A community with duplicate handle for integration tests.\",\"imageId\":\"\"}': Simulated failure");
             assertThat(logCaptor.getErrorLogs()).isEmpty();
         }
     }

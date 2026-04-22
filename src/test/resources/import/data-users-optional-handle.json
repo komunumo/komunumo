@@ -1,0 +1,33 @@
+{
+  "users": [
+    {
+      "userId": "11111111-1111-1111-1111-111111111111",
+      "handle": null,
+      "email": "null-handle@example.com",
+      "name": "Null Handle",
+      "bio": "User with explicit null handle",
+      "imageId": "",
+      "role": "USER",
+      "type": "REMOTE"
+    },
+    {
+      "userId": "22222222-2222-2222-2222-222222222222",
+      "email": "missing-handle@example.com",
+      "name": "Missing Handle",
+      "bio": "User with missing handle field",
+      "imageId": "",
+      "role": "USER",
+      "type": "ANONYMOUS"
+    },
+    {
+      "userId": "33333333-3333-3333-3333-333333333333",
+      "handle": "",
+      "email": "empty-handle@example.com",
+      "name": "Empty Handle",
+      "bio": "User with empty handle field",
+      "imageId": "",
+      "role": "USER",
+      "type": "ANONYMOUS"
+    }
+  ]
+}

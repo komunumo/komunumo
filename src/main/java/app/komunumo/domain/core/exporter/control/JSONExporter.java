@@ -28,6 +28,7 @@ import app.komunumo.domain.member.control.MemberService;
 import app.komunumo.domain.page.control.GlobalPageService;
 import app.komunumo.domain.participant.control.ParticipantService;
 import app.komunumo.domain.user.control.UserService;
+import app.komunumo.domain.user.entity.UserType;
 import app.komunumo.infra.i18n.TranslationProvider;
 import app.komunumo.util.ImageUtil;
 import org.jetbrains.annotations.NotNull;
@@ -181,7 +182,9 @@ public final class JSONExporter {
             final var node = objectMapper.createObjectNode();
             //noinspection DataFlowIssue // user ID is never null because it comes from db
             node.put("userId", user.id().toString());
-            node.put("profile", user.profile());
+            if (UserType.LOCAL.equals(user.type())) {
+                node.put("handle", user.handle());
+            }
             node.put("email", user.email());
             node.put("name", user.name());
             node.put("bio", user.bio());
@@ -200,7 +203,7 @@ public final class JSONExporter {
             final var node = objectMapper.createObjectNode();
             //noinspection DataFlowIssue // community ID is never null because it comes from db
             node.put("communityId", community.id().toString());
-            node.put("profile", community.profile());
+            node.put("handle", community.handle());
             node.put("name", community.name());
             node.put("description", community.description());
             node.put("imageId", community.imageId() != null ? community.imageId().toString() : "");

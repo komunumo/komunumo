@@ -263,7 +263,7 @@ class MemberServiceTest {
 
         assertThat(response.confirmationStatus()).isEqualTo(ConfirmationStatus.SUCCESS);
         assertThat(response.message()).isEqualTo("Erfolgreich beigetreten");
-        assertThat(response.location()).isEqualTo("/communities/" + community.profile());
+        assertThat(response.location()).isEqualTo("/communities/@" + community.handle());
         verify(userService, never()).createAnonymousUserWithEmail(any());
     }
 
@@ -502,11 +502,11 @@ class MemberServiceTest {
     }
 
     private static CommunityDto createCommunity() {
-        return new CommunityDto(UUID.randomUUID(), "@community", null, null, "Community", "Description", null);
+        return new CommunityDto(UUID.randomUUID(), "community", null, null, "Community", "Description", null);
     }
 
     private static UserDto createUser(final String email) {
-        return new UserDto(UUID.randomUUID(), null, null, "@user", email, "User", "Bio", null,
+        return new UserDto(UUID.randomUUID(), null, null, "user", email, "User", "Bio", null,
                 UserRole.USER, UserType.LOCAL);
     }
 

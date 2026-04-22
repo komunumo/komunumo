@@ -23,6 +23,8 @@ import app.komunumo.domain.member.entity.MemberRole;
 import app.komunumo.domain.participant.entity.ParticipantDto;
 import app.komunumo.domain.participant.entity.RegisteredParticipantDto;
 import app.komunumo.domain.user.entity.UserDto;
+import app.komunumo.domain.user.entity.UserRole;
+import app.komunumo.domain.user.entity.UserType;
 import org.jetbrains.annotations.NotNull;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Service;
@@ -35,6 +37,7 @@ import java.util.Optional;
 import static app.komunumo.data.db.tables.Member.MEMBER;
 import static app.komunumo.data.db.tables.Participant.PARTICIPANT;
 import static app.komunumo.data.db.tables.User.USER;
+import static app.komunumo.data.db.tables.ActorHandle.ACTOR_HANDLE;
 
 /**
  * <p>Handles persistence operations for event participation and related read projections.</p>
@@ -166,13 +169,26 @@ final class ParticipantStore {
      */
     public @NotNull List<@NotNull RegisteredParticipantDto> getParticipants(final @NotNull EventDto event) {
         return dsl.select(USER.fields())
+                .select(ACTOR_HANDLE.HANDLE)
                 .select(PARTICIPANT.REGISTERED)
                 .from(PARTICIPANT)
                 .join(USER).on(PARTICIPANT.USER_ID.eq(USER.ID))
+                .leftJoin(ACTOR_HANDLE).on(ACTOR_HANDLE.USER_ID.eq(USER.ID))
                 .where(PARTICIPANT.EVENT_ID.eq(event.id()))
                 .orderBy(PARTICIPANT.REGISTERED.asc())
                 .fetch(record -> new RegisteredParticipantDto(
-                        record.into(USER).into(UserDto.class),
+                        new UserDto(
+                                record.get(USER.ID),
+                                record.get(USER.CREATED),
+                                record.get(USER.UPDATED),
+                                record.get(ACTOR_HANDLE.HANDLE),
+                                record.get(USER.EMAIL),
+                                record.get(USER.NAME),
+                                record.get(USER.BIO),
+                                record.get(USER.IMAGE_ID),
+                                record.get(USER.ROLE, UserRole.class),
+                                record.get(USER.TYPE, UserType.class)
+                        ),
                         record.get(PARTICIPANT.REGISTERED, ZonedDateTime.class)
                 ));
     }

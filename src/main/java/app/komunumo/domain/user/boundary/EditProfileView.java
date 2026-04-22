@@ -125,7 +125,7 @@ public final class EditProfileView extends AbstractView implements BeforeLeaveOb
                     user.id(),
                     user.created(),
                     user.updated(),
-                    user.profile(),
+                    user.handle(),
                     user.email(),
                     formData.name().trim(),
                     formData.bio().trim(),

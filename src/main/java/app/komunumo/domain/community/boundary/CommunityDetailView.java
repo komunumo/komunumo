@@ -58,7 +58,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
-@Route(value = "communities/:profile", layout = WebsiteLayout.class)
+@Route(value = "communities/:handle", layout = WebsiteLayout.class)
 @AnonymousAllowed
 public final class CommunityDetailView extends AbstractView implements BeforeEnterObserver {
 
@@ -90,15 +90,21 @@ public final class CommunityDetailView extends AbstractView implements BeforeEnt
     @Override
     public void beforeEnter(final @NotNull BeforeEnterEvent beforeEnterEvent) {
         final var params = beforeEnterEvent.getRouteParameters();
-        final var profile = params.get("profile").orElse("");
+        final var routeHandle = params.get("handle").orElse("");
+        if (!routeHandle.startsWith("@")) {
+            LOGGER.warn("Invalid community URL handle '{}'! Expected format '@<handle>'.", routeHandle);
+            beforeEnterEvent.rerouteToError(NotFoundException.class);
+            return;
+        }
+        final var handle = routeHandle.substring(1);
         final var ui = beforeEnterEvent.getUI();
         final var locale = ui.getLocale();
 
-        communityService.getCommunityWithImage(profile).ifPresentOrElse(communityWithImage -> {
+        communityService.getCommunityWithImage(handle).ifPresentOrElse(communityWithImage -> {
             showDetails(communityWithImage, locale);
             pageTitle = communityWithImage.community().name();
         }, () -> {
-            LOGGER.warn("Community not found with profile '{}'!", profile);
+            LOGGER.warn("Community not found with handle '{}'!", handle);
             beforeEnterEvent.rerouteToError(NotFoundException.class);
         });
     }
@@ -122,9 +128,9 @@ public final class CommunityDetailView extends AbstractView implements BeforeEnt
         name.addClassName("community-name");
         pageContent.add(name);
 
-        final var profile = new Paragraph(community.profile());
-        profile.addClassName("community-profile");
-        pageContent.add(profile);
+        final var handle = new Paragraph("@".concat(community.handle()));
+        handle.addClassName("community-handle");
+        pageContent.add(handle);
 
         final var prettyTime = new PrettyTime(locale);
         final var createdText = getTranslation("community.boundary.CommunityDetailView.created",

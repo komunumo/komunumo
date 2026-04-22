@@ -202,13 +202,13 @@ class JSONExporterTest {
         final JsonNode users = root.get("users");
         assertThat(users).hasSize(2);
         assertThat(users.get(0).get("userId").asString()).isEqualTo(TEST_UUID_1.toString());
-        assertThat(users.get(0).get("profile").asString()).isEqualTo("testuser1");
+        assertThat(users.get(0).get("handle").asString()).isEqualTo("testuser1");
         assertThat(users.get(0).get("email").asString()).isEqualTo("test1@example.com");
         assertThat(users.get(0).get("name").asString()).isEqualTo("Test User 1");
         assertThat(users.get(0).get("role").asString()).isEqualTo("USER");
         assertThat(users.get(0).get("type").asString()).isEqualTo("LOCAL");
         assertThat(users.get(1).get("userId").asString()).isEqualTo(TEST_UUID_2.toString());
-        assertThat(users.get(1).get("profile").asString()).isEqualTo("testuser2");
+        assertThat(users.get(1).get("handle").asString()).isEqualTo("testuser2");
         assertThat(users.get(1).get("email").isNull()).isTrue();
         assertThat(users.get(1).get("name").asString()).isEqualTo("Test User 2");
         assertThat(users.get(1).get("role").asString()).isEqualTo("USER");
@@ -234,7 +234,7 @@ class JSONExporterTest {
         final JsonNode communities = root.get("communities");
         assertThat(communities).hasSize(1);
         assertThat(communities.get(0).get("communityId").asString()).isEqualTo(TEST_UUID_1.toString());
-        assertThat(communities.get(0).get("profile").asString()).isEqualTo("test-community");
+        assertThat(communities.get(0).get("handle").asString()).isEqualTo("test-community");
         assertThat(communities.get(0).get("name").asString()).isEqualTo("Test Community");
         assertThat(communities.get(0).get("description").asString()).isEqualTo("A test community description");
     }

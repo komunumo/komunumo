@@ -64,7 +64,7 @@ public class JoinCommunityFlowBT extends CommunityFlowBT {
 
         final var page = getPage();
         page.navigate(LinkUtil.getLink(demoCommunity, true));
-        page.waitForURL("**/communities/" + demoCommunity.profile());
+        page.waitForURL("**/communities/@" + demoCommunity.handle());
         page.waitForSelector(DEMO_COMMUNITY_NAME_SELECTOR);
         captureScreenshot("joinCommunityAnonymously_detailViewLoaded");
 
@@ -121,7 +121,7 @@ public class JoinCommunityFlowBT extends CommunityFlowBT {
 
         // back to community detail page
         page.navigate(LinkUtil.getLink(demoCommunity, true));
-        page.waitForURL("**/communities/" + demoCommunity.profile());
+        page.waitForURL("**/communities/@" + demoCommunity.handle());
         page.waitForSelector(DEMO_COMMUNITY_NAME_SELECTOR);
         captureScreenshot("joinCommunityAnonymously_detailViewLoaded");
 
@@ -141,7 +141,7 @@ public class JoinCommunityFlowBT extends CommunityFlowBT {
 
         final var page = getPage();
         page.navigate(LinkUtil.getLink(demoCommunity, true));
-        page.waitForURL("**/communities/" + demoCommunity.profile());
+        page.waitForURL("**/communities/@" + demoCommunity.handle());
         page.waitForSelector(demoCommunityNameSelector);
         captureScreenshot("joinCommunityWhenLoggedIn_detailViewLoaded");
 
@@ -172,7 +172,7 @@ public class JoinCommunityFlowBT extends CommunityFlowBT {
 
         // back to community detail page
         page.navigate(LinkUtil.getLink(demoCommunity, true));
-        page.waitForURL("**/communities/" + demoCommunity.profile());
+        page.waitForURL("**/communities/@" + demoCommunity.handle());
         page.waitForSelector(demoCommunityNameSelector);
         captureScreenshot("joinCommunityAnonymously_detailViewLoaded");
 

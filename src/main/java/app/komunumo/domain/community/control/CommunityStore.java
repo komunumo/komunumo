@@ -17,7 +17,6 @@
  */
 package app.komunumo.domain.community.control;
 
-import app.komunumo.data.db.Tables;
 import app.komunumo.data.db.tables.records.CommunityRecord;
 import app.komunumo.domain.community.entity.CommunityDto;
 import app.komunumo.domain.community.entity.CommunityWithImageDto;
@@ -99,19 +98,20 @@ final class CommunityStore extends AbstractStore {
     }
 
     /**
-     * <p>Loads a community by profile and includes optional image data.</p>
+     * <p>Loads a community by handle and includes optional image data.</p>
      *
-     * @param profile the community profile slug/name
+     * @param handle the community handle slug/name
      * @return an optional containing the community and image projection if found; otherwise empty
      */
-    public @NotNull Optional<CommunityWithImageDto> getCommunityWithImage(final @NotNull String profile) {
-        return dsl.select()
-                .from(Tables.COMMUNITY)
-                .leftJoin(ACTOR_HANDLE).on(ACTOR_HANDLE.COMMUNITY_ID.eq(COMMUNITY.ID))
-                .leftJoin(IMAGE).on(Tables.COMMUNITY.IMAGE_ID.eq(IMAGE.ID))
-                .where(COMMUNITY.PROFILE.eq(profile))
-                .fetchOptional()
-                .map(rec -> new CommunityWithImageDto(
+    public @NotNull Optional<CommunityWithImageDto> getCommunityWithImage(final @NotNull String handle) {
+        return dsl.select(COMMUNITY.fields())
+                .select(ACTOR_HANDLE.HANDLE)
+                .select(IMAGE.fields())
+                .from(COMMUNITY)
+                .join(ACTOR_HANDLE).on(ACTOR_HANDLE.COMMUNITY_ID.eq(COMMUNITY.ID))
+                .leftJoin(IMAGE).on(COMMUNITY.IMAGE_ID.eq(IMAGE.ID))
+                .where(ACTOR_HANDLE.HANDLE.eq(handle))
+                .fetchOptional(rec -> new CommunityWithImageDto(
                         toCommunityDto(rec),
                         rec.get(IMAGE.ID) != null ? rec.into(IMAGE).into(ImageDto.class) : null
                 ));
@@ -183,21 +183,6 @@ final class CommunityStore extends AbstractStore {
     }
 
     /**
-     * <p>Counts communities with the given profile name.</p>
-     *
-     * @param profile the profile name to filter by
-     * @return the number of matching communities; never negative
-     */
-    public int getCommunityCount(final @NotNull String profile) {
-        return Optional.ofNullable(
-                dsl.selectCount()
-                        .from(COMMUNITY)
-                        .where(COMMUNITY.PROFILE.eq(profile))
-                        .fetchOne(0, Integer.class)
-        ).orElse(0);
-    }
-
-    /**
      * <p>Deletes the given community and its related member records.</p>
      *
      * @param community the community to delete
@@ -214,17 +199,14 @@ final class CommunityStore extends AbstractStore {
     }
 
     private @NotNull CommunityDto toCommunityDto(final @NotNull Record record) {
-        final var community = record.into(COMMUNITY).into(CommunityDto.class);
-        final var handle = Optional.ofNullable(record.get(ACTOR_HANDLE.HANDLE)).orElse(community.profile());
         return new CommunityDto(
-                community.id(),
-                community.profile(),
-                handle,
-                community.created(),
-                community.updated(),
-                community.name(),
-                community.description(),
-                community.imageId()
+                record.get(COMMUNITY.ID),
+                record.get(ACTOR_HANDLE.HANDLE),
+                record.get(COMMUNITY.CREATED),
+                record.get(COMMUNITY.UPDATED),
+                record.get(COMMUNITY.NAME),
+                record.get(COMMUNITY.DESCRIPTION),
+                record.get(COMMUNITY.IMAGE_ID)
         );
     }
 }

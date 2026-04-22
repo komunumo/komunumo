@@ -171,6 +171,16 @@ class CommunityDetailViewKT extends KaribuTest {
     }
 
     @Test
+    void communityWithoutAtPrefixInUrl() {
+        UI.getCurrent().navigate("communities/demoCommunity1");
+
+        final var main = _get(Main.class);
+        final var h2 = findComponent(main, H2.class);
+        assertThat(h2).isNotNull();
+        assertThat(h2.getText()).isEqualTo("Page not found");
+    }
+
+    @Test
     void anonymousUserCannotCreateEvents() {
         UI.getCurrent().navigate("communities/@demoCommunity1");
 
@@ -182,7 +192,7 @@ class CommunityDetailViewKT extends KaribuTest {
 
     @Test
     void memberCannotCreateEvents() {
-        final var testUser = getMember("@demoCommunity1", MemberRole.MEMBER);
+        final var testUser = getMember("demoCommunity1", MemberRole.MEMBER);
         login(testUser);
 
         UI.getCurrent().navigate("communities/@demoCommunity1");
@@ -195,7 +205,7 @@ class CommunityDetailViewKT extends KaribuTest {
 
     @Test
     void organizerCanCreateEvents() {
-        final var testUser = getMember("@demoCommunity1", MemberRole.ORGANIZER);
+        final var testUser = getMember("demoCommunity1", MemberRole.ORGANIZER);
         login(testUser);
 
         UI.getCurrent().navigate("communities/@demoCommunity1");
@@ -212,7 +222,7 @@ class CommunityDetailViewKT extends KaribuTest {
 
     @Test
     void ownerCanCreateEvents() {
-        final var testUser = getMember("@demoCommunity1", MemberRole.OWNER);
+        final var testUser = getMember("demoCommunity1", MemberRole.OWNER);
         login(testUser);
 
         UI.getCurrent().navigate("communities/@demoCommunity1");
@@ -228,9 +238,9 @@ class CommunityDetailViewKT extends KaribuTest {
     }
 
     @SuppressWarnings("SameParameterValue")
-    private @NotNull UserDto getMember(final @NotNull String communityProfile,
+    private @NotNull UserDto getMember(final @NotNull String communityHandle,
                                        final @NotNull MemberRole memberRole) {
-        final var communityWithImage = communityService.getCommunityWithImage(communityProfile).orElseThrow();
+        final var communityWithImage = communityService.getCommunityWithImage(communityHandle).orElseThrow();
         final var communityId = communityWithImage.community().id();
         assertThat(communityId).isNotNull();
         final var member = memberService.getMembersByCommunityId(communityId, memberRole).getFirst();
