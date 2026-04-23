@@ -185,6 +185,8 @@ public final class LoginService {
                 && response instanceof VaadinServletResponse vaadinServletResponse) {
             final var httpServletRequest = vaadinServletRequest.getHttpServletRequest();
             final var httpServletResponse = vaadinServletResponse.getHttpServletResponse();
+            httpServletRequest.getSession();
+            httpServletRequest.changeSessionId();
             new HttpSessionSecurityContextRepository().saveContext(context, httpServletRequest, httpServletResponse);
         } else {
             // fallback: should never happen in Vaadin UI context

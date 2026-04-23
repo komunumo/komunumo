@@ -156,6 +156,14 @@ public abstract class BrowserTest extends IntegrationTest {
         return page;
     }
 
+    protected BrowserContext getBrowserContext() {
+        return browserContext;
+    }
+
+    protected @NotNull ConfigurationService getConfigurationService() {
+        return configurationService;
+    }
+
     /**
      * <p>Captures a screenshot with a given name and prefixed timestamp.</p>
      *

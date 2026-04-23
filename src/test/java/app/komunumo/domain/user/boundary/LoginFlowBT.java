@@ -21,6 +21,8 @@ import app.komunumo.domain.user.entity.UserRole;
 import app.komunumo.test.BrowserTest;
 import org.junit.jupiter.api.Test;
 
+import static app.komunumo.test.TestUtil.extractLinkFromText;
+import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class LoginFlowBT extends BrowserTest {
@@ -53,6 +55,42 @@ class LoginFlowBT extends BrowserTest {
         captureScreenshot("loginWorks_event-page");
 
         logout();
+    }
+
+    @Test
+    void sessionIdShouldChangeAfterSuccessfulLogin() {
+        final var page = getPage();
+        final var testUser = getTestUser(UserRole.USER);
+
+        page.navigate(getInstanceUrl() + "login");
+        page.waitForURL("**/login");
+        page.waitForSelector(getInstanceNameSelector());
+
+        final var emailInput = page.locator("vaadin-email-field input");
+        emailInput.fill(testUser.email());
+        page.locator("vaadin-button.email-button").click();
+
+        final var sessionIdBeforeLogin = getBrowserContext().cookies(getInstanceUrl()).stream()
+                .filter(cookie -> "JSESSIONID".equals(cookie.name))
+                .map(cookie -> cookie.value)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("Missing JSESSIONID before login confirmation"));
+
+        final var instanceName = requireNonNull(getConfigurationService().getConfiguration(app.komunumo.domain.core.config.entity.ConfigurationSetting.INSTANCE_NAME));
+        final var confirmationMessage = getEmailBySubject("[%s] Please confirm your login".formatted(instanceName));
+        final var confirmationLink = extractLinkFromText(com.icegreen.greenmail.util.GreenMailUtil.getBody(confirmationMessage));
+        assertThat(confirmationLink).isNotNull();
+
+        page.navigate(confirmationLink);
+        page.waitForSelector(getInstanceNameSelector());
+
+        final var sessionIdAfterLogin = getBrowserContext().cookies(getInstanceUrl()).stream()
+                .filter(cookie -> "JSESSIONID".equals(cookie.name))
+                .map(cookie -> cookie.value)
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("Missing JSESSIONID after login confirmation"));
+
+        assertThat(sessionIdAfterLogin).isNotEqualTo(sessionIdBeforeLogin);
     }
 
 }
