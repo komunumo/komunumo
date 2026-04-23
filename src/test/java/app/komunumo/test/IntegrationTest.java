@@ -17,6 +17,7 @@
  */
 package app.komunumo.test;
 
+import app.komunumo.Application;
 import app.komunumo.domain.core.config.control.ConfigurationService;
 import app.komunumo.domain.core.config.entity.ConfigurationSetting;
 import app.komunumo.domain.core.demo.control.DemoMode;
@@ -52,6 +53,7 @@ import static org.awaitility.Awaitility.await;
  * with test execution.</p>
  */
 @SpringBootTest(
+        classes = Application.class,
         webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
         properties = "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.task.TaskSchedulingAutoConfiguration")
 @ActiveProfiles("test")
