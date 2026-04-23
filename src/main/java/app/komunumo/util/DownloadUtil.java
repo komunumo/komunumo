@@ -71,7 +71,9 @@ public final class DownloadUtil {
             }
 
             if (location.startsWith("https://")) {
-                final HttpClient client = HttpClient.newHttpClient();
+                final HttpClient client = HttpClient.newBuilder()
+                        .followRedirects(HttpClient.Redirect.NEVER)
+                        .build();
                 final HttpRequest request = HttpRequest.newBuilder()
                         .uri(URI.create(location))
                         .GET()
