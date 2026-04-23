@@ -43,6 +43,8 @@ class ImporterViewBT extends BrowserTest {
             "li:has-text('...finished importing 2 global pages.')";
     private static final String DOWNLOAD_FAILED_SELECTOR =
             "li:has-text('Failed to download JSON data from URL')";
+    private static final String INVALID_URL_SCHEMA_MESSAGE =
+            "Only HTTPS URLs are allowed.";
     private static final String VAADIN_UPLOAD_INPUT_SELECTOR =
             "vaadin-upload input[type='file']";
     private static final String IMPORT_LOG_CONTAINER_SELECTOR =
@@ -138,10 +140,10 @@ class ImporterViewBT extends BrowserTest {
             page.waitForSelector(IMPORTER_SELECTOR);
             captureScreenshot("importerWorksWithURL_importerViewLoaded");
 
-            // URL field should be empty
+            // URL field should be pre-filled with HTTPS prefix
             final var urlField = page.locator("vaadin-text-field.url-field");
             final var urlFieldInput = urlField.locator("input");
-            assertThat(urlFieldInput.inputValue()).isEmpty();
+            assertThat(urlFieldInput.inputValue()).isEqualTo("https://");
 
             // start import button should be disabled
             final var startImportButton = page.locator("vaadin-button.start-import-button");
@@ -225,6 +227,39 @@ class ImporterViewBT extends BrowserTest {
             final var logList = page.locator(IMPORT_LOG_LIST_SELECTOR);
             assertThat(logList.isVisible()).isTrue();
             assertThat(logList.locator("li").count()).isGreaterThan(0);
+        } finally {
+            logout();
+        }
+    }
+
+    @Test
+    void importerRejectsURLWithInvalidSchema() throws InterruptedException {
+        login(getTestUser(UserRole.ADMIN));
+        final var page = getPage();
+
+        try {
+            // navigate to importer page
+            page.navigate(getInstanceUrl() + "admin/import");
+            page.waitForURL("**/admin/import");
+            page.waitForSelector(IMPORTER_SELECTOR);
+            captureScreenshot("invalidSchema_importerViewLoaded");
+
+            // fill in URL field with invalid schema
+            final var urlField = page.locator("vaadin-text-field.url-field");
+            final var urlFieldInput = urlField.locator("input");
+            //noinspection HttpUrlsUsage
+            urlFieldInput.fill("http://example.com/import/data.json");
+            Thread.sleep(100); // wait for all UI animations to finish
+
+            // start import button should be disabled
+            final var startImportButton = page.locator("vaadin-button.start-import-button");
+            assertThat(startImportButton.isEnabled()).isFalse();
+
+            // check english validation message
+            final var errorMessage = urlField.locator("[slot='error-message']");
+            assertThat(errorMessage.isVisible()).isTrue();
+            assertThat(errorMessage.innerText()).isEqualTo(INVALID_URL_SCHEMA_MESSAGE);
+            captureScreenshot("invalidSchema_validationError");
         } finally {
             logout();
         }

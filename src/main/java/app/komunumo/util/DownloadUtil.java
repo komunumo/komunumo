@@ -70,24 +70,28 @@ public final class DownloadUtil {
                 return tempFile;
             }
 
-            final HttpClient client = HttpClient.newHttpClient();
-            final HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(location))
-                    .GET()
-                    .build();
-            final var response = client.send(request, HttpResponse.BodyHandlers.ofFile(tempFile));
-            final var statusCode = response.statusCode();
-            if (statusCode == 200) {
-                return tempFile;
-            } else {
-                Files.deleteIfExists(tempFile);
-                throw new KomunumoException("Failed to download file from '%s': HTTP status code %s"
-                        .formatted(location, statusCode));
+            if (location.startsWith("https://")) {
+                final HttpClient client = HttpClient.newHttpClient();
+                final HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(location))
+                        .GET()
+                        .build();
+                final var response = client.send(request, HttpResponse.BodyHandlers.ofFile(tempFile));
+                final var statusCode = response.statusCode();
+                if (statusCode == 200) {
+                    return tempFile;
+                } else {
+                    Files.deleteIfExists(tempFile);
+                    throw new KomunumoException("Failed to download file from '%s': HTTP status code %s"
+                            .formatted(location, statusCode));
+                }
             }
         } catch (final IOException | InterruptedException e) {
             throw new KomunumoException("Failed to download file from '%s': %s"
                     .formatted(location, e.getMessage()), e);
         }
+
+        throw new KomunumoException("Unsupported URL: " + location);
     }
 
     private DownloadUtil() {

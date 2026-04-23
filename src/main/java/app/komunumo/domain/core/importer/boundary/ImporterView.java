@@ -54,6 +54,8 @@ import java.util.concurrent.CompletableFuture;
 @Route(value = "admin/import", layout = WebsiteLayout.class)
 public final class ImporterView extends AbstractView {
 
+    private static final @NotNull String HTTPS_URL_PREFIX = "https://";
+
     private final @NotNull ConfigurationService configurationService;
     private final @NotNull ImageService imageService;
     private final @NotNull UserService userService;
@@ -117,6 +119,7 @@ public final class ImporterView extends AbstractView {
         urlField = new TextField();
         urlField.setValueChangeMode(ValueChangeMode.EAGER);
         urlField.setPlaceholder(getTranslation("core.importer.boundary.ImporterView.urlFieldPlaceholder"));
+        urlField.setValue(HTTPS_URL_PREFIX);
         urlField.setWidthFull();
         urlField.addClassName("url-field");
 
@@ -129,8 +132,8 @@ public final class ImporterView extends AbstractView {
         importLog = new UnorderedList();
         importLog.addClassName("import-log");
 
-        urlField.addValueChangeListener(valueChangeEvent ->
-                importButton.setEnabled(!valueChangeEvent.getValue().isBlank()));
+        urlField.addValueChangeListener(_ -> validateUrlFieldAndUpdateImportButton());
+        validateUrlFieldAndUpdateImportButton();
 
         addClassName("importer-view");
         add(new H2(getTranslation("core.importer.boundary.ImporterView.title")));
@@ -154,6 +157,20 @@ public final class ImporterView extends AbstractView {
         file.deleteOnExit();
         uploadFile = file;
         processImport();
+    }
+
+    private void validateUrlFieldAndUpdateImportButton() {
+        final var url = urlField.getValue();
+        final var blank = url.isBlank();
+        final var onlyPrefix = url.equals(HTTPS_URL_PREFIX);
+        final var validSchema = url.startsWith(HTTPS_URL_PREFIX);
+        final var valid = blank || validSchema;
+
+        urlField.setInvalid(!valid);
+        urlField.setErrorMessage(valid
+                ? null
+                : getTranslation("core.importer.boundary.ImporterView.urlFieldInvalidScheme"));
+        importButton.setEnabled(!blank && !onlyPrefix && valid);
     }
 
     private void processImport() {

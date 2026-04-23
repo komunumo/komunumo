@@ -53,6 +53,22 @@ class DownloadUtilTest {
                 .isInstanceOf(KomunumoException.class);
     }
 
+    @Test
+    void shouldThrowExceptionForUnsupportedUrlScheme() {
+        final var url = "http://example.com/file.json";
+        assertThatThrownBy(() -> DownloadUtil.downloadFile(url))
+                .isInstanceOf(KomunumoException.class)
+                .hasMessage("Unsupported URL: " + url);
+    }
+
+    @Test
+    void shouldWrapIOExceptionInCatchBlockForHttpsDownload() {
+        final var url = "https://nonexistent.invalid/file.json";
+        assertThatThrownBy(() -> DownloadUtil.downloadFile(url))
+                .isInstanceOf(KomunumoException.class)
+                .hasMessage("Failed to download file from '" + url + "': null");
+    }
+
     private static Stream<String> invalidOrUnreachableUrls() {
         return Stream.of(
                 TEST_BASE_URL + "/99",
