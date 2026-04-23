@@ -72,7 +72,7 @@ class EventParticipantViewKT extends KaribuTest {
     @Test
     void accessView_withInvalidEventId_shouldShow404() {
         final var admin = userService.storeUser(new UserDto(null, null, null,
-                null, "test-admin@example.com", "Test Admin", "", null,
+                "testAdmin", "test-admin@example.com", "Test Admin", "", null,
                 UserRole.ADMIN, UserType.LOCAL));
         login(admin);
 
@@ -85,7 +85,7 @@ class EventParticipantViewKT extends KaribuTest {
     @Test
     void accessView_withEventIdNotFound_shouldShow404() {
         final var admin = userService.storeUser(new UserDto(null, null, null,
-                null, "test-admin@example.com", "Test Admin", "", null,
+                "testAdmin", "test-admin@example.com", "Test Admin", "", null,
                 UserRole.ADMIN, UserType.LOCAL));
         login(admin);
 
@@ -106,7 +106,7 @@ class EventParticipantViewKT extends KaribuTest {
     @Test
     void accessView_whenNonMember_shouldShow404() {
         final var nonMember = userService.storeUser(new UserDto(null, null, null,
-                null, "test-non-member@example.com", "Test User", "", null,
+                "testNonMember", "test-non-member@example.com", "Test User", "", null,
                 UserRole.USER, UserType.LOCAL));
         login(nonMember);
 
@@ -119,7 +119,7 @@ class EventParticipantViewKT extends KaribuTest {
     @Test
     void accessView_whenMember_shouldShow404() {
         final var member = userService.storeUser(new UserDto(null, null, null,
-                null, "test-member@example.com", "Test Member", "", null,
+                "testMember", "test-member@example.com", "Test Member", "", null,
                 UserRole.USER, UserType.LOCAL));
         assertThat(member.id()).isNotNull();
         assertThat(testEvent.communityId()).isNotNull();
@@ -135,7 +135,7 @@ class EventParticipantViewKT extends KaribuTest {
     @Test
     void accessView_whenOrganizer_shouldShowParticipants() {
         final var organizer = userService.storeUser(new UserDto(null, null, null,
-                null, "test-owner@example.com", "Test Owner", "", null,
+                "testOrganizer", "test-organizer@example.com", "Test Organizer", "", null,
                 UserRole.USER, UserType.LOCAL));
         assertThat(organizer.id()).isNotNull();
         assertThat(testEvent.communityId()).isNotNull();
@@ -151,7 +151,7 @@ class EventParticipantViewKT extends KaribuTest {
     @Test
     void accessView_whenOwner_shouldShowParticipants() {
         final var owner = userService.storeUser(new UserDto(null, null, null,
-                null, "test-owner@example.com", "Test Owner", "", null,
+                "testOwner", "test-owner@example.com", "Test Owner", "", null,
                 UserRole.USER, UserType.LOCAL));
         assertThat(owner.id()).isNotNull();
         assertThat(testEvent.communityId()).isNotNull();
@@ -167,7 +167,7 @@ class EventParticipantViewKT extends KaribuTest {
     @Test
     void accessView_whenAdmin_shouldShowParticipants() {
         final var admin = userService.storeUser(new UserDto(null, null, null,
-                null, "test-admin@example.com", "Test Admin", "", null,
+                "testAmin", "test-admin@example.com", "Test Admin", "", null,
                 UserRole.ADMIN, UserType.LOCAL));
         login(admin);
 
@@ -188,7 +188,7 @@ class EventParticipantViewKT extends KaribuTest {
         participantService.storeParticipant(new ParticipantDto(testEvent.id(), anonymous.id(), null));
 
         final var admin = userService.storeUser(new UserDto(null, null, null,
-                null, "test-admin@example.com", "Test Admin", "", null,
+                "testAdmin", "test-admin@example.com", "Test Admin", "", null,
                 UserRole.ADMIN, UserType.LOCAL));
         login(admin);
 

@@ -125,7 +125,7 @@ public final class HandleField extends CustomField<String> implements HasValueCh
 
     @Override
     public void setValue(final @NotNull String value) {
-        if (!value.matches(HANDLE_ALLOWED_CHARACTERS_PATTERN)) {
+        if (!value.isBlank() && !value.matches(HANDLE_ALLOWED_CHARACTERS_PATTERN)) {
             showErrorMessage(getTranslation("vaadin.components.HandleField.syntaxError", value));
             return;
         }

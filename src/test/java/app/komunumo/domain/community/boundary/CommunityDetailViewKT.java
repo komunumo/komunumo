@@ -24,6 +24,7 @@ import app.komunumo.domain.member.control.MemberService;
 import app.komunumo.domain.member.entity.MemberRole;
 import app.komunumo.domain.user.control.UserService;
 import app.komunumo.domain.user.entity.UserDto;
+import app.komunumo.domain.user.entity.UserType;
 import app.komunumo.test.KaribuTest;
 import com.github.mvysny.kaributesting.v10.MockVaadin;
 import com.vaadin.flow.component.UI;
@@ -243,7 +244,10 @@ class CommunityDetailViewKT extends KaribuTest {
         final var communityWithImage = communityService.getCommunityWithImage(communityHandle).orElseThrow();
         final var communityId = communityWithImage.community().id();
         assertThat(communityId).isNotNull();
-        final var member = memberService.getMembersByCommunityId(communityId, memberRole).getFirst();
-        return userService.getUserById(member.userId()).orElseThrow();
+        return memberService.getMembersByCommunityId(communityId, memberRole).stream()
+                .map(memberDto -> userService.getUserById(memberDto.userId()).orElseThrow())
+                .filter(user -> user.type().equals(UserType.LOCAL))
+                .findFirst()
+                .orElseThrow();
     }
 }

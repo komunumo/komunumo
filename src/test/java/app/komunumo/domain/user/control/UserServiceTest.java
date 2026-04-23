@@ -43,7 +43,8 @@ class UserServiceTest {
         final var store = mock(UserStore.class);
         final var actorHandleService = mock(ActorHandleService.class);
         final var service = new UserService(store, actorHandleService);
-        final var user = createUser(UUID.randomUUID(), "user@example.org", "User", UserRole.USER, UserType.LOCAL);
+        final var user = createUser(UUID.randomUUID(), "user@example.org", null, "User",
+                UserRole.USER, UserType.REMOTE);
         when(store.storeUser(user)).thenReturn(user);
         assertThat(user.id()).isNotNull();
         when(store.getUserById(user.id())).thenReturn(Optional.of(user));
@@ -62,7 +63,8 @@ class UserServiceTest {
         final var service = new UserService(store, actorHandleService);
         final var user = new UserDto(
                 UUID.randomUUID(), null, null, "localHandle",
-                "user@example.org", "User", "", null, UserRole.USER, UserType.LOCAL);
+                "user@example.org", "User", "", null,
+                UserRole.USER, UserType.LOCAL);
         when(store.storeUser(user)).thenReturn(user);
         assertThat(user.id()).isNotNull();
         when(store.getUserById(user.id())).thenReturn(Optional.of(user));
@@ -82,7 +84,8 @@ class UserServiceTest {
         final var service = new UserService(store, actorHandleService);
         final var user = new UserDto(
                 UUID.randomUUID(), null, null, " ",
-                "user@example.org", "User", "", null, UserRole.USER, UserType.LOCAL);
+                "user@example.org", "User", "", null,
+                UserRole.USER, UserType.LOCAL);
         when(store.storeUser(user)).thenReturn(user);
         assertThat(user.id()).isNotNull();
         when(store.getUserById(user.id())).thenReturn(Optional.of(user));
@@ -100,8 +103,10 @@ class UserServiceTest {
         final var store = mock(UserStore.class);
         final var actorHandleService = mock(ActorHandleService.class);
         final var service = new UserService(store, actorHandleService);
-        final var user = createUser(UUID.randomUUID(), "user@example.org", "User", UserRole.USER, UserType.LOCAL);
-        final var storedWithoutId = createUser(null, "user@example.org", "User", UserRole.USER, UserType.LOCAL);
+        final var user = createUser(UUID.randomUUID(), "user@example.org", "testUser", "User",
+                UserRole.USER, UserType.LOCAL);
+        final var storedWithoutId = createUser(null, "user@example.org", "testUser", "User",
+                UserRole.USER, UserType.LOCAL);
         when(store.storeUser(user)).thenReturn(storedWithoutId);
 
         assertThatThrownBy(() -> service.storeUser(user))
@@ -116,7 +121,8 @@ class UserServiceTest {
     void getAllUsersDelegatesToStore() {
         final var store = mock(UserStore.class);
         final var service = new UserService(store, mock(ActorHandleService.class));
-        final var users = List.of(createUser(UUID.randomUUID(), "user@example.org", "User", UserRole.USER, UserType.LOCAL));
+        final var users = List.of(createUser(UUID.randomUUID(), "user@example.org", "testUser", "User",
+                UserRole.USER, UserType.LOCAL));
         when(store.getAllUsers()).thenReturn(users);
 
         final var result = service.getAllUsers();
@@ -150,7 +156,8 @@ class UserServiceTest {
     void getUserByIdDelegatesToStore() {
         final var store = mock(UserStore.class);
         final var service = new UserService(store, mock(ActorHandleService.class));
-        final var user = createUser(UUID.randomUUID(), "user@example.org", "User", UserRole.USER, UserType.LOCAL);
+        final var user = createUser(UUID.randomUUID(), "user@example.org", "testUser", "User",
+                UserRole.USER, UserType.LOCAL);
         assertThat(user.id()).isNotNull();
         when(store.getUserById(user.id())).thenReturn(Optional.of(user));
 
@@ -163,7 +170,8 @@ class UserServiceTest {
     void getUserByEmailDelegatesToStore() {
         final var store = mock(UserStore.class);
         final var service = new UserService(store, mock(ActorHandleService.class));
-        final var user = createUser(UUID.randomUUID(), "user@example.org", "User", UserRole.USER, UserType.LOCAL);
+        final var user = createUser(UUID.randomUUID(), "user@example.org", "testUser", "User",
+                UserRole.USER, UserType.LOCAL);
         when(store.getUserByEmail("user@example.org")).thenReturn(Optional.of(user));
 
         final var result = service.getUserByEmail("user@example.org");
@@ -176,8 +184,10 @@ class UserServiceTest {
         final var store = mock(UserStore.class);
         final var actorHandleService = mock(ActorHandleService.class);
         final var service = new UserService(store, actorHandleService);
-        final var storedUser = createUser(UUID.randomUUID(), "anonymous@example.org", "", UserRole.USER, UserType.ANONYMOUS);
-        final var anonymousUser = createUser(null, "anonymous@example.org", "", UserRole.USER, UserType.ANONYMOUS);
+        final var storedUser = createUser(UUID.randomUUID(), "anonymous@example.org", null, "",
+                UserRole.USER, UserType.ANONYMOUS);
+        final var anonymousUser = createUser(null, "anonymous@example.org", null, "",
+                UserRole.USER, UserType.ANONYMOUS);
         when(store.storeUser(anonymousUser))
                 .thenReturn(storedUser);
         assertThat(storedUser.id()).isNotNull();
@@ -195,12 +205,14 @@ class UserServiceTest {
         final var store = mock(UserStore.class);
         final var actorHandleService = mock(ActorHandleService.class);
         final var service = new UserService(store, actorHandleService);
-        final var user = createUser(UUID.randomUUID(), "user@example.org", "User", UserRole.USER, UserType.LOCAL);
+        final var user = createUser(UUID.randomUUID(), "user@example.org", "testUser", "User",
+                UserRole.USER, UserType.LOCAL);
         when(store.deleteUser(user)).thenReturn(1);
 
         final var result = service.deleteUser(user);
 
         assertThat(result).isTrue();
+        assertThat(user.id()).isNotNull();
         verify(actorHandleService).deleteActorHandleByUserId(user.id());
         verify(store).deleteUser(user);
     }
@@ -210,12 +222,14 @@ class UserServiceTest {
         final var store = mock(UserStore.class);
         final var actorHandleService = mock(ActorHandleService.class);
         final var service = new UserService(store, actorHandleService);
-        final var user = createUser(UUID.randomUUID(), "user@example.org", "User", UserRole.USER, UserType.LOCAL);
+        final var user = createUser(UUID.randomUUID(), "user@example.org", "testUser", "User",
+                UserRole.USER, UserType.LOCAL);
         when(store.deleteUser(user)).thenReturn(0);
 
         final var result = service.deleteUser(user);
 
         assertThat(result).isFalse();
+        assertThat(user.id()).isNotNull();
         verify(actorHandleService).deleteActorHandleByUserId(user.id());
         verify(store).deleteUser(user);
     }
@@ -225,7 +239,8 @@ class UserServiceTest {
         final var store = mock(UserStore.class);
         final var actorHandleService = mock(ActorHandleService.class);
         final var service = new UserService(store, actorHandleService);
-        final var userWithoutId = createUser(null, "user@example.org", "User", UserRole.USER, UserType.LOCAL);
+        final var userWithoutId = createUser(null, "user@example.org", "testUser", "User",
+                UserRole.USER, UserType.LOCAL);
 
         assertThatThrownBy(() -> service.deleteUser(userWithoutId))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -238,7 +253,8 @@ class UserServiceTest {
     void changeUserTypeThrowsWhenUserIdIsNull() {
         final var store = mock(UserStore.class);
         final var service = new UserService(store, mock(ActorHandleService.class));
-        final var user = createUser(null, "user@example.org", "User", UserRole.USER, UserType.ANONYMOUS);
+        final var user = createUser(null, "user@example.org", "testUser", "User",
+                UserRole.USER, UserType.ANONYMOUS);
 
         assertThatThrownBy(() -> service.changeUserType(user, UserType.LOCAL))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -250,8 +266,10 @@ class UserServiceTest {
         final var store = mock(UserStore.class);
         final var service = new UserService(store, mock(ActorHandleService.class));
         final var userId = UUID.randomUUID();
-        final var user = createUser(userId, "user@example.org", "User", UserRole.USER, UserType.ANONYMOUS);
-        final var updatedUser = createUser(userId, "user@example.org", "User", UserRole.USER, UserType.LOCAL);
+        final var user = createUser(userId, "user@example.org", "testUser", "User",
+                UserRole.USER, UserType.ANONYMOUS);
+        final var updatedUser = createUser(userId, "user@example.org", "testUser", "User",
+                UserRole.USER, UserType.LOCAL);
         when(store.getUserById(userId)).thenReturn(Optional.of(updatedUser));
 
         final var result = service.changeUserType(user, UserType.LOCAL);
@@ -262,9 +280,10 @@ class UserServiceTest {
     }
 
     @Test
-    void isProfileCompleteReturnsTrueForNonBlankName() {
+    void isProfileCompleteReturnsTrueWhenComplete() {
         final var service = new UserService(mock(UserStore.class), mock(ActorHandleService.class));
-        final var user = createUser(UUID.randomUUID(), "user@example.org", "User", UserRole.USER, UserType.LOCAL);
+        final var user = createUser(UUID.randomUUID(), "user@example.org", "testUser", "User",
+                UserRole.USER, UserType.LOCAL);
 
         final var result = service.isProfileComplete(user);
 
@@ -272,9 +291,32 @@ class UserServiceTest {
     }
 
     @Test
+    void isProfileCompleteReturnsFalseForNullHandle() {
+        final var service = new UserService(mock(UserStore.class), mock(ActorHandleService.class));
+        final var user = createUser(UUID.randomUUID(), "user@example.org", null, "User",
+                UserRole.USER, UserType.LOCAL);
+
+        final var result = service.isProfileComplete(user);
+
+        assertThat(result).isFalse();
+    }
+
+    @Test
+    void isProfileCompleteReturnsFalseForBlankHandle() {
+        final var service = new UserService(mock(UserStore.class), mock(ActorHandleService.class));
+        final var user = createUser(UUID.randomUUID(), "user@example.org", " ", "User",
+                UserRole.USER, UserType.LOCAL);
+
+        final var result = service.isProfileComplete(user);
+
+        assertThat(result).isFalse();
+    }
+
+    @Test
     void isProfileCompleteReturnsFalseForBlankName() {
         final var service = new UserService(mock(UserStore.class), mock(ActorHandleService.class));
-        final var user = createUser(UUID.randomUUID(), "user@example.org", " ", UserRole.USER, UserType.LOCAL);
+        final var user = createUser(UUID.randomUUID(), "user@example.org", "testUser", " ",
+                UserRole.USER, UserType.LOCAL);
 
         final var result = service.isProfileComplete(user);
 
@@ -284,9 +326,10 @@ class UserServiceTest {
     @SuppressWarnings("SameParameterValue")
     private static UserDto createUser(final UUID id,
                                       final String email,
+                                      final String handle,
                                       final String name,
                                       final UserRole role,
                                       final UserType type) {
-        return new UserDto(id, null, null, null, email, name, "", null, role, type);
+        return new UserDto(id, null, null, handle, email, name, "", null, role, type);
     }
 }

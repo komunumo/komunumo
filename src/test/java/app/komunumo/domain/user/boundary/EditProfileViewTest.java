@@ -17,6 +17,7 @@
  */
 package app.komunumo.domain.user.boundary;
 
+import app.komunumo.domain.core.activitypub.control.ActorHandleService;
 import app.komunumo.domain.core.config.control.ConfigurationService;
 import app.komunumo.domain.user.control.LoginService;
 import app.komunumo.domain.user.control.UserService;
@@ -35,11 +36,12 @@ class EditProfileViewTest {
         final var configurationService = mock(ConfigurationService.class);
         final var loginService = mock(LoginService.class);
         final var userService = mock(UserService.class);
+        final var actorHandleService = mock(ActorHandleService.class);
 
         when(loginService.getLoggedInUser()).thenReturn(Optional.empty());
 
         assertThatThrownBy(() ->
-                new EditProfileView(configurationService, loginService, userService)
+                new EditProfileView(configurationService, loginService, userService, actorHandleService)
         )
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessage("No logged-in user");

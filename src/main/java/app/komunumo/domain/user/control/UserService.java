@@ -70,13 +70,14 @@ public class UserService {
     @Transactional
     public @NotNull UserDto storeUser(final @NotNull UserDto user) {
         final var handle = user.handle();
+        final var type = user.type();
         final var storedUser = userStore.storeUser(user);
         final var userId = storedUser.id();
         if (userId == null) {
             throw new IllegalStateException("Stored user must have a user ID.");
         }
 
-        if (storedUser.type() == UserType.LOCAL && handle != null && !handle.isBlank()) {
+        if (type == UserType.LOCAL && handle != null && !handle.isBlank()) {
             actorHandleService.storeActorHandle(new ActorHandleDto(handle, userId, null));
         } else {
             actorHandleService.deleteActorHandleByUserId(userId);
@@ -183,6 +184,7 @@ public class UserService {
      * @return {@code true} if profile-relevant fields are complete; otherwise {@code false}
      */
     public boolean isProfileComplete(final @NotNull UserDto user) {
-        return !user.name().isBlank();
+        final var incomplete = user.handle() == null || user.handle().isBlank() || user.name().isBlank();
+        return !incomplete;
     }
 }

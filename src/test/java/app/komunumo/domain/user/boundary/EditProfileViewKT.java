@@ -23,6 +23,7 @@ import app.komunumo.domain.user.control.UserService;
 import app.komunumo.domain.user.entity.UserDto;
 import app.komunumo.domain.user.entity.UserRole;
 import app.komunumo.domain.user.entity.UserType;
+import app.komunumo.infra.ui.vaadin.components.HandleField;
 import app.komunumo.infra.ui.vaadin.components.MarkdownEditor;
 import app.komunumo.infra.ui.vaadin.components.PersistentNotification;
 import app.komunumo.test.KaribuTest;
@@ -135,6 +136,40 @@ class EditProfileViewKT extends KaribuTest {
                     throw new RuntimeException("Test user not found");
                 }
         );
+    }
+
+    @Test
+    void editProfileViewSupportsLocalUserWithNullHandle() {
+        final var user = userService.storeUser(new UserDto(null, null, null,
+                null, "test-user-null-handle@example.com", "Test User", "", null,
+                UserRole.USER, UserType.LOCAL));
+        login(user);
+
+        UI.getCurrent().navigate(EditProfileView.class);
+
+        final var view = _get(VerticalLayout.class, spec -> spec.withClasses("edit-profile-view"));
+        assertThat(view).isNotNull();
+        assertThat(_get(HandleField.class, spec -> spec.withClasses("handle-field"))).isNotNull();
+
+        final var nameField = _get(TextField.class, spec -> spec.withClasses("name-field"));
+        assertThat(nameField.getValue()).isEqualTo("Test User");
+    }
+
+    @Test
+    void editProfileViewSupportsLocalUserWithBlankHandle() {
+        final var user = userService.storeUser(new UserDto(null, null, null,
+                " ", "test-user-blank-handle@example.com", "Test User", "", null,
+                UserRole.USER, UserType.LOCAL));
+        login(user);
+
+        UI.getCurrent().navigate(EditProfileView.class);
+
+        final var view = _get(VerticalLayout.class, spec -> spec.withClasses("edit-profile-view"));
+        assertThat(view).isNotNull();
+        assertThat(_get(HandleField.class, spec -> spec.withClasses("handle-field"))).isNotNull();
+
+        final var nameField = _get(TextField.class, spec -> spec.withClasses("name-field"));
+        assertThat(nameField.getValue()).isEqualTo("Test User");
     }
 
     @Test
