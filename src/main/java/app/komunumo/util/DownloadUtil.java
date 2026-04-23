@@ -79,7 +79,7 @@ public final class DownloadUtil {
                 final var dataPart = location.substring(commaIndex + 1);
                 final var isBase64 = metadata.contains(";base64");
 
-                try (InputStream inputStream = isBase64
+                try (var inputStream = isBase64
                         ? Base64.getDecoder().wrap(new ByteArrayInputStream(dataPart.getBytes(StandardCharsets.US_ASCII)))
                         : new ByteArrayInputStream(
                                 URLDecoder.decode(dataPart, StandardCharsets.UTF_8).getBytes(StandardCharsets.UTF_8))) {
@@ -89,34 +89,35 @@ public final class DownloadUtil {
             }
 
             if (location.startsWith("https://")) {
-                final HttpClient client = HttpClient.newBuilder()
+                try (var client = HttpClient.newBuilder()
                         .connectTimeout(connectTimeout)
                         .followRedirects(HttpClient.Redirect.NEVER)
-                        .build();
-                final HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create(location))
-                        .timeout(requestTimeout)
-                        .GET()
-                        .build();
-                final var response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
-                final var statusCode = response.statusCode();
-                if (statusCode == 200) {
-                    final var contentLength = response.headers()
-                            .firstValueAsLong("Content-Length")
-                            .orElse(-1L);
-                    if (contentLength > maxDownloadSizeInBytes) {
+                        .build()) {
+                    final var request = HttpRequest.newBuilder()
+                            .uri(URI.create(location))
+                            .timeout(requestTimeout)
+                            .GET()
+                            .build();
+                    final var response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+                    final var statusCode = response.statusCode();
+                    if (statusCode == 200) {
+                        final var contentLength = response.headers()
+                                .firstValueAsLong("Content-Length")
+                                .orElse(-1L);
+                        if (contentLength > maxDownloadSizeInBytes) {
+                            Files.deleteIfExists(tempFile);
+                            throw new KomunumoException("Download exceeds maximum allowed size of %s bytes: %s"
+                                    .formatted(maxDownloadSizeInBytes, location));
+                        }
+                        try (var responseBody = response.body()) {
+                            copyToFileWithSizeLimit(responseBody, tempFile, maxDownloadSizeInBytes, location);
+                        }
+                        return tempFile;
+                    } else {
                         Files.deleteIfExists(tempFile);
-                        throw new KomunumoException("Download exceeds maximum allowed size of %s bytes: %s"
-                                .formatted(maxDownloadSizeInBytes, location));
+                        throw new KomunumoException("Failed to download file from '%s': HTTP status code %s"
+                                .formatted(location, statusCode));
                     }
-                    try (InputStream responseBody = response.body()) {
-                        copyToFileWithSizeLimit(responseBody, tempFile, maxDownloadSizeInBytes, location);
-                    }
-                    return tempFile;
-                } else {
-                    Files.deleteIfExists(tempFile);
-                    throw new KomunumoException("Failed to download file from '%s': HTTP status code %s"
-                            .formatted(location, statusCode));
                 }
             }
         } catch (final IOException | InterruptedException e) {
