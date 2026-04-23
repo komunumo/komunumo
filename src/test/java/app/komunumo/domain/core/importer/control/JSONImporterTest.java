@@ -176,7 +176,7 @@ class JSONImporterTest {
 
     @Test
     void testImporterWithRealJson() {
-        final var jsonUrl = importUrl("data.json");
+        final var jsonUrl = importUrl("test-data.json");
         try (var logCaptor = LogCaptor.forClass(ImporterLog.class)) {
             new JSONImporter(new ImporterLog(null), jsonUrl);
             assertThat(logCaptor.getInfoLogs()).containsExactly(IDENTIFIED_COUNTS_MESSAGE);
@@ -189,7 +189,7 @@ class JSONImporterTest {
         doThrow(new RuntimeException("Simulated failure"))
                 .when(configurationService)
                 .setConfiguration(argThat(setting -> "simulated.failure".equals(setting.setting())), any());
-        final var jsonUrl = importUrl("data.json");
+        final var jsonUrl = importUrl("test-data.json");
         try (var logCaptor = LogCaptor.forClass(ImporterLog.class)) {
             final var importer = new JSONImporter(new ImporterLog(null), jsonUrl);
             importer.importSettings(configurationService);
@@ -209,7 +209,7 @@ class JSONImporterTest {
     @Test
     void testImportImages() {
         final var imageService = mock(ImageService.class);
-        final var jsonUrl = importUrl("data.json");
+        final var jsonUrl = importUrl("test-data.json");
         try (var logCaptor = LogCaptor.forClass(ImporterLog.class);
              var mockedImageUtil = mockStatic(ImageUtil.class)) {
 
@@ -238,7 +238,7 @@ class JSONImporterTest {
         doThrow(new RuntimeException("Simulated failure"))
                 .when(userService)
                 .storeUser(argThat(user -> UUID_ZERO.equals(user.id())));
-        final var jsonUrl = importUrl("data.json");
+        final var jsonUrl = importUrl("test-data.json");
         try (var logCaptor = LogCaptor.forClass(ImporterLog.class)) {
             final var importer = new JSONImporter(new ImporterLog(null), jsonUrl);
             importer.importUsers(userService);
@@ -283,7 +283,7 @@ class JSONImporterTest {
         doThrow(new RuntimeException("Simulated failure"))
                 .when(communityService)
                 .storeCommunity(argThat(community -> UUID_ZERO.equals(community.id())));
-        final var jsonUrl = importUrl("data.json");
+        final var jsonUrl = importUrl("test-data.json");
         try (var logCaptor = LogCaptor.forClass(ImporterLog.class)) {
             final var importer = new JSONImporter(new ImporterLog(null), jsonUrl);
             importer.importCommunities(communityService);
@@ -310,7 +310,7 @@ class JSONImporterTest {
         doThrow(new RuntimeException("Simulated failure"))
                 .when(eventService)
                 .storeEvent(argThat(event -> UUID_ZERO.equals(event.id())));
-        final var jsonUrl = importUrl("data.json");
+        final var jsonUrl = importUrl("test-data.json");
         try (var logCaptor = LogCaptor.forClass(ImporterLog.class)) {
             final var importer = new JSONImporter(new ImporterLog(null), jsonUrl);
             importer.importEvents(eventService);
@@ -339,7 +339,7 @@ class JSONImporterTest {
         doThrow(new RuntimeException("Simulated failure"))
                 .when(memberService)
                 .storeMember(argThat(member -> UUID_ZERO.equals(member.userId())));
-        final var jsonUrl = importUrl("data.json");
+        final var jsonUrl = importUrl("test-data.json");
         try (var logCaptor = LogCaptor.forClass(ImporterLog.class)) {
             final var importer = new JSONImporter(new ImporterLog(null), jsonUrl);
             importer.importMembers(memberService);
@@ -360,7 +360,7 @@ class JSONImporterTest {
         doThrow(new RuntimeException("Simulated failure"))
                 .when(participantService)
                 .storeParticipant(argThat(participant -> UUID_ZERO.equals(participant.eventId())));
-        final var jsonUrl = importUrl("data.json");
+        final var jsonUrl = importUrl("test-data.json");
         try (var logCaptor = LogCaptor.forClass(ImporterLog.class)) {
             final var importer = new JSONImporter(new ImporterLog(null), jsonUrl);
             importer.importParticipants(participantService);
@@ -378,7 +378,7 @@ class JSONImporterTest {
     @Test
     void testImportGlobalPages() {
         final var globalPageService = mock(GlobalPageService.class);
-        final var jsonUrl = importUrl("data.json");
+        final var jsonUrl = importUrl("test-data.json");
         try (var logCaptor = LogCaptor.forClass(ImporterLog.class)) {
             final var importer = new JSONImporter(new ImporterLog(null), jsonUrl);
             importer.importGlobalPages(globalPageService);
@@ -400,7 +400,7 @@ class JSONImporterTest {
         doThrow(new RuntimeException("Simulated failure"))
                 .when(mailService)
                 .storeMailTemplate(argThat(template -> "TEST".equals(template.id().name())));
-        final var jsonUrl = importUrl("data.json");
+        final var jsonUrl = importUrl("test-data.json");
         try (var logCaptor = LogCaptor.forClass(ImporterLog.class)) {
             final var importer = new JSONImporter(new ImporterLog(null), jsonUrl);
             importer.importMailTemplates(mailService);

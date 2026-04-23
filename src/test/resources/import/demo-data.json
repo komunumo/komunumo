@@ -1,0 +1,421 @@
+{
+  "settings": [
+    {
+      "setting": "instance.domain",
+      "value": "example.com"
+    },
+    {
+      "setting": "instance.url",
+      "value": "http://localhost:8080"
+    },
+    {
+      "setting": "instance.name",
+      "value": "Komunumo Test"
+    },
+    {
+      "setting": "instance.slogan",
+      "language": "en",
+      "value": "This is a local test instance of Komunumo."
+    }
+  ],
+  "users": [
+    {
+      "userId": "4a7c0871-915f-49d6-8182-9e1e8d253f79",
+      "handle": "admin",
+      "email": "admin@example.com",
+      "name": "Armin Admin",
+      "bio": "Admin user for integration tests",
+      "imageId": "",
+      "role": "ADMIN",
+      "type": "LOCAL"
+    },
+    {
+      "userId": "c9fc8b0a-6ff7-4c00-a6f2-d85f5829edff",
+      "handle": "user",
+      "email": "user@example.com",
+      "name": "Udo User",
+      "bio": "Test user for integration tests",
+      "imageId": "",
+      "role": "USER",
+      "type": "LOCAL"
+    },
+    {
+      "userId": "d56a84c8-e63c-4df4-a854-3af6fb11cdbf",
+      "handle": "member",
+      "email": "member@example.com",
+      "name": "Martin Member",
+      "bio": "Test member for integration tests",
+      "imageId": "",
+      "role": "USER",
+      "type": "LOCAL"
+    },
+    {
+      "userId": "e7d67a8e-26f5-427d-9339-bf81fe598b39",
+      "email": "remote@example.com",
+      "name": "Rita Remote",
+      "bio": "Remote user for integration tests",
+      "imageId": "",
+      "role": "USER",
+      "type": "REMOTE"
+    },
+    {
+      "userId": "2cf14b04-2975-4ac8-b68d-48e445180d26",
+      "email": "anonymous@example.com",
+      "name": "Agnes Anonymous",
+      "bio": "Anonymous user for integration tests",
+      "imageId": "",
+      "role": "USER",
+      "type": "ANONYMOUS"
+    }
+  ],
+  "communities": [
+    {
+      "communityId": "9a73690b-6dbd-456a-88e9-dc3f77b69aa0",
+      "handle": "demoCommunity1",
+      "name": "Demo Community 1",
+      "description": "A description of the demo community.",
+      "imageId": "0278ec5a-9fe1-4882-85f9-845ca72c2795"
+    },
+    {
+      "communityId": "5a6f6a65-0d3a-4b8b-ba3e-3506810a9dac",
+      "handle": "demoCommunity2",
+      "name": "Demo Community 2",
+      "description": "A description of the demo community.",
+      "imageId": "0278ec5a-9fe1-4882-85f9-845ca72c2795"
+    },
+    {
+      "communityId": "b7220a84-713e-4df7-8b73-69eb35434a67",
+      "handle": "demoCommunity3",
+      "name": "Demo Community 3",
+      "description": "A description of the demo community.",
+      "imageId": "0278ec5a-9fe1-4882-85f9-845ca72c2795"
+    },
+    {
+      "communityId": "96c7585c-6c10-4c6c-bba8-863fe5c9479a",
+      "handle": "demoCommunity4",
+      "name": "Demo Community 4",
+      "description": "A description of the demo community.",
+      "imageId": "0278ec5a-9fe1-4882-85f9-845ca72c2795"
+    },
+    {
+      "communityId": "ca983216-36d5-43c6-9a52-63da69e3d90a",
+      "handle": "demoCommunity5",
+      "name": "Demo Community 5",
+      "description": "A description of the demo community.",
+      "imageId": "0278ec5a-9fe1-4882-85f9-845ca72c2795"
+    },
+    {
+      "communityId": "af1a9ddf-346e-4bcf-b581-2685d4cf363e",
+      "handle": "demoCommunity6",
+      "name": "Demo Community 6",
+      "description": "A description of the demo community.",
+      "imageId": ""
+    }
+  ],
+  "members": [
+    {
+      "userId": "c9fc8b0a-6ff7-4c00-a6f2-d85f5829edff",
+      "communityId": "9a73690b-6dbd-456a-88e9-dc3f77b69aa0",
+      "role": "OWNER",
+      "since": "2025-01-01T10:00:00+02:00[Europe/Zurich]"
+    },
+    {
+      "userId": "c9fc8b0a-6ff7-4c00-a6f2-d85f5829edff",
+      "communityId": "5a6f6a65-0d3a-4b8b-ba3e-3506810a9dac",
+      "role": "OWNER",
+      "since": "2025-01-01T10:00:00+02:00[Europe/Zurich]"
+    },
+    {
+      "userId": "c9fc8b0a-6ff7-4c00-a6f2-d85f5829edff",
+      "communityId": "b7220a84-713e-4df7-8b73-69eb35434a67",
+      "role": "OWNER",
+      "since": "2025-01-01T10:00:00+02:00[Europe/Zurich]"
+    },
+    {
+      "userId": "c9fc8b0a-6ff7-4c00-a6f2-d85f5829edff",
+      "communityId": "96c7585c-6c10-4c6c-bba8-863fe5c9479a",
+      "role": "OWNER",
+      "since": "2025-01-01T10:00:00+02:00[Europe/Zurich]"
+    },
+    {
+      "userId": "c9fc8b0a-6ff7-4c00-a6f2-d85f5829edff",
+      "communityId": "ca983216-36d5-43c6-9a52-63da69e3d90a",
+      "role": "OWNER",
+      "since": "2025-01-01T10:00:00+02:00[Europe/Zurich]"
+    },
+    {
+      "userId": "c9fc8b0a-6ff7-4c00-a6f2-d85f5829edff",
+      "communityId": "af1a9ddf-346e-4bcf-b581-2685d4cf363e",
+      "role": "OWNER",
+      "since": "2025-01-01T10:00:00+02:00[Europe/Zurich]"
+    },
+    {
+      "userId": "4a7c0871-915f-49d6-8182-9e1e8d253f79",
+      "communityId": "9a73690b-6dbd-456a-88e9-dc3f77b69aa0",
+      "role": "ORGANIZER",
+      "since": "2025-01-01T10:00:00+02:00[Europe/Zurich]"
+    },
+    {
+      "userId": "4a7c0871-915f-49d6-8182-9e1e8d253f79",
+      "communityId": "5a6f6a65-0d3a-4b8b-ba3e-3506810a9dac",
+      "role": "ORGANIZER",
+      "since": "2025-01-01T10:00:00+02:00[Europe/Zurich]"
+    },
+    {
+      "userId": "4a7c0871-915f-49d6-8182-9e1e8d253f79",
+      "communityId": "b7220a84-713e-4df7-8b73-69eb35434a67",
+      "role": "ORGANIZER",
+      "since": "2025-01-01T10:00:00+02:00[Europe/Zurich]"
+    },
+    {
+      "userId": "4a7c0871-915f-49d6-8182-9e1e8d253f79",
+      "communityId": "96c7585c-6c10-4c6c-bba8-863fe5c9479a",
+      "role": "ORGANIZER",
+      "since": "2025-01-01T10:00:00+02:00[Europe/Zurich]"
+    },
+    {
+      "userId": "4a7c0871-915f-49d6-8182-9e1e8d253f79",
+      "communityId": "ca983216-36d5-43c6-9a52-63da69e3d90a",
+      "role": "ORGANIZER",
+      "since": "2025-01-01T10:00:00+02:00[Europe/Zurich]"
+    },
+    {
+      "userId": "4a7c0871-915f-49d6-8182-9e1e8d253f79",
+      "communityId": "af1a9ddf-346e-4bcf-b581-2685d4cf363e",
+      "role": "ORGANIZER",
+      "since": "2025-01-01T10:00:00+02:00[Europe/Zurich]"
+    },
+    {
+      "userId": "d56a84c8-e63c-4df4-a854-3af6fb11cdbf",
+      "communityId": "9a73690b-6dbd-456a-88e9-dc3f77b69aa0",
+      "role": "MEMBER",
+      "since": "2025-01-01T10:00:00+02:00[Europe/Zurich]"
+    },
+    {
+      "userId": "d56a84c8-e63c-4df4-a854-3af6fb11cdbf",
+      "communityId": "5a6f6a65-0d3a-4b8b-ba3e-3506810a9dac",
+      "role": "MEMBER",
+      "since": "2025-01-01T10:00:00+02:00[Europe/Zurich]"
+    },
+    {
+      "userId": "d56a84c8-e63c-4df4-a854-3af6fb11cdbf",
+      "communityId": "b7220a84-713e-4df7-8b73-69eb35434a67",
+      "role": "MEMBER",
+      "since": "2025-01-01T10:00:00+02:00[Europe/Zurich]"
+    },
+    {
+      "userId": "d56a84c8-e63c-4df4-a854-3af6fb11cdbf",
+      "communityId": "96c7585c-6c10-4c6c-bba8-863fe5c9479a",
+      "role": "MEMBER",
+      "since": "2025-01-01T10:00:00+02:00[Europe/Zurich]"
+    },
+    {
+      "userId": "d56a84c8-e63c-4df4-a854-3af6fb11cdbf",
+      "communityId": "ca983216-36d5-43c6-9a52-63da69e3d90a",
+      "role": "MEMBER",
+      "since": "2025-01-01T10:00:00+02:00[Europe/Zurich]"
+    },
+    {
+      "userId": "d56a84c8-e63c-4df4-a854-3af6fb11cdbf",
+      "communityId": "af1a9ddf-346e-4bcf-b581-2685d4cf363e",
+      "role": "MEMBER",
+      "since": "2025-01-01T10:00:00+02:00[Europe/Zurich]"
+    },
+    {
+      "userId": "2cf14b04-2975-4ac8-b68d-48e445180d26",
+      "communityId": "9a73690b-6dbd-456a-88e9-dc3f77b69aa0",
+      "role": "MEMBER",
+      "since": "2025-01-01T10:00:00+02:00[Europe/Zurich]"
+    },
+    {
+      "userId": "2cf14b04-2975-4ac8-b68d-48e445180d26",
+      "communityId": "5a6f6a65-0d3a-4b8b-ba3e-3506810a9dac",
+      "role": "MEMBER",
+      "since": "2025-01-01T10:00:00+02:00[Europe/Zurich]"
+    },
+    {
+      "userId": "2cf14b04-2975-4ac8-b68d-48e445180d26",
+      "communityId": "b7220a84-713e-4df7-8b73-69eb35434a67",
+      "role": "MEMBER",
+      "since": "2025-01-01T10:00:00+02:00[Europe/Zurich]"
+    },
+    {
+      "userId": "2cf14b04-2975-4ac8-b68d-48e445180d26",
+      "communityId": "96c7585c-6c10-4c6c-bba8-863fe5c9479a",
+      "role": "MEMBER",
+      "since": "2025-01-01T10:00:00+02:00[Europe/Zurich]"
+    },
+    {
+      "userId": "2cf14b04-2975-4ac8-b68d-48e445180d26",
+      "communityId": "ca983216-36d5-43c6-9a52-63da69e3d90a",
+      "role": "MEMBER",
+      "since": "2025-01-01T10:00:00+02:00[Europe/Zurich]"
+    },
+    {
+      "userId": "2cf14b04-2975-4ac8-b68d-48e445180d26",
+      "communityId": "af1a9ddf-346e-4bcf-b581-2685d4cf363e",
+      "role": "MEMBER",
+      "since": "2025-01-01T10:00:00+02:00[Europe/Zurich]"
+    }
+  ],
+  "events": [
+    {
+      "eventId": "07fe5b04-0ea1-43b7-a63a-f4d8b8c29ed6",
+      "communityId": "9a73690b-6dbd-456a-88e9-dc3f77b69aa0",
+      "title": "Demo Event 1",
+      "description": "A description of the demo event.",
+      "location": "Somewhere",
+      "begin": "2020-01-01T18:00:00+02:00[Europe/Zurich]",
+      "end": "2020-01-01T20:00:00+02:00[Europe/Zurich]",
+      "imageId": "0278ec5a-9fe1-4882-85f9-845ca72c2795",
+      "visibility": "PUBLIC",
+      "status": "PUBLISHED"
+    },
+    {
+      "eventId": "03950951-39e1-429a-b702-5bf210960495",
+      "communityId": "5a6f6a65-0d3a-4b8b-ba3e-3506810a9dac",
+      "title": "Demo Event 2",
+      "description": "A description of the demo event.",
+      "location": "Somewhere",
+      "begin": "2020-01-02T18:00:00+02:00[Europe/Zurich]",
+      "end": "2020-01-02T20:00:00+02:00[Europe/Zurich]",
+      "imageId": "0278ec5a-9fe1-4882-85f9-845ca72c2795",
+      "visibility": "PUBLIC",
+      "status": "PUBLISHED"
+    },
+    {
+      "eventId": "3609c5c1-536a-46b6-8b6b-7834d9cc9669",
+      "communityId": "b7220a84-713e-4df7-8b73-69eb35434a67",
+      "title": "Demo Event 3",
+      "description": "A description of the demo event.",
+      "location": "Somewhere",
+      "begin": "2030-01-03T18:00:00+02:00[Europe/Zurich]",
+      "end": "2030-01-03T20:00:00+02:00[Europe/Zurich]",
+      "imageId": "0278ec5a-9fe1-4882-85f9-845ca72c2795",
+      "visibility": "PUBLIC",
+      "status": "PUBLISHED"
+    },
+    {
+      "eventId": "a7882cbd-551d-40d9-bb70-085030493a95",
+      "communityId": "96c7585c-6c10-4c6c-bba8-863fe5c9479a",
+      "title": "Demo Event 4",
+      "description": "A description of the demo event.",
+      "location": "Somewhere",
+      "begin": "",
+      "end": null,
+      "imageId": "0278ec5a-9fe1-4882-85f9-845ca72c2795",
+      "visibility": "PUBLIC",
+      "status": "PUBLISHED"
+    },
+    {
+      "eventId": "c46859a3-66fb-43f9-9d59-091e1fb5ab75",
+      "communityId": "ca983216-36d5-43c6-9a52-63da69e3d90a",
+      "title": "Demo Event 5",
+      "description": "A description of the demo event.",
+      "location": "Somewhere",
+      "begin": "2030-01-05T18:00:00+02:00[Europe/Zurich]",
+      "end": "2030-01-05T20:00:00+02:00[Europe/Zurich]",
+      "imageId": "0278ec5a-9fe1-4882-85f9-845ca72c2795",
+      "anonymousParticipationAllowed": true,
+      "visibility": "PUBLIC",
+      "status": "PUBLISHED"
+    },
+    {
+      "eventId": "b04f6258-1414-4931-bd35-d3be46bd7dc2",
+      "communityId": "af1a9ddf-346e-4bcf-b581-2685d4cf363e",
+      "title": "Demo Event 6",
+      "description": "A description of the demo event.",
+      "location": "Somewhere",
+      "begin": "2030-01-06T18:00:00+02:00[Europe/Zurich]",
+      "end": "2030-01-06T20:00:00+02:00[Europe/Zurich]",
+      "imageId": "",
+      "anonymousParticipationAllowed": false,
+      "visibility": "PUBLIC",
+      "status": "PUBLISHED"
+    }
+  ],
+  "participants": [
+    {
+      "eventId": "07fe5b04-0ea1-43b7-a63a-f4d8b8c29ed6",
+      "userId": "c9fc8b0a-6ff7-4c00-a6f2-d85f5829edff",
+      "registered": "2019-12-02T12:00:00+02:00[Europe/Zurich]"
+    },
+    {
+      "eventId": "07fe5b04-0ea1-43b7-a63a-f4d8b8c29ed6",
+      "userId": "4a7c0871-915f-49d6-8182-9e1e8d253f79",
+      "registered": "2029-12-03T12:00:00+02:00[Europe/Zurich]"
+    },
+    {
+      "eventId": "07fe5b04-0ea1-43b7-a63a-f4d8b8c29ed6",
+      "userId": "e7d67a8e-26f5-427d-9339-bf81fe598b39",
+      "registered": "2029-12-03T12:00:00+02:00[Europe/Zurich]"
+    },
+    {
+      "eventId": "03950951-39e1-429a-b702-5bf210960495",
+      "userId": "c9fc8b0a-6ff7-4c00-a6f2-d85f5829edff",
+      "registered": "2019-12-05T12:00:00+02:00[Europe/Zurich]"
+    },
+    {
+      "eventId": "03950951-39e1-429a-b702-5bf210960495",
+      "userId": "4a7c0871-915f-49d6-8182-9e1e8d253f79",
+      "registered": "2029-12-06T12:00:00+02:00[Europe/Zurich]"
+    },
+    {
+      "eventId": "03950951-39e1-429a-b702-5bf210960495",
+      "userId": "e7d67a8e-26f5-427d-9339-bf81fe598b39",
+      "registered": "2029-12-06T12:00:00+02:00[Europe/Zurich]"
+    }
+  ],
+  "images": [
+    {
+      "imageId": "0278ec5a-9fe1-4882-85f9-845ca72c2795",
+      "contentType": "image/svg+xml",
+      "url": "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22400%22%20height%3D%22225%22%20viewBox%3D%220%200%20400%20225%22%20role%3D%22img%22%20aria-label%3D%22Image%22%3E%0A%20%20%3Ctext%20x%3D%22200%22%20y%3D%22112.5%22%20text-anchor%3D%22middle%22%20dominant-baseline%3D%22middle%22%0A%20%20%20%20%20%20%20%20font-family%3D%22sans-serif%22%20font-size%3D%2256%22%20fill%3D%22%23000%22%3EImage%3C%2Ftext%3E%0A%3C%2Fsvg%3E"
+    },
+    {
+      "imageId": "4ca05a55-de1e-4571-a833-c9e5e4f4bfba",
+      "contentType": "image/svg+xml",
+      "url": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MDAiIGhlaWdodD0iMjI1IiB2aWV3Qm94PSIwIDAgNDAwIDIyNSIgcm9sZT0iaW1nIiBhcmlhLWxhYmVsPSJEZW1vIj4KICA8dGV4dCB4PSIyMDAiIHk9IjExMi41IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0ibWlkZGxlIgogICAgICAgIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjU2IiBmaWxsPSIjMDAwIj5EZW1vPC90ZXh0Pgo8L3N2Zz4="
+    }
+  ],
+  "globalPages": [
+    {
+      "slot": "imprint",
+      "language": "en",
+      "title": "Legal Notice",
+      "markdown": "## Legal Notice\n\nThis is a demo for testing purposes **only**."
+    },
+    {
+      "slot": "imprint",
+      "language": "de",
+      "title": "Impressum",
+      "markdown": "## Impressum\n\nDies ist eine Demo **nur** für Testzwecke."
+    }
+  ],
+  "mailTemplates": [
+    {
+      "mailTemplateId": "ACCOUNT_REGISTRATION_SUCCESS",
+      "language": "en",
+      "subject": "Your new local account is ready",
+      "markdown": "Hello,\n\nWelcome to ${instanceName}! You have successfully created a new local account with us.\n\nThank you for trusting us!\n${instanceName}"
+    },
+    {
+      "mailTemplateId": "ACCOUNT_REGISTRATION_SUCCESS",
+      "language": "de",
+      "subject": "Dein neues lokales Konto ist bereit",
+      "markdown": "Hallo,\n\nherzlich willkommen bei ${instanceName}! Du hast erfolgreich ein neues lokales Konto bei uns erstellt.\n\nVielen Dank für dein Vertrauen!\n${instanceName}"
+    },
+    {
+      "mailTemplateId": "TEST",
+      "language": "en",
+      "subject": "Test mail",
+      "markdown": "Hello,\n\nthis is a test mail from ${instanceName}."
+    },
+    {
+      "mailTemplateId": "TEST",
+      "language": "de",
+      "subject": "Testmail",
+      "markdown": "Hallo,\n\ndies ist eine Testmail von ${instanceName}."
+    }
+  ]
+}

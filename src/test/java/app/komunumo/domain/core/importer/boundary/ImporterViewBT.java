@@ -158,7 +158,7 @@ class ImporterViewBT extends BrowserTest {
             assertThat(logList.locator("li").count()).isZero();
 
             // fill in URL field
-            urlFieldInput.fill(TEST_BASE_URL + "/import/data.json");
+            urlFieldInput.fill(TEST_BASE_URL + "/import/test-data.json");
             Thread.sleep(100); // wait for all UI animations to finish
 
             // start import button should be enabled
@@ -248,7 +248,7 @@ class ImporterViewBT extends BrowserTest {
             final var urlField = page.locator("vaadin-text-field.url-field");
             final var urlFieldInput = urlField.locator("input");
             //noinspection HttpUrlsUsage
-            urlFieldInput.fill("http://example.com/import/data.json");
+            urlFieldInput.fill("http://example.com/import/test-data.json");
             Thread.sleep(100); // wait for all UI animations to finish
 
             // start import button should be disabled
@@ -287,7 +287,7 @@ class ImporterViewBT extends BrowserTest {
 
             // upload a file
             final var uploadInput = page.locator(VAADIN_UPLOAD_INPUT_SELECTOR);
-            uploadInput.setInputFiles(Path.of("src/test/resources/import/data.json"));
+            uploadInput.setInputFiles(Path.of("src/test/resources/import/test-data.json"));
             Thread.sleep(100); // wait for all UI animations to finish
 
             // log container should be visible
