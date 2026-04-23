@@ -20,7 +20,6 @@ package app.komunumo;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 import com.sun.net.httpserver.HttpsConfigurator;
-import com.sun.net.httpserver.HttpsParameters;
 import com.sun.net.httpserver.HttpsServer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -129,12 +128,7 @@ public class HttpTestServer implements LauncherSessionListener {
         final var sslContext = createServerSslContext();
 
         final var httpsServer = HttpsServer.create(new InetSocketAddress(0), 0);
-        httpsServer.setHttpsConfigurator(new HttpsConfigurator(sslContext) {
-            @Override
-            public void configure(final HttpsParameters parameters) {
-                parameters.setSSLParameters(getSSLContext().getDefaultSSLParameters());
-            }
-        });
+        httpsServer.setHttpsConfigurator(new HttpsConfigurator(sslContext));
         httpsServer.createContext("/", exchange -> handleRequest(exchange, root));
         httpsServer.setExecutor(null);
         httpsServer.start();
