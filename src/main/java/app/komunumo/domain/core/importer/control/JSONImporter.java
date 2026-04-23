@@ -74,7 +74,7 @@ public final class JSONImporter {
             final var json = DownloadUtil.getString(jsonDataUrl);
             this.root = objectMapper.readTree(json);
             logJSONInfo();
-        } catch (IOException | URISyntaxException e) {
+        } catch (IOException | URISyntaxException | KomunumoException e) {
             importerLog.error("Failed to download JSON data from URL: %s".formatted(jsonDataUrl));
             throw new KomunumoException("Failed to download JSON data from URL: %s".formatted(jsonDataUrl), e);
         }

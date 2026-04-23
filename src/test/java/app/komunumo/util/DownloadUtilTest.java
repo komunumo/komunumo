@@ -22,6 +22,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.time.Duration;
 import java.util.stream.Stream;
 
 import static java.util.Objects.requireNonNull;
@@ -67,6 +71,61 @@ class DownloadUtilTest {
         assertThatThrownBy(() -> DownloadUtil.downloadFile(url))
                 .isInstanceOf(KomunumoException.class)
                 .hasMessage("Failed to download file from '" + url + "': null");
+    }
+
+    @Test
+    void shouldRejectOversizedDataUrl() {
+        final var payload = "a".repeat(64);
+        final var url = "data:text/plain," + payload;
+
+        assertThatThrownBy(() -> DownloadUtil.copyToFileWithSizeLimit(
+                new ByteArrayInputStream(payload.getBytes(StandardCharsets.UTF_8)),
+                Files.createTempFile("download-util-test-", ".tmp"),
+                32L,
+                url))
+                .isInstanceOf(KomunumoException.class)
+                .hasMessage("Download exceeds maximum allowed size of 32 bytes: " + url);
+    }
+
+    @Test
+    void shouldWriteFileWhenWithinSizeLimit() throws Exception {
+        final var payload = "hello world";
+        final var targetFile = Files.createTempFile("download-util-test-", ".tmp");
+
+        DownloadUtil.copyToFileWithSizeLimit(
+                new ByteArrayInputStream(payload.getBytes(StandardCharsets.UTF_8)),
+                targetFile,
+                32L,
+                "data:text/plain,hello%20world");
+
+        assertThat(Files.readString(targetFile)).isEqualTo(payload);
+    }
+
+    @Test
+    void shouldRejectOversizedDecodedDataUrlInDownloadFile() {
+        final var payload = "a".repeat(64);
+        final var url = "data:text/plain," + payload;
+
+        assertThatThrownBy(() -> DownloadUtil.downloadFile(
+                url,
+                Duration.ofSeconds(1),
+                Duration.ofSeconds(1),
+                32L))
+                .isInstanceOf(KomunumoException.class)
+                .hasMessage("Download exceeds maximum allowed size of 32 bytes: " + url);
+    }
+
+    @Test
+    void shouldRejectHttpsDownloadWhenContentLengthExceedsLimit() {
+        final var url = TEST_BASE_URL + "/custom-styles/styles.css";
+
+        assertThatThrownBy(() -> DownloadUtil.downloadFile(
+                url,
+                Duration.ofSeconds(1),
+                Duration.ofSeconds(1),
+                1L))
+                .isInstanceOf(KomunumoException.class)
+                .hasMessage("Download exceeds maximum allowed size of 1 bytes: " + url);
     }
 
     private static Stream<String> invalidOrUnreachableUrls() {

@@ -19,7 +19,9 @@ package app.komunumo.util;
 
 import app.komunumo.KomunumoException;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.VisibleForTesting;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -31,19 +33,37 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.Base64;
 
 public final class DownloadUtil {
 
+    @VisibleForTesting
+    static final int CONNECT_TIMEOUT_SECONDS = 5;
+    @VisibleForTesting
+    static final int REQUEST_TIMEOUT_SECONDS = 30;
+    @VisibleForTesting
+    static final long MAX_DOWNLOAD_SIZE_IN_BYTES = 100L * 1024L * 1024L;
+
     public static @NotNull String getString(final @NotNull String location)
             throws IOException, URISyntaxException {
-        try (InputStream in = new URI(location).toURL().openStream()) {
-            return new String(in.readAllBytes(), StandardCharsets.UTF_8);
-        }
+        final var path = downloadFile(location);
+        return Files.readString(path, StandardCharsets.UTF_8);
     }
 
     @SuppressWarnings({"java:S2095", "java:S2142", "LoggingSimilarMessage"})
     public static @NotNull Path downloadFile(final @NotNull String location) {
+        return downloadFile(location,
+                Duration.ofSeconds(CONNECT_TIMEOUT_SECONDS),
+                Duration.ofSeconds(REQUEST_TIMEOUT_SECONDS),
+                MAX_DOWNLOAD_SIZE_IN_BYTES);
+    }
+
+    @SuppressWarnings({"java:S2095", "java:S2142", "LoggingSimilarMessage"})
+    public static @NotNull Path downloadFile(final @NotNull String location,
+                                             final @NotNull Duration connectTimeout,
+                                             final @NotNull Duration requestTimeout,
+                                             final long maxDownloadSizeInBytes) {
         try {
             final var tempFile = Files.createTempFile("download-", ".tmp");
             tempFile.toFile().deleteOnExit();
@@ -59,28 +79,39 @@ public final class DownloadUtil {
                 final var dataPart = location.substring(commaIndex + 1);
                 final var isBase64 = metadata.contains(";base64");
 
-                final byte[] data;
-                if (isBase64) {
-                    data = Base64.getDecoder().decode(dataPart);
-                } else {
-                    data = URLDecoder.decode(dataPart, StandardCharsets.UTF_8).getBytes(StandardCharsets.UTF_8);
+                try (InputStream inputStream = isBase64
+                        ? Base64.getDecoder().wrap(new ByteArrayInputStream(dataPart.getBytes(StandardCharsets.US_ASCII)))
+                        : new ByteArrayInputStream(
+                                URLDecoder.decode(dataPart, StandardCharsets.UTF_8).getBytes(StandardCharsets.UTF_8))) {
+                    copyToFileWithSizeLimit(inputStream, tempFile, maxDownloadSizeInBytes, location);
                 }
-
-                Files.write(tempFile, data);
                 return tempFile;
             }
 
             if (location.startsWith("https://")) {
                 final HttpClient client = HttpClient.newBuilder()
+                        .connectTimeout(connectTimeout)
                         .followRedirects(HttpClient.Redirect.NEVER)
                         .build();
                 final HttpRequest request = HttpRequest.newBuilder()
                         .uri(URI.create(location))
+                        .timeout(requestTimeout)
                         .GET()
                         .build();
-                final var response = client.send(request, HttpResponse.BodyHandlers.ofFile(tempFile));
+                final var response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
                 final var statusCode = response.statusCode();
                 if (statusCode == 200) {
+                    final var contentLength = response.headers()
+                            .firstValueAsLong("Content-Length")
+                            .orElse(-1L);
+                    if (contentLength > maxDownloadSizeInBytes) {
+                        Files.deleteIfExists(tempFile);
+                        throw new KomunumoException("Download exceeds maximum allowed size of %s bytes: %s"
+                                .formatted(maxDownloadSizeInBytes, location));
+                    }
+                    try (InputStream responseBody = response.body()) {
+                        copyToFileWithSizeLimit(responseBody, tempFile, maxDownloadSizeInBytes, location);
+                    }
                     return tempFile;
                 } else {
                     Files.deleteIfExists(tempFile);
@@ -94,6 +125,30 @@ public final class DownloadUtil {
         }
 
         throw new KomunumoException("Unsupported URL: " + location);
+    }
+
+    @VisibleForTesting
+    static void copyToFileWithSizeLimit(final @NotNull InputStream inputStream,
+                                        final @NotNull Path targetFile,
+                                        final long maxSizeInBytes,
+                                        final @NotNull String location) throws IOException {
+        long totalBytes = 0L;
+        final byte[] buffer = new byte[8192];
+
+        try (var outputStream = Files.newOutputStream(targetFile)) {
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                totalBytes += bytesRead;
+                if (totalBytes > maxSizeInBytes) {
+                    throw new KomunumoException("Download exceeds maximum allowed size of %s bytes: %s"
+                            .formatted(maxSizeInBytes, location));
+                }
+                outputStream.write(buffer, 0, bytesRead);
+            }
+        } catch (final RuntimeException | IOException e) {
+            Files.deleteIfExists(targetFile);
+            throw e;
+        }
     }
 
     private DownloadUtil() {
