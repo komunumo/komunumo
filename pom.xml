@@ -930,6 +930,9 @@
                         <goals>
                             <goal>makeAggregateBom</goal>
                         </goals>
+                        <configuration>
+                            <outputFormat>xml</outputFormat>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
