@@ -29,24 +29,30 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class HttpTestServer implements LauncherSessionListener {
 
     private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(HttpTestServer.class);
+    public static final @NotNull String TEST_BASE_URL_PROPERTY = "komunumo.test.base-url";
+    private static final @NotNull String TEST_BASE_URL_PLACEHOLDER = "{{TEST_BASE_URL}}";
 
     private static HttpServer server;
+    private static @NotNull String testBaseUrl = "http://localhost";
 
     @Override
     public void launcherSessionOpened(final @Nullable LauncherSession session) {
         try {
             final var root = Path.of("src/test/resources").toAbsolutePath().normalize();
-            server = HttpServer.create(new InetSocketAddress(8082), 0);
+            server = HttpServer.create(new InetSocketAddress(0), 0);
             server.createContext("/", exchange -> handleRequest(exchange, root));
             server.setExecutor(null);
             server.start();
-            LOGGER.info("[HTTP Server] Started on http://localhost:8082 serving {}", root);
+            testBaseUrl = "http://localhost:%d".formatted(server.getAddress().getPort());
+            System.setProperty(TEST_BASE_URL_PROPERTY, testBaseUrl);
+            LOGGER.info("[HTTP Server] Started on {} serving {}", testBaseUrl, root);
         } catch (final @NotNull  IOException e) {
             throw new RuntimeException("Failed to start HTTP server", e);
         }
@@ -58,6 +64,7 @@ public class HttpTestServer implements LauncherSessionListener {
             server.stop(0);
             LOGGER.info("[HTTP Server] Stopped");
         }
+        System.clearProperty(TEST_BASE_URL_PROPERTY);
     }
 
     private static void handleRequest(final @NotNull HttpExchange exchange,
@@ -74,7 +81,13 @@ public class HttpTestServer implements LauncherSessionListener {
         final var headers = exchange.getResponseHeaders();
         headers.set("Content-Type", contentType);
 
-        final var body = Files.readAllBytes(file);
+        final byte[] body;
+        if ("application/json".equals(contentType)) {
+            final var json = Files.readString(file).replace(TEST_BASE_URL_PLACEHOLDER, testBaseUrl);
+            body = json.getBytes(StandardCharsets.UTF_8);
+        } else {
+            body = Files.readAllBytes(file);
+        }
         exchange.sendResponseHeaders(200, body.length);
 
         try (final OutputStream os = exchange.getResponseBody()) {

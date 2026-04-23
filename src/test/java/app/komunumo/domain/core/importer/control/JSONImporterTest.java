@@ -37,6 +37,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.UUID;
 
+import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -51,11 +52,14 @@ import static org.mockito.Mockito.verify;
 class JSONImporterTest {
 
     private static final String IDENTIFIED_COUNTS_MESSAGE = "Identified 7 settings, 4 images, 6 users, 7 communities, 7 events, 25 members, 7 participants, 4 global pages, and 5 mail templates.";
+    private static final String TEST_BASE_URL =
+            requireNonNull(System.getProperty("komunumo.test.base-url"),
+                    "Missing system property: komunumo.test.base-url");
     private static final UUID UUID_ZERO = UUID.fromString("00000000-0000-0000-0000-000000000000");
 
     @Test
     void testImporterWithURLNotFound() {
-        final var jsonUrl = "http://localhost:8082/import/non-existing.json";
+        final var jsonUrl = importUrl("non-existing.json");
         final var expectedMessage = "Failed to download JSON data from URL: " + jsonUrl;
         assertThatThrownBy(() -> new JSONImporter(new ImporterLog(null), jsonUrl))
                 .isInstanceOf(KomunumoException.class)
@@ -73,7 +77,7 @@ class JSONImporterTest {
 
     @Test
     void testSettingsNotFound() {
-        final var jsonUrl = "http://localhost:8082/import/no-data.json";
+        final var jsonUrl = importUrl("no-data.json");
         final var expectedMessage = "No settings found in JSON data.";
         try (var logCaptor = LogCaptor.forClass(ImporterLog.class)) {
             final var importer = new JSONImporter(new ImporterLog(null), jsonUrl);
@@ -84,7 +88,7 @@ class JSONImporterTest {
 
     @Test
     void testImagesNotFound() {
-        final var jsonUrl = "http://localhost:8082/import/no-data.json";
+        final var jsonUrl = importUrl("no-data.json");
         final var expectedMessage = "No images found in JSON data.";
         try (var logCaptor = LogCaptor.forClass(ImporterLog.class)) {
             final var importer = new JSONImporter(new ImporterLog(null), jsonUrl);
@@ -95,7 +99,7 @@ class JSONImporterTest {
 
     @Test
     void testUsersNotFound() {
-        final var jsonUrl = "http://localhost:8082/import/no-data.json";
+        final var jsonUrl = importUrl("no-data.json");
         final var expectedMessage = "No users found in JSON data.";
         try (var logCaptor = LogCaptor.forClass(ImporterLog.class)) {
             final var importer = new JSONImporter(new ImporterLog(null), jsonUrl);
@@ -106,7 +110,7 @@ class JSONImporterTest {
 
     @Test
     void testCommunitiesNotFound() {
-        final var jsonUrl = "http://localhost:8082/import/no-data.json";
+        final var jsonUrl = importUrl("no-data.json");
         final var expectedMessage = "No communities found in JSON data.";
         try (var logCaptor = LogCaptor.forClass(ImporterLog.class)) {
             final var importer = new JSONImporter(new ImporterLog(null), jsonUrl);
@@ -117,7 +121,7 @@ class JSONImporterTest {
 
     @Test
     void testMembersNotFound() {
-        final var jsonUrl = "http://localhost:8082/import/no-data.json";
+        final var jsonUrl = importUrl("no-data.json");
         final var expectedMessage = "No members found in JSON data.";
         try (var logCaptor = LogCaptor.forClass(ImporterLog.class)) {
             final var importer = new JSONImporter(new ImporterLog(null), jsonUrl);
@@ -128,7 +132,7 @@ class JSONImporterTest {
 
     @Test
     void testEventsNotFound() {
-        final var jsonUrl = "http://localhost:8082/import/no-data.json";
+        final var jsonUrl = importUrl("no-data.json");
         final var expectedMessage = "No events found in JSON data.";
         try (var logCaptor = LogCaptor.forClass(ImporterLog.class)) {
             final var importer = new JSONImporter(new ImporterLog(null), jsonUrl);
@@ -139,7 +143,7 @@ class JSONImporterTest {
 
     @Test
     void testParticipantsNotFound() {
-        final var jsonUrl = "http://localhost:8082/import/no-data.json";
+        final var jsonUrl = importUrl("no-data.json");
         final var expectedMessage = "No participants found in JSON data.";
         try (var logCaptor = LogCaptor.forClass(ImporterLog.class)) {
             final var importer = new JSONImporter(new ImporterLog(null), jsonUrl);
@@ -150,7 +154,7 @@ class JSONImporterTest {
 
     @Test
     void testGlobalPagesNotFound() {
-        final var jsonUrl = "http://localhost:8082/import/no-data.json";
+        final var jsonUrl = importUrl("no-data.json");
         final var expectedMessage = "No global pages found in JSON data.";
         try (var logCaptor = LogCaptor.forClass(ImporterLog.class)) {
             final var importer = new JSONImporter(new ImporterLog(null), jsonUrl);
@@ -161,7 +165,7 @@ class JSONImporterTest {
 
     @Test
     void testMailTemplatesNotFound() {
-        final var jsonUrl = "http://localhost:8082/import/no-data.json";
+        final var jsonUrl = importUrl("no-data.json");
         final var expectedMessage = "No mail templates found in JSON data.";
         try (var logCaptor = LogCaptor.forClass(ImporterLog.class)) {
             final var importer = new JSONImporter(new ImporterLog(null), jsonUrl);
@@ -172,7 +176,7 @@ class JSONImporterTest {
 
     @Test
     void testImporterWithRealJson() {
-        final var jsonUrl = "http://localhost:8082/import/data.json";
+        final var jsonUrl = importUrl("data.json");
         try (var logCaptor = LogCaptor.forClass(ImporterLog.class)) {
             new JSONImporter(new ImporterLog(null), jsonUrl);
             assertThat(logCaptor.getInfoLogs()).containsExactly(IDENTIFIED_COUNTS_MESSAGE);
@@ -185,7 +189,7 @@ class JSONImporterTest {
         doThrow(new RuntimeException("Simulated failure"))
                 .when(configurationService)
                 .setConfiguration(argThat(setting -> "simulated.failure".equals(setting.setting())), any());
-        final var jsonUrl = "http://localhost:8082/import/data.json";
+        final var jsonUrl = importUrl("data.json");
         try (var logCaptor = LogCaptor.forClass(ImporterLog.class)) {
             final var importer = new JSONImporter(new ImporterLog(null), jsonUrl);
             importer.importSettings(configurationService);
@@ -205,7 +209,7 @@ class JSONImporterTest {
     @Test
     void testImportImages() {
         final var imageService = mock(ImageService.class);
-        final var jsonUrl = "http://localhost:8082/import/data.json";
+        final var jsonUrl = importUrl("data.json");
         try (var logCaptor = LogCaptor.forClass(ImporterLog.class);
              var mockedImageUtil = mockStatic(ImageUtil.class)) {
 
@@ -220,7 +224,9 @@ class JSONImporterTest {
                     "Start importing images...",
                     "...finished importing 2 images.");
             assertThat(logCaptor.getWarnLogs()).containsExactly(
-                    "Skipping image '{\"imageId\":\"d7bd2d09-3310-4e37-ad0a-c7c4c43389ad\",\"contentType\":\"image/svg+xml\",\"url\":\"http://localhost:8082/import/non-existing.svg\"}': Failed to download file from 'http://localhost:8082/import/non-existing.svg': HTTP status code 404",
+                    ("Skipping image '{\"imageId\":\"d7bd2d09-3310-4e37-ad0a-c7c4c43389ad\",\"contentType\":\"image/svg+xml\",\"url\":\"%s/import/non-existing.svg\"}': " +
+                            "Failed to download file from '%s/import/non-existing.svg': HTTP status code 404")
+                            .formatted(TEST_BASE_URL, TEST_BASE_URL),
                     "Skipping image '{\"imageId\":\"c81bca0e-6a1f-422c-b03f-aee75bee6779\",\"contentType\":\"image/png\",\"url\":\"data:broken\"}': Invalid data URL: data:broken");
             assertThat(logCaptor.getErrorLogs()).isEmpty();
         }
@@ -232,7 +238,7 @@ class JSONImporterTest {
         doThrow(new RuntimeException("Simulated failure"))
                 .when(userService)
                 .storeUser(argThat(user -> UUID_ZERO.equals(user.id())));
-        final var jsonUrl = "http://localhost:8082/import/data.json";
+        final var jsonUrl = importUrl("data.json");
         try (var logCaptor = LogCaptor.forClass(ImporterLog.class)) {
             final var importer = new JSONImporter(new ImporterLog(null), jsonUrl);
             importer.importUsers(userService);
@@ -257,7 +263,7 @@ class JSONImporterTest {
             return user;
         }).when(userService).storeUser(any(UserDto.class));
 
-        final var jsonUrl = "http://localhost:8082/import/data-users-optional-handle.json";
+        final var jsonUrl = importUrl("data-users-optional-handle.json");
         try (var logCaptor = LogCaptor.forClass(ImporterLog.class)) {
             final var importer = new JSONImporter(new ImporterLog(null), jsonUrl);
             importer.importUsers(userService);
@@ -277,7 +283,7 @@ class JSONImporterTest {
         doThrow(new RuntimeException("Simulated failure"))
                 .when(communityService)
                 .storeCommunity(argThat(community -> UUID_ZERO.equals(community.id())));
-        final var jsonUrl = "http://localhost:8082/import/data.json";
+        final var jsonUrl = importUrl("data.json");
         try (var logCaptor = LogCaptor.forClass(ImporterLog.class)) {
             final var importer = new JSONImporter(new ImporterLog(null), jsonUrl);
             importer.importCommunities(communityService);
@@ -304,7 +310,7 @@ class JSONImporterTest {
         doThrow(new RuntimeException("Simulated failure"))
                 .when(eventService)
                 .storeEvent(argThat(event -> UUID_ZERO.equals(event.id())));
-        final var jsonUrl = "http://localhost:8082/import/data.json";
+        final var jsonUrl = importUrl("data.json");
         try (var logCaptor = LogCaptor.forClass(ImporterLog.class)) {
             final var importer = new JSONImporter(new ImporterLog(null), jsonUrl);
             importer.importEvents(eventService);
@@ -333,7 +339,7 @@ class JSONImporterTest {
         doThrow(new RuntimeException("Simulated failure"))
                 .when(memberService)
                 .storeMember(argThat(member -> UUID_ZERO.equals(member.userId())));
-        final var jsonUrl = "http://localhost:8082/import/data.json";
+        final var jsonUrl = importUrl("data.json");
         try (var logCaptor = LogCaptor.forClass(ImporterLog.class)) {
             final var importer = new JSONImporter(new ImporterLog(null), jsonUrl);
             importer.importMembers(memberService);
@@ -354,7 +360,7 @@ class JSONImporterTest {
         doThrow(new RuntimeException("Simulated failure"))
                 .when(participantService)
                 .storeParticipant(argThat(participant -> UUID_ZERO.equals(participant.eventId())));
-        final var jsonUrl = "http://localhost:8082/import/data.json";
+        final var jsonUrl = importUrl("data.json");
         try (var logCaptor = LogCaptor.forClass(ImporterLog.class)) {
             final var importer = new JSONImporter(new ImporterLog(null), jsonUrl);
             importer.importParticipants(participantService);
@@ -372,7 +378,7 @@ class JSONImporterTest {
     @Test
     void testImportGlobalPages() {
         final var globalPageService = mock(GlobalPageService.class);
-        final var jsonUrl = "http://localhost:8082/import/data.json";
+        final var jsonUrl = importUrl("data.json");
         try (var logCaptor = LogCaptor.forClass(ImporterLog.class)) {
             final var importer = new JSONImporter(new ImporterLog(null), jsonUrl);
             importer.importGlobalPages(globalPageService);
@@ -394,7 +400,7 @@ class JSONImporterTest {
         doThrow(new RuntimeException("Simulated failure"))
                 .when(mailService)
                 .storeMailTemplate(argThat(template -> "TEST".equals(template.id().name())));
-        final var jsonUrl = "http://localhost:8082/import/data.json";
+        final var jsonUrl = importUrl("data.json");
         try (var logCaptor = LogCaptor.forClass(ImporterLog.class)) {
             final var importer = new JSONImporter(new ImporterLog(null), jsonUrl);
             importer.importMailTemplates(mailService);
@@ -413,7 +419,7 @@ class JSONImporterTest {
 
     @Test
     void testNoData() {
-        final var jsonUrl = "http://localhost:8082/import/no-data.json";
+        final var jsonUrl = importUrl("no-data.json");
         final var expectedMessage = "Identified 0 settings, 0 images, 0 users, 0 communities, 0 events, 0 members, 0 participants, 0 global pages, and 0 mail templates.";
         try (var logCaptor = LogCaptor.forClass(ImporterLog.class)) {
             new JSONImporter(new ImporterLog(null), jsonUrl);
@@ -423,12 +429,16 @@ class JSONImporterTest {
 
     @Test
     void testNullData() {
-        final var jsonUrl = "http://localhost:8082/import/null-data.json";
+        final var jsonUrl = importUrl("null-data.json");
         final var expectedMessage = "Identified 0 settings, 0 images, 0 users, 0 communities, 0 events, 0 members, 0 participants, 0 global pages, and 0 mail templates.";
         try (var logCaptor = LogCaptor.forClass(ImporterLog.class)) {
             new JSONImporter(new ImporterLog(null), jsonUrl);
             assertThat(logCaptor.getInfoLogs()).containsExactly(expectedMessage);
         }
+    }
+
+    private static String importUrl(final String fileName) {
+        return TEST_BASE_URL + "/import/" + fileName;
     }
 
 }

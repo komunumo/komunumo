@@ -23,10 +23,14 @@ import org.junit.jupiter.api.Test;
 
 import java.nio.file.Path;
 
+import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ImporterViewBT extends BrowserTest {
 
+    private static final String TEST_BASE_URL =
+            requireNonNull(System.getProperty("komunumo.test.base-url"),
+                    "Missing system property: komunumo.test.base-url");
     private static final String IMPORTER_SELECTOR =
             "h2:has-text('Import Data')";
     private static final String IMPORTER_MENU_ITEM_SELECTOR =
@@ -152,7 +156,7 @@ class ImporterViewBT extends BrowserTest {
             assertThat(logList.locator("li").count()).isZero();
 
             // fill in URL field
-            urlFieldInput.fill("http://localhost:8082/import/data.json");
+            urlFieldInput.fill(TEST_BASE_URL + "/import/data.json");
             Thread.sleep(100); // wait for all UI animations to finish
 
             // start import button should be enabled
@@ -199,7 +203,7 @@ class ImporterViewBT extends BrowserTest {
             // fill in URL field
             final var urlField = page.locator("vaadin-text-field.url-field");
             final var urlFieldInput = urlField.locator("input");
-            urlFieldInput.fill("http://localhost:8082/import/non-existing.json");
+            urlFieldInput.fill(TEST_BASE_URL + "/import/non-existing.json");
             Thread.sleep(100); // wait for all UI animations to finish
 
             // start import button should be enabled

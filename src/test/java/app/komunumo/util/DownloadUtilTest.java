@@ -20,35 +20,45 @@ package app.komunumo.util;
 import app.komunumo.KomunumoException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.MethodSource;
 
+import java.util.stream.Stream;
+
+import static java.util.Objects.requireNonNull;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class DownloadUtilTest {
 
+    private static final String TEST_BASE_URL =
+            requireNonNull(System.getProperty("komunumo.test.base-url"),
+                    "Missing system property: komunumo.test.base-url");
+
     @Test
     void getString() throws Exception {
-        final String string = DownloadUtil.getString("http://localhost:8082/custom-styles/styles.css").trim();
+        final String string = DownloadUtil.getString(TEST_BASE_URL + "/custom-styles/styles.css").trim();
         assertThat(string).startsWith("body::after {").endsWith("}");
     }
 
     @Test
     void downloadFileSuccess() {
-        final var path = DownloadUtil.downloadFile("http://localhost:8082/custom-styles/styles.css");
+        final var path = DownloadUtil.downloadFile(TEST_BASE_URL + "/custom-styles/styles.css");
         assertThat(path).isNotNull().exists();
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {
-            "http://localhost:8082/99",
-            "http://localhost:8082/non-existing",
-            "http://localhost:8888/",
-            "data:invalid"
-    })
+    @MethodSource("invalidOrUnreachableUrls")
     void shouldThrowExceptionForInvalidOrUnreachableUrls(final String url) {
         assertThatThrownBy(() -> DownloadUtil.downloadFile(url))
                 .isInstanceOf(KomunumoException.class);
+    }
+
+    private static Stream<String> invalidOrUnreachableUrls() {
+        return Stream.of(
+                TEST_BASE_URL + "/99",
+                TEST_BASE_URL + "/non-existing",
+                "http://localhost:8888/",
+                "data:invalid");
     }
 
 }
