@@ -19,8 +19,8 @@ package app.komunumo.domain.core.activitypub.control;
 
 import app.komunumo.data.db.tables.records.ActorHandleRecord;
 import app.komunumo.domain.core.activitypub.entity.ActorHandleDto;
-import org.junit.jupiter.api.Test;
 import org.jooq.DSLContext;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
 import java.util.Optional;

@@ -19,11 +19,11 @@ package app.komunumo.infra.ui.vaadin.components;
 
 import app.komunumo.domain.core.image.entity.ImageDto;
 import app.komunumo.util.ImageUtil;
-import com.vaadin.flow.component.card.Card;
-import com.vaadin.flow.component.card.CardVariant;
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.card.Card;
+import com.vaadin.flow.component.card.CardVariant;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.shared.Registration;
 import org.jetbrains.annotations.NotNull;

@@ -31,8 +31,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static app.komunumo.data.db.tables.User.USER;
 import static app.komunumo.data.db.tables.ActorHandle.ACTOR_HANDLE;
+import static app.komunumo.data.db.tables.User.USER;
 
 /**
  * <p>Handles persistence operations for users.</p>

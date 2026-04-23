@@ -34,10 +34,10 @@ import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import static app.komunumo.data.db.tables.ActorHandle.ACTOR_HANDLE;
 import static app.komunumo.data.db.tables.Member.MEMBER;
 import static app.komunumo.data.db.tables.Participant.PARTICIPANT;
 import static app.komunumo.data.db.tables.User.USER;
-import static app.komunumo.data.db.tables.ActorHandle.ACTOR_HANDLE;
 
 /**
  * <p>Handles persistence operations for event participation and related read projections.</p>
