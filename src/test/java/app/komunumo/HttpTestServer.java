@@ -52,6 +52,7 @@ public class HttpTestServer implements LauncherSessionListener {
     private static final @NotNull String CERT_ALIAS = "komunumo-test-server";
     private static final @NotNull String STORE_TYPE = "PKCS12";
     private static final @NotNull String STORE_PASSWORD = "komunumo-test-password";
+    private static final @NotNull String DEFAULT_JAVA_TRUSTSTORE_PASSWORD = "changeit";
 
     private static HttpServer server;
     private static @NotNull String testBaseUrl = "http://localhost";
@@ -171,6 +172,16 @@ public class HttpTestServer implements LauncherSessionListener {
                 "-storepass", STORE_PASSWORD,
                 "-file", certificate.toString()));
 
+        final var javaTrustStore = resolveDefaultJavaTrustStorePath();
+        runKeytool(List.of(
+                "-importkeystore",
+                "-srckeystore", javaTrustStore.toString(),
+                "-srcstorepass", DEFAULT_JAVA_TRUSTSTORE_PASSWORD,
+                "-destkeystore", trustStore.toString(),
+                "-deststoretype", STORE_TYPE,
+                "-deststorepass", STORE_PASSWORD,
+                "-noprompt"));
+
         runKeytool(List.of(
                 "-importcert",
                 "-alias", CERT_ALIAS,
@@ -179,6 +190,15 @@ public class HttpTestServer implements LauncherSessionListener {
                 "-storetype", STORE_TYPE,
                 "-storepass", STORE_PASSWORD,
                 "-noprompt"));
+    }
+
+    private static @NotNull Path resolveDefaultJavaTrustStorePath() throws IOException {
+        final var javaHome = Path.of(System.getProperty("java.home"));
+        final var trustStore = javaHome.resolve("lib").resolve("security").resolve("cacerts");
+        if (Files.exists(trustStore)) {
+            return trustStore;
+        }
+        throw new IOException("Default Java truststore not found: " + trustStore);
     }
 
     private static @NotNull SSLContext createServerSslContext() throws IOException {
