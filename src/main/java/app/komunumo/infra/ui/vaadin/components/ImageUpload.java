@@ -34,22 +34,24 @@ import com.vaadin.flow.server.streams.UploadHandler;
 import com.vaadin.flow.server.streams.UploadMetadata;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 
 import static app.komunumo.util.NotificationUtil.showNotification;
+import static com.vaadin.flow.component.notification.NotificationVariant.ERROR;
 
 public final class ImageUpload extends CustomField<ImageDto> {
 
     private static final int MAX_FILE_SIZE_IN_BYTES = 10 * 1024 * 1024; // 10MB
-    private static final @NotNull String[] ACCEPTED_MIME_TYPES = Arrays.stream(ContentType.values())
-            .map(ContentType::getContentType)
-            .filter(contentType -> contentType.startsWith("image/"))
-            .toArray(String[]::new);
+    private static final @NotNull String[] ACCEPTED_MIME_TYPES = {
+            ContentType.IMAGE_JPEG.getContentType(),
+            ContentType.IMAGE_PNG.getContentType(),
+            ContentType.IMAGE_WEBP.getContentType()
+    };
     private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(ImageUpload.class);
 
     private final @NotNull ImageService imageService;
@@ -104,6 +106,11 @@ public final class ImageUpload extends CustomField<ImageDto> {
     private void processUploadSuccess(final @NotNull UploadMetadata metadata, final @NotNull File file) {
         file.deleteOnExit();
 
+        if (!isAcceptedUploadContentType(metadata.contentType())) {
+            showNotification(getTranslation("vaadin.components.ImageUpload.uploadIncorrectFileType"), ERROR);
+            return;
+        }
+
         final var contentType = ContentType.fromContentType(metadata.contentType());
         final var newImage = imageService.storeImage(new ImageDto(null, contentType));
 
@@ -120,6 +127,19 @@ public final class ImageUpload extends CustomField<ImageDto> {
             showNotification(getTranslation("vaadin.components.ImageUpload.storeError"),
                     NotificationVariant.ERROR);
         }
+    }
+
+    @VisibleForTesting
+    static boolean isAcceptedUploadContentType(final @Nullable String contentType) {
+        if (contentType == null) {
+            return false;
+        }
+        for (final var acceptedMimeType : ACCEPTED_MIME_TYPES) {
+            if (acceptedMimeType.equals(contentType)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void deleteCurrentImage(final boolean clearUploadFileList) {

@@ -107,4 +107,15 @@ class ImageUploadTest {
         // then
         verify(imageService, never()).deleteImage(any());
     }
+
+    @Test
+    void acceptedUploadContentTypesShouldOnlyAllowJpegPngAndWebp() {
+        assertThat(ImageUpload.isAcceptedUploadContentType(ContentType.IMAGE_JPEG.getContentType())).isTrue();
+        assertThat(ImageUpload.isAcceptedUploadContentType(ContentType.IMAGE_PNG.getContentType())).isTrue();
+        assertThat(ImageUpload.isAcceptedUploadContentType(ContentType.IMAGE_WEBP.getContentType())).isTrue();
+        assertThat(ImageUpload.isAcceptedUploadContentType(ContentType.IMAGE_GIF.getContentType())).isFalse();
+        assertThat(ImageUpload.isAcceptedUploadContentType(ContentType.IMAGE_SVG.getContentType())).isFalse();
+        assertThat(ImageUpload.isAcceptedUploadContentType("text/plain")).isFalse();
+        assertThat(ImageUpload.isAcceptedUploadContentType(null)).isFalse();
+    }
 }

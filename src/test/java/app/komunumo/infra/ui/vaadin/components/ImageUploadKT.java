@@ -22,6 +22,10 @@ import app.komunumo.domain.core.image.entity.ContentType;
 import app.komunumo.domain.core.image.entity.ImageDto;
 import app.komunumo.test.KaribuTest;
 import app.komunumo.util.ImageUtil;
+import com.github.mvysny.kaributesting.v10.LocatorJ;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.server.streams.UploadMetadata;
 import nl.altindag.log.LogCaptor;
 import org.junit.jupiter.api.Test;
@@ -35,6 +39,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 final class ImageUploadKT extends KaribuTest {
@@ -72,5 +78,37 @@ final class ImageUploadKT extends KaribuTest {
             assertThat(logCaptor.getErrorLogs()).containsExactly(
                     "Failed to store uploaded image file: simulated I/O failure");
         }
+    }
+
+    @Test
+    void unsupportedImageTypeShouldBeRejectedWithGenericIncorrectFileTypeMessage() throws Exception {
+        // given
+        final var imageService = mock(ImageService.class);
+        final var imageUpload = new ImageUpload(imageService);
+        final var metadata = new UploadMetadata(
+                "test.gif",
+                ContentType.IMAGE_GIF.getContentType(),
+                1_234L
+        );
+        final var tempFile = Files.createTempFile("image-upload-test-", ".gif").toFile();
+        UI.getCurrent().add(imageUpload);
+
+        // when
+        final var method = ImageUpload.class.getDeclaredMethod(
+                "processUploadSuccess",
+                UploadMetadata.class,
+                File.class
+        );
+        method.setAccessible(true);
+        method.invoke(imageUpload, metadata, tempFile);
+
+        // then
+        verify(imageService, never()).storeImage(any(ImageDto.class));
+        assertThat(imageUpload.getValue()).isNull();
+
+        final var notification = LocatorJ._get(Notification.class);
+        assertThat(notification.isOpened()).isTrue();
+        final var div = LocatorJ._get(notification, Div.class);
+        assertThat(div.getText()).isEqualTo("The selected file is not an image. Please select a valid image to upload.");
     }
 }
