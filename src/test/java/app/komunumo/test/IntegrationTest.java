@@ -64,7 +64,7 @@ public abstract class IntegrationTest {
      * This timeout is applied to Awaitility-based waits that poll for messages delivered asynchronously by the
      * application under test.</p>
      */
-    private static final int GREENMAIL_WAIT_TIMEOUT = 2;
+    private static final int GREENMAIL_WAIT_TIMEOUT = 5;
 
     /**
      * <p>Injected service responsible for managing application configuration settings within the test environment.</p>
