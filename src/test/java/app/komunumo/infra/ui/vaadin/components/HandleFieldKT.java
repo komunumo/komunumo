@@ -25,9 +25,13 @@ import com.vaadin.flow.component.html.Paragraph;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.UUID;
+
 import static com.github.mvysny.kaributesting.v10.LocatorJ._get;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -40,7 +44,7 @@ class HandleFieldKT extends KaribuTest {
         final var configurationService = mock(ConfigurationService.class);
         when(configurationService.getConfiguration(ConfigurationSetting.INSTANCE_DOMAIN)).thenReturn("example.com");
         final var actorHandleService = mock(ActorHandleService.class);
-        when(actorHandleService.isHandleAvailable(anyString()))
+        when(actorHandleService.isHandleAvailable(anyString(), isNull()))
                 .thenAnswer(invocation -> {
                     final String handle = invocation.getArgument(0);
                     return !handle.contains("taken");
@@ -60,6 +64,22 @@ class HandleFieldKT extends KaribuTest {
         handleField.setValue("taken");
         final var message = _get(handleField, Paragraph.class);
         assertThat(message.getText()).isEqualTo("This handle is not available!");
+    }
+
+    @Test
+    void ownHandleIsAvailable() {
+        final var userId = UUID.randomUUID();
+        final var configurationService = mock(ConfigurationService.class);
+        when(configurationService.getConfiguration(ConfigurationSetting.INSTANCE_DOMAIN)).thenReturn("example.com");
+        final var actorHandleService = mock(ActorHandleService.class);
+        when(actorHandleService.isHandleAvailable(eq("taken"), eq(userId))).thenReturn(true);
+        handleField = new HandleField(configurationService, actorHandleService);
+        handleField.setUserId(userId);
+
+        handleField.setValue("taken");
+
+        final var message = _get(handleField, Paragraph.class);
+        assertThat(message.getText()).isEqualTo("This handle is available.");
     }
 
     @Test

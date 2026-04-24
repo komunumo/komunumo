@@ -24,6 +24,8 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.UUID;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -95,5 +97,13 @@ class HandleFieldTest {
         handleField.setValue("testValue");
         assertThat(handleField.generateModelValue()).isEqualTo("testValue");
         assertThat(handleField.getValue()).isEqualTo("testValue");
+    }
+
+    @Test
+    void userId() {
+        assertThat(handleField.getUserId()).isNull();
+        final var userId = UUID.randomUUID();
+        handleField.setUserId(userId);
+        assertThat(handleField.getUserId()).isEqualTo(userId);
     }
 }

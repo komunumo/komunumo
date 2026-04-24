@@ -19,6 +19,7 @@ package app.komunumo.domain.core.activitypub.control;
 
 import app.komunumo.domain.core.activitypub.entity.ActorHandleDto;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -102,7 +103,25 @@ public final class ActorHandleService {
      * @return {@code true} if no actor handle exists for the given value; otherwise {@code false}
      */
     public boolean isHandleAvailable(final @NotNull String handle) {
-        return actorHandleStore.getActorHandle(handle).isEmpty();
+        return isHandleAvailable(handle, null);
+    }
+
+    /**
+     * <p>Checks whether a handle is currently available for a specific user.</p>
+     *
+     * @param handle the handle to check
+     * @param userId the ID of the user requesting the handle; may be {@code null}
+     * @return {@code true} if no actor handle exists for the given value, or if it already belongs to the user;
+     * otherwise {@code false}
+     */
+    public boolean isHandleAvailable(final @NotNull String handle, final @Nullable UUID userId) {
+        if (userId == null) {
+            return actorHandleStore.getActorHandle(handle).isEmpty();
+        }
+
+        return actorHandleStore.getActorHandle(handle)
+                .map(actorHandle -> userId.equals(actorHandle.userId()))
+                .orElse(true);
     }
 
     /**

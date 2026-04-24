@@ -193,6 +193,34 @@ class ActorHandleServiceTest {
     }
 
     @Test
+    void isHandleAvailableReturnsTrueIfHandleAlreadyBelongsToUser() {
+        final var actorHandleStore = mock(ActorHandleStore.class);
+        final var actorHandleService = new ActorHandleService(actorHandleStore);
+        final var handle = "alice";
+        final var userId = UUID.randomUUID();
+        when(actorHandleStore.getActorHandle(handle)).thenReturn(Optional.of(new ActorHandleDto(handle, userId, null)));
+
+        final var result = actorHandleService.isHandleAvailable(handle, userId);
+
+        assertThat(result).isTrue();
+        verify(actorHandleStore).getActorHandle(handle);
+    }
+
+    @Test
+    void isHandleAvailableReturnsFalseIfHandleBelongsToDifferentUser() {
+        final var actorHandleStore = mock(ActorHandleStore.class);
+        final var actorHandleService = new ActorHandleService(actorHandleStore);
+        final var handle = "alice";
+        final var userId = UUID.randomUUID();
+        when(actorHandleStore.getActorHandle(handle)).thenReturn(Optional.of(createActorHandleForUser(handle)));
+
+        final var result = actorHandleService.isHandleAvailable(handle, userId);
+
+        assertThat(result).isFalse();
+        verify(actorHandleStore).getActorHandle(handle);
+    }
+
+    @Test
     void deleteActorHandleByCommunityIdReturnsTrueIfDeleteCountIsPositive() {
         final var actorHandleStore = mock(ActorHandleStore.class);
         final var actorHandleService = new ActorHandleService(actorHandleStore);

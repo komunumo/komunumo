@@ -103,6 +103,7 @@ public final class EditProfileView extends AbstractView implements BeforeLeaveOb
         final var handleField = new HandleField(configurationService, actorHandleService);
         handleField.setLabel(getTranslation("user.boundary.EditProfileView.handle"));
         handleField.addClassName("handle-field");
+        handleField.setUserId(user.id());
         handleField.setRequired(true);
         handleField.setWidthFull();
 

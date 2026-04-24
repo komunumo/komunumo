@@ -29,6 +29,8 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.UUID;
+
 import static app.komunumo.domain.core.activitypub.control.ActorHandleService.HANDLE_ALLOWED_CHARACTERS_PATTERN;
 import static app.komunumo.domain.core.activitypub.control.ActorHandleService.HANDLE_MAX_LENGTH;
 import static app.komunumo.domain.core.activitypub.control.ActorHandleService.HANDLE_MIN_LENGTH;
@@ -38,6 +40,8 @@ public final class HandleField extends CustomField<String> implements HasValueCh
 
     private final TextField textField = new TextField();
     private final Paragraph message = new Paragraph();
+
+    private @Nullable UUID userId;
 
     public HandleField(final @NotNull ConfigurationService configurationService,
                        final @NotNull ActorHandleService actorHandleService) {
@@ -63,7 +67,7 @@ public final class HandleField extends CustomField<String> implements HasValueCh
                     || value.length() > HANDLE_MAX_LENGTH) {
                 showErrorMessage(getTranslation("vaadin.components.HandleField.errorLength",
                         HANDLE_MIN_LENGTH, HANDLE_MAX_LENGTH));
-            } else if (actorHandleService.isHandleAvailable(value)) {
+            } else if (actorHandleService.isHandleAvailable(value, userId)) {
                 showSuccessMessage(getTranslation("vaadin.components.HandleField.handleAvailable"));
             } else {
                 showErrorMessage(getTranslation("vaadin.components.HandleField.handleNotAvailable"));
@@ -103,6 +107,14 @@ public final class HandleField extends CustomField<String> implements HasValueCh
 
     public @Nullable String getPlaceholder() {
         return textField.getPlaceholder();
+    }
+
+    public void setUserId(final @Nullable UUID userId) {
+        this.userId = userId;
+    }
+
+    public @Nullable UUID getUserId() {
+        return userId;
     }
 
     @Override
