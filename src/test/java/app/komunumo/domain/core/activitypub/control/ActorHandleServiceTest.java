@@ -246,6 +246,32 @@ class ActorHandleServiceTest {
         verify(actorHandleStore).deleteActorHandleByCommunityId(communityId);
     }
 
+    @Test
+    void deleteActorHandleByUserIdReturnsTrueIfDeleteCountIsPositive() {
+        final var actorHandleStore = mock(ActorHandleStore.class);
+        final var actorHandleService = new ActorHandleService(actorHandleStore);
+        final var userId = UUID.randomUUID();
+        when(actorHandleStore.deleteActorHandleByUserId(userId)).thenReturn(1);
+
+        final var result = actorHandleService.deleteActorHandleByUserId(userId);
+
+        assertThat(result).isTrue();
+        verify(actorHandleStore).deleteActorHandleByUserId(userId);
+    }
+
+    @Test
+    void deleteActorHandleByUserIdReturnsFalseIfDeleteCountIsZero() {
+        final var actorHandleStore = mock(ActorHandleStore.class);
+        final var actorHandleService = new ActorHandleService(actorHandleStore);
+        final var userId = UUID.randomUUID();
+        when(actorHandleStore.deleteActorHandleByUserId(userId)).thenReturn(0);
+
+        final var result = actorHandleService.deleteActorHandleByUserId(userId);
+
+        assertThat(result).isFalse();
+        verify(actorHandleStore).deleteActorHandleByUserId(userId);
+    }
+
     private static ActorHandleDto createActorHandleForUser(final String handle) {
         return new ActorHandleDto(handle, UUID.randomUUID(), null);
     }
