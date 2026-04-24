@@ -18,8 +18,8 @@
 package app.komunumo.domain.core.activitypub.control;
 
 import app.komunumo.domain.core.activitypub.entity.ActorHandleDto;
+import app.komunumo.domain.core.activitypub.entity.HandleOwnerContext;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -103,25 +103,34 @@ public final class ActorHandleService {
      * @return {@code true} if no actor handle exists for the given value; otherwise {@code false}
      */
     public boolean isHandleAvailable(final @NotNull String handle) {
-        return isHandleAvailable(handle, null);
+        return isHandleAvailable(handle, HandleOwnerContext.none());
     }
 
     /**
-     * <p>Checks whether a handle is currently available for a specific user.</p>
+     * <p>Checks whether a handle is currently available for a specific owner.</p>
      *
      * @param handle the handle to check
-     * @param userId the ID of the user requesting the handle; may be {@code null}
-     * @return {@code true} if no actor handle exists for the given value, or if it already belongs to the user;
+     * @param ownerContext the owner requesting the handle
+     * @return {@code true} if no actor handle exists for the given value, or if it already belongs to the owner;
      * otherwise {@code false}
      */
-    public boolean isHandleAvailable(final @NotNull String handle, final @Nullable UUID userId) {
-        if (userId == null) {
-            return actorHandleStore.getActorHandle(handle).isEmpty();
-        }
-
+    public boolean isHandleAvailable(final @NotNull String handle, final @NotNull HandleOwnerContext ownerContext) {
         return actorHandleStore.getActorHandle(handle)
-                .map(actorHandle -> userId.equals(actorHandle.userId()))
+                .map(actorHandle -> ownerOwnsHandle(actorHandle, ownerContext))
                 .orElse(true);
+    }
+
+    /**
+     * <p>Checks whether the given actor handle belongs to the owner described by the context.</p>
+     *
+     * @param actorHandle the persisted actor handle to inspect
+     * @param ownerContext the owner context to compare against
+     * @return {@code true} if the handle belongs to the referenced user or community; otherwise {@code false}
+     */
+    private boolean ownerOwnsHandle(final @NotNull ActorHandleDto actorHandle,
+                                    final @NotNull HandleOwnerContext ownerContext) {
+        return ownerContext.userId() != null && ownerContext.userId().equals(actorHandle.userId())
+                || ownerContext.communityId() != null && ownerContext.communityId().equals(actorHandle.communityId());
     }
 
     /**

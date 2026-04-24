@@ -18,6 +18,7 @@
 package app.komunumo.infra.ui.vaadin.components;
 
 import app.komunumo.domain.core.activitypub.control.ActorHandleService;
+import app.komunumo.domain.core.activitypub.entity.HandleOwnerContext;
 import app.komunumo.domain.core.config.control.ConfigurationService;
 import app.komunumo.domain.core.config.entity.ConfigurationSetting;
 import app.komunumo.test.KaribuTest;
@@ -31,7 +32,6 @@ import static com.github.mvysny.kaributesting.v10.LocatorJ._get;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -44,12 +44,12 @@ class HandleFieldKT extends KaribuTest {
         final var configurationService = mock(ConfigurationService.class);
         when(configurationService.getConfiguration(ConfigurationSetting.INSTANCE_DOMAIN)).thenReturn("example.com");
         final var actorHandleService = mock(ActorHandleService.class);
-        when(actorHandleService.isHandleAvailable(anyString(), isNull()))
+        when(actorHandleService.isHandleAvailable(anyString(), eq(HandleOwnerContext.none())))
                 .thenAnswer(invocation -> {
                     final String handle = invocation.getArgument(0);
                     return !handle.contains("taken");
                 });
-        handleField = new HandleField(configurationService, actorHandleService);
+        handleField = new HandleField(configurationService, actorHandleService, HandleOwnerContext.none());
     }
 
     @Test
@@ -72,14 +72,62 @@ class HandleFieldKT extends KaribuTest {
         final var configurationService = mock(ConfigurationService.class);
         when(configurationService.getConfiguration(ConfigurationSetting.INSTANCE_DOMAIN)).thenReturn("example.com");
         final var actorHandleService = mock(ActorHandleService.class);
-        when(actorHandleService.isHandleAvailable(eq("taken"), eq(userId))).thenReturn(true);
-        handleField = new HandleField(configurationService, actorHandleService);
-        handleField.setUserId(userId);
+        final var ownerContext = HandleOwnerContext.forUser(userId, "other");
+        when(actorHandleService.isHandleAvailable(eq("taken"), eq(ownerContext))).thenReturn(true);
+        handleField = new HandleField(configurationService, actorHandleService, ownerContext);
 
         handleField.setValue("taken");
 
         final var message = _get(handleField, Paragraph.class);
         assertThat(message.getText()).isEqualTo("This handle is available.");
+    }
+
+    @Test
+    void persistedHandleDoesNotShowAvailabilityMessage() {
+        final var userId = UUID.randomUUID();
+        final var configurationService = mock(ConfigurationService.class);
+        when(configurationService.getConfiguration(ConfigurationSetting.INSTANCE_DOMAIN)).thenReturn("example.com");
+        final var actorHandleService = mock(ActorHandleService.class);
+        handleField = new HandleField(configurationService,
+                actorHandleService,
+                HandleOwnerContext.forUser(userId, "saved"));
+
+        handleField.setValue("saved");
+
+        final var message = _get(handleField, Paragraph.class);
+        assertThat(message.getText()).isEmpty();
+    }
+
+    @Test
+    void changedHandleIsNotTreatedAsPersistedValue() {
+        final var userId = UUID.randomUUID();
+        final var configurationService = mock(ConfigurationService.class);
+        when(configurationService.getConfiguration(ConfigurationSetting.INSTANCE_DOMAIN)).thenReturn("example.com");
+        final var actorHandleService = mock(ActorHandleService.class);
+        final var ownerContext = HandleOwnerContext.forUser(userId, "saved");
+        when(actorHandleService.isHandleAvailable(eq("changed"), eq(ownerContext))).thenReturn(true);
+        handleField = new HandleField(configurationService, actorHandleService, ownerContext);
+
+        handleField.setValue("changed");
+
+        final var message = _get(handleField, Paragraph.class);
+        assertThat(message.getText()).isEqualTo("This handle is available.");
+    }
+
+    @Test
+    void blankHandleIsNotTreatedAsPersistedValue() {
+        final var userId = UUID.randomUUID();
+        final var configurationService = mock(ConfigurationService.class);
+        when(configurationService.getConfiguration(ConfigurationSetting.INSTANCE_DOMAIN)).thenReturn("example.com");
+        final var actorHandleService = mock(ActorHandleService.class);
+        final var ownerContext = HandleOwnerContext.forUser(userId, "saved");
+        when(actorHandleService.isHandleAvailable(eq("   "), eq(ownerContext))).thenReturn(false);
+        handleField = new HandleField(configurationService, actorHandleService, ownerContext);
+
+        handleField.setValue("   ");
+
+        final var message = _get(handleField, Paragraph.class);
+        assertThat(message.getText()).isEqualTo("This handle is not available!");
     }
 
     @Test

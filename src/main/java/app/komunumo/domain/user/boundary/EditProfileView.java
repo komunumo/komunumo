@@ -19,6 +19,7 @@ package app.komunumo.domain.user.boundary;
 
 import app.komunumo.SecurityConfig;
 import app.komunumo.domain.core.activitypub.control.ActorHandleService;
+import app.komunumo.domain.core.activitypub.entity.HandleOwnerContext;
 import app.komunumo.domain.core.config.control.ConfigurationService;
 import app.komunumo.domain.user.control.LoginService;
 import app.komunumo.domain.user.control.UserService;
@@ -100,10 +101,13 @@ public final class EditProfileView extends AbstractView implements BeforeLeaveOb
         emailField.setReadOnly(true);
         emailField.setWidthFull();
 
-        final var handleField = new HandleField(configurationService, actorHandleService);
+        final var handleField = new HandleField(
+                configurationService,
+                actorHandleService,
+                HandleOwnerContext.forUser(user.id(), user.handle())
+        );
         handleField.setLabel(getTranslation("user.boundary.EditProfileView.handle"));
         handleField.addClassName("handle-field");
-        handleField.setUserId(user.id());
         handleField.setRequired(true);
         handleField.setWidthFull();
 

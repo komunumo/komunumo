@@ -18,6 +18,7 @@
 package app.komunumo.infra.ui.vaadin.components;
 
 import app.komunumo.domain.core.activitypub.control.ActorHandleService;
+import app.komunumo.domain.core.activitypub.entity.HandleOwnerContext;
 import app.komunumo.domain.core.config.control.ConfigurationService;
 import app.komunumo.domain.core.config.entity.ConfigurationSetting;
 import com.vaadin.flow.component.customfield.CustomField;
@@ -29,8 +30,6 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.UUID;
-
 import static app.komunumo.domain.core.activitypub.control.ActorHandleService.HANDLE_ALLOWED_CHARACTERS_PATTERN;
 import static app.komunumo.domain.core.activitypub.control.ActorHandleService.HANDLE_MAX_LENGTH;
 import static app.komunumo.domain.core.activitypub.control.ActorHandleService.HANDLE_MIN_LENGTH;
@@ -38,14 +37,15 @@ import static app.komunumo.domain.core.activitypub.control.ActorHandleService.HA
 
 public final class HandleField extends CustomField<String> implements HasValueChangeMode {
 
-    private final TextField textField = new TextField();
-    private final Paragraph message = new Paragraph();
-
-    private @Nullable UUID userId;
+    private final @NotNull TextField textField = new TextField();
+    private final @NotNull Paragraph message = new Paragraph();
+    private final @NotNull HandleOwnerContext ownerContext;
 
     public HandleField(final @NotNull ConfigurationService configurationService,
-                       final @NotNull ActorHandleService actorHandleService) {
+                       final @NotNull ActorHandleService actorHandleService,
+                       final @NotNull HandleOwnerContext ownerContext) {
         super();
+        this.ownerContext = ownerContext;
         addClassName("handle-field");
         setWidthFull();
 
@@ -67,7 +67,9 @@ public final class HandleField extends CustomField<String> implements HasValueCh
                     || value.length() > HANDLE_MAX_LENGTH) {
                 showErrorMessage(getTranslation("vaadin.components.HandleField.errorLength",
                         HANDLE_MIN_LENGTH, HANDLE_MAX_LENGTH));
-            } else if (actorHandleService.isHandleAvailable(value, userId)) {
+            } else if (isPersistedValue(value)) {
+                clearMessage();
+            } else if (actorHandleService.isHandleAvailable(value, ownerContext)) {
                 showSuccessMessage(getTranslation("vaadin.components.HandleField.handleAvailable"));
             } else {
                 showErrorMessage(getTranslation("vaadin.components.HandleField.handleNotAvailable"));
@@ -91,6 +93,16 @@ public final class HandleField extends CustomField<String> implements HasValueCh
         message.addClassName("error");
     }
 
+    private void clearMessage() {
+        message.setText("");
+        message.removeClassName("success");
+        message.removeClassName("error");
+    }
+
+    private boolean isPersistedValue(final @NotNull String value) {
+        return !value.isBlank() && value.equals(ownerContext.persistedHandle());
+    }
+
     @Override
     protected String generateModelValue() {
         return textField.getValue();
@@ -107,14 +119,6 @@ public final class HandleField extends CustomField<String> implements HasValueCh
 
     public @Nullable String getPlaceholder() {
         return textField.getPlaceholder();
-    }
-
-    public void setUserId(final @Nullable UUID userId) {
-        this.userId = userId;
-    }
-
-    public @Nullable UUID getUserId() {
-        return userId;
     }
 
     @Override

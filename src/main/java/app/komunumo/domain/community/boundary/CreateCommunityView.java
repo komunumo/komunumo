@@ -20,6 +20,7 @@ package app.komunumo.domain.community.boundary;
 import app.komunumo.domain.community.control.CommunityService;
 import app.komunumo.domain.community.entity.CommunityDto;
 import app.komunumo.domain.core.activitypub.control.ActorHandleService;
+import app.komunumo.domain.core.activitypub.entity.HandleOwnerContext;
 import app.komunumo.domain.core.config.control.ConfigurationService;
 import app.komunumo.domain.core.image.control.ImageService;
 import app.komunumo.domain.member.control.MemberService;
@@ -90,7 +91,7 @@ public class CreateCommunityView extends AbstractView {
     }
 
     private @NotNull Component createForm() {
-        final var handleField = new HandleField(configurationService, actorHandleService);
+        final var handleField = new HandleField(configurationService, actorHandleService, HandleOwnerContext.none());
         handleField.addClassName("handle-field");
         handleField.setLabel(getTranslation("community.boundary.CreateCommunityView.label.profile"));
         handleField.setRequired(true);

@@ -18,6 +18,7 @@
 package app.komunumo.domain.core.activitypub.control;
 
 import app.komunumo.domain.core.activitypub.entity.ActorHandleDto;
+import app.komunumo.domain.core.activitypub.entity.HandleOwnerContext;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -200,7 +201,7 @@ class ActorHandleServiceTest {
         final var userId = UUID.randomUUID();
         when(actorHandleStore.getActorHandle(handle)).thenReturn(Optional.of(new ActorHandleDto(handle, userId, null)));
 
-        final var result = actorHandleService.isHandleAvailable(handle, userId);
+        final var result = actorHandleService.isHandleAvailable(handle, HandleOwnerContext.forUser(userId, handle));
 
         assertThat(result).isTrue();
         verify(actorHandleStore).getActorHandle(handle);
@@ -214,7 +215,40 @@ class ActorHandleServiceTest {
         final var userId = UUID.randomUUID();
         when(actorHandleStore.getActorHandle(handle)).thenReturn(Optional.of(createActorHandleForUser(handle)));
 
-        final var result = actorHandleService.isHandleAvailable(handle, userId);
+        final var result = actorHandleService.isHandleAvailable(handle, HandleOwnerContext.forUser(userId, null));
+
+        assertThat(result).isFalse();
+        verify(actorHandleStore).getActorHandle(handle);
+    }
+
+    @Test
+    void isHandleAvailableReturnsTrueIfHandleAlreadyBelongsToCommunity() {
+        final var actorHandleStore = mock(ActorHandleStore.class);
+        final var actorHandleService = new ActorHandleService(actorHandleStore);
+        final var handle = "alice";
+        final var communityId = UUID.randomUUID();
+        when(actorHandleStore.getActorHandle(handle))
+                .thenReturn(Optional.of(new ActorHandleDto(handle, null, communityId)));
+
+        final var result = actorHandleService.isHandleAvailable(handle,
+                HandleOwnerContext.forCommunity(communityId, handle));
+
+        assertThat(result).isTrue();
+        verify(actorHandleStore).getActorHandle(handle);
+    }
+
+    @Test
+    void isHandleAvailableReturnsFalseIfHandleBelongsToDifferentCommunity() {
+        final var actorHandleStore = mock(ActorHandleStore.class);
+        final var actorHandleService = new ActorHandleService(actorHandleStore);
+        final var handle = "alice";
+        final var existingCommunityId = UUID.randomUUID();
+        final var requestedCommunityId = UUID.randomUUID();
+        when(actorHandleStore.getActorHandle(handle))
+                .thenReturn(Optional.of(new ActorHandleDto(handle, null, existingCommunityId)));
+
+        final var result = actorHandleService.isHandleAvailable(handle,
+                HandleOwnerContext.forCommunity(requestedCommunityId, handle));
 
         assertThat(result).isFalse();
         verify(actorHandleStore).getActorHandle(handle);

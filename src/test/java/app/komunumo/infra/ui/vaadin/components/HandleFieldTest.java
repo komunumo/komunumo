@@ -18,13 +18,12 @@
 package app.komunumo.infra.ui.vaadin.components;
 
 import app.komunumo.domain.core.activitypub.control.ActorHandleService;
+import app.komunumo.domain.core.activitypub.entity.HandleOwnerContext;
 import app.komunumo.domain.core.config.control.ConfigurationService;
 import app.komunumo.domain.core.config.entity.ConfigurationSetting;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
@@ -39,7 +38,7 @@ class HandleFieldTest {
         final var configurationService = mock(ConfigurationService.class);
         final var actorHandleService = mock(ActorHandleService.class);
         when(configurationService.getConfiguration(ConfigurationSetting.INSTANCE_DOMAIN)).thenReturn("example.com");
-        handleField = new HandleField(configurationService, actorHandleService);
+        handleField = new HandleField(configurationService, actorHandleService, HandleOwnerContext.none());
     }
 
     @Test
@@ -97,13 +96,5 @@ class HandleFieldTest {
         handleField.setValue("testValue");
         assertThat(handleField.generateModelValue()).isEqualTo("testValue");
         assertThat(handleField.getValue()).isEqualTo("testValue");
-    }
-
-    @Test
-    void userId() {
-        assertThat(handleField.getUserId()).isNull();
-        final var userId = UUID.randomUUID();
-        handleField.setUserId(userId);
-        assertThat(handleField.getUserId()).isEqualTo(userId);
     }
 }
