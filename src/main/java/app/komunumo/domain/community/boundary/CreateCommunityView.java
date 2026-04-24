@@ -93,7 +93,7 @@ public class CreateCommunityView extends AbstractView {
     private @NotNull Component createForm() {
         final var handleField = new HandleField(configurationService, actorHandleService, HandleOwnerContext.none());
         handleField.addClassName("handle-field");
-        handleField.setLabel(getTranslation("community.boundary.CreateCommunityView.label.profile"));
+        handleField.setLabel(getTranslation("community.boundary.CreateCommunityView.label.handle"));
         handleField.setRequired(true);
         handleField.setWidthFull();
 

@@ -106,6 +106,12 @@ public final class EditProfileView extends AbstractView implements BeforeLeaveOb
                 actorHandleService,
                 HandleOwnerContext.forUser(user.id(), user.handle())
         );
+        final var handleFieldI18n = new HandleField.HandleFieldI18N();
+        handleFieldI18n.setHandleAvailable(getTranslation("user.boundary.EditProfileView.handleField.handleAvailable"));
+        handleFieldI18n.setHandleNotAvailable(getTranslation("user.boundary.EditProfileView.handleField.handleNotAvailable"));
+        handleFieldI18n.setErrorLength(getTranslation("user.boundary.EditProfileView.handleField.errorLength"));
+        handleFieldI18n.setSyntaxError(getTranslation("user.boundary.EditProfileView.handleField.syntaxError"));
+        handleField.setI18n(handleFieldI18n);
         handleField.setLabel(getTranslation("user.boundary.EditProfileView.handle"));
         handleField.addClassName("handle-field");
         handleField.setRequired(true);

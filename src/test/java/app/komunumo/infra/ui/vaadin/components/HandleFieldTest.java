@@ -97,4 +97,26 @@ class HandleFieldTest {
         assertThat(handleField.generateModelValue()).isEqualTo("testValue");
         assertThat(handleField.getValue()).isEqualTo("testValue");
     }
+
+    @Test
+    void i18n() {
+        assertThat(handleField.getI18n()).isNotNull();
+        final var i18n = new HandleField.HandleFieldI18N();
+        i18n.setErrorLength("error length");
+        i18n.setHandleAvailable("available");
+        i18n.setHandleNotAvailable("not available");
+        i18n.setSyntaxError("syntax error");
+        handleField.setI18n(i18n);
+        assertThat(handleField.getI18n()).isEqualTo(i18n);
+    }
+
+    @Test
+    void i18nDefaultsAreEmptyStrings() {
+        final var i18n = new HandleField.HandleFieldI18N();
+
+        assertThat(i18n.getErrorLength()).isEmpty();
+        assertThat(i18n.getHandleAvailable()).isEmpty();
+        assertThat(i18n.getHandleNotAvailable()).isEmpty();
+        assertThat(i18n.getSyntaxError()).isEmpty();
+    }
 }

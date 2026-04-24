@@ -78,6 +78,10 @@ class EditProfileViewKT extends KaribuTest {
         assertThat(emailField.getValue()).isEqualTo(testUser.email());
         assertThat(emailField.isReadOnly()).isTrue();
 
+        final var handleField = _get(HandleField.class, spec -> spec.withClasses("handle-field"));
+        assertThat(handleField).isNotNull();
+        assertThat(handleField.getLabel()).isEqualTo("Username");
+
         final var nameField = _get(TextField.class, spec -> spec.withClasses("name-field"));
         assertThat(nameField).isNotNull();
         assertThat(nameField.getValue()).isEqualTo(testUser.name());
