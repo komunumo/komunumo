@@ -143,6 +143,7 @@ class CommunityServiceTest {
         final var communityService = new CommunityService(communityStore, actorHandleService);
         final var community = createCommunity();
         when(communityStore.deleteCommunity(community)).thenReturn(1);
+        assertThat(community.id()).isNotNull();
 
         final var result = communityService.deleteCommunity(community);
 
@@ -158,6 +159,7 @@ class CommunityServiceTest {
         final var communityService = new CommunityService(communityStore, actorHandleService);
         final var community = createCommunity();
         when(communityStore.deleteCommunity(community)).thenReturn(0);
+        assertThat(community.id()).isNotNull();
 
         final var result = communityService.deleteCommunity(community);
 
