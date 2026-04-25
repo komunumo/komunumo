@@ -74,12 +74,12 @@ public final class ActorHandleService {
     }
 
     /**
-     * <p>Stores or updates an actor handle.</p>
+     * <p>Stores the actor handle assigned to an owner.</p>
      *
      * @param actorHandle the actor handle data to persist
      * @return the persisted actor handle
      * @throws IllegalArgumentException if the handle is blank, contains invalid characters,
-     *                                  has invalid length, or if neither/both actor references are set
+     *                                  has invalid length, or if the actor handle does not reference exactly one owner
      */
     public @NotNull ActorHandleDto storeActorHandle(final @NotNull ActorHandleDto actorHandle) {
         validateActorHandle(actorHandle);

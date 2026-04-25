@@ -52,14 +52,33 @@ final class ActorHandleStore {
     }
 
     /**
-     * <p>Stores or updates an actor handle record.</p>
+     * <p>Stores the actor handle assigned to an owner.</p>
      *
-     * @param actorHandle the actor handle DTO to persist
+     * <p>If the owner already has the same handle, the existing record is returned without
+     * writing to the database. If the owner has a different handle, the previous record is
+     * deleted first so that storing the new handle does not depend on updating the primary key in place.</p>
+     *
+     * @param actorHandle the actor handle to persist
      * @return the persisted actor handle DTO
      */
     public @NotNull ActorHandleDto storeActorHandle(final @NotNull ActorHandleDto actorHandle) {
-        final ActorHandleRecord actorHandleRecord = fetchByActorReference(actorHandle)
-                .orElse(dsl.newRecord(ACTOR_HANDLE));
+        final var existingActorHandle = fetchByActorReference(actorHandle);
+        if (existingActorHandle.isPresent()) {
+            final var existingActorHandleRecord = existingActorHandle.orElseThrow();
+            if (actorHandle.handle().equals(existingActorHandleRecord.getHandle())) {
+                return existingActorHandleRecord.into(ActorHandleDto.class);
+            }
+        }
+
+        if (actorHandle.userId() != null) {
+            deleteActorHandleByUserId(actorHandle.userId());
+        } else if (actorHandle.communityId() != null) {
+            deleteActorHandleByCommunityId(actorHandle.communityId());
+        } else {
+            throw new IllegalArgumentException("storeActorHandle requires a user or community reference.");
+        }
+
+        final var actorHandleRecord = dsl.newRecord(ACTOR_HANDLE);
         actorHandleRecord.from(actorHandle);
         actorHandleRecord.store();
         return actorHandleRecord.into(ActorHandleDto.class);
@@ -101,6 +120,12 @@ final class ActorHandleStore {
                 .execute();
     }
 
+    /**
+     * <p>Loads an actor handle by its referenced owner.</p>
+     *
+     * @param actorHandle the actor handle containing either a user or community reference
+     * @return an optional containing the matching actor handle record if found; otherwise empty
+     */
     private @NotNull Optional<ActorHandleRecord> fetchByActorReference(final @NotNull ActorHandleDto actorHandle) {
         if (actorHandle.userId() != null) {
             return dsl.fetchOptional(ACTOR_HANDLE, ACTOR_HANDLE.USER_ID.eq(actorHandle.userId()));
