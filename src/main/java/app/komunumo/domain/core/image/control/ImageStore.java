@@ -73,7 +73,7 @@ final class ImageStore {
      * @param image the image DTO to persist
      * @return the persisted image DTO
      */
-    public @NotNull ImageDto storeImage(final @NotNull ImageDto image) {
+    @NotNull ImageDto storeImage(final @NotNull ImageDto image) {
         final ImageRecord imageRecord = dsl
                 .fetchOptional(Tables.IMAGE, Tables.IMAGE.ID.eq(image.id()))
                 .orElse(dsl.newRecord(Tables.IMAGE));
@@ -91,7 +91,7 @@ final class ImageStore {
      * @param id the image ID; may be {@code null}
      * @return an optional containing the image if found; otherwise empty
      */
-    public @NotNull Optional<ImageDto> getImage(final @Nullable UUID id) {
+    @NotNull Optional<ImageDto> getImage(final @Nullable UUID id) {
         return id == null ? Optional.empty() : dsl
                 .selectFrom(IMAGE)
                 .where(IMAGE.ID.eq(id))
@@ -103,7 +103,7 @@ final class ImageStore {
      *
      * @return all persisted image DTOs
      */
-    public @NotNull List<@NotNull ImageDto> getImages() {
+    @NotNull List<@NotNull ImageDto> getImages() {
         return dsl.selectFrom(IMAGE)
                 .fetchInto(ImageDto.class);
     }
@@ -113,7 +113,7 @@ final class ImageStore {
      *
      * @return the total number of images; never negative
      */
-    public int getImageCount() {
+    int getImageCount() {
         return Optional.ofNullable(
                 dsl.selectCount()
                         .from(IMAGE)
@@ -128,7 +128,7 @@ final class ImageStore {
      *
      * @return all orphaned image DTOs
      */
-    public @NotNull List<@NotNull ImageDto> findOrphanedImages() {
+    @NotNull List<@NotNull ImageDto> findOrphanedImages() {
         return dsl.selectFrom(IMAGE)
                 .whereNotExists(
                         selectOne()
@@ -153,7 +153,7 @@ final class ImageStore {
      *
      * @return all persisted image IDs
      */
-    public @NotNull List<@NotNull UUID> getAllImageIds() {
+    @NotNull List<@NotNull UUID> getAllImageIds() {
         return dsl.select(IMAGE.ID)
                 .from(IMAGE)
                 .stream()
@@ -166,7 +166,7 @@ final class ImageStore {
      *
      * @return all persisted image DTOs
      */
-    public @NotNull List<@NotNull ImageDto> getAllImages() {
+    @NotNull List<@NotNull ImageDto> getAllImages() {
         return dsl.selectFrom(IMAGE)
                 .fetchInto(ImageDto.class);
     }
@@ -177,7 +177,7 @@ final class ImageStore {
      * @param image the image whose ID is used for deletion
      * @return the number of deleted rows
      */
-    public int deleteImage(final @NotNull ImageDto image) {
+    int deleteImage(final @NotNull ImageDto image) {
         return dsl.delete(Tables.IMAGE)
                 .where(Tables.IMAGE.ID.eq(image.id()))
                 .execute();

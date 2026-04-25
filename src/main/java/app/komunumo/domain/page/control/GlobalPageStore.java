@@ -58,7 +58,7 @@ final class GlobalPageStore {
      * @param globalPage the global page DTO to persist; must not be {@code null}
      * @return the persisted global page as a DTO
      */
-    public @NotNull GlobalPageDto storeGlobalPage(final @NotNull GlobalPageDto globalPage) {
+    @NotNull GlobalPageDto storeGlobalPage(final @NotNull GlobalPageDto globalPage) {
         final var slot = globalPage.slot();
         final var languageCode = LocaleUtil.getLanguageCode(globalPage.language());
         final GlobalPageRecord globalPageRecord = dsl.selectFrom(GLOBAL_PAGE)
@@ -85,7 +85,7 @@ final class GlobalPageStore {
      * @param languageCode the language code to query; must not be {@code null}
      * @return an {@link Optional} containing the page if found, otherwise empty
      */
-    public @NotNull Optional<GlobalPageDto> getGlobalPage(final @NotNull String slot,
+    @NotNull Optional<GlobalPageDto> getGlobalPage(final @NotNull String slot,
                                                            final @NotNull String languageCode) {
         return dsl.selectFrom(GLOBAL_PAGE)
                 .where(GLOBAL_PAGE.SLOT.eq(slot))
@@ -100,7 +100,7 @@ final class GlobalPageStore {
      * @param fallbackLanguageCode the fallback language code; must not be {@code null}
      * @return a list of matching pages
      */
-    public @NotNull List<@NotNull GlobalPageDto> getGlobalPages(final @NotNull String preferredLanguageCode,
+    @NotNull List<@NotNull GlobalPageDto> getGlobalPages(final @NotNull String preferredLanguageCode,
                                                                 final @NotNull String fallbackLanguageCode) {
         return dsl.selectFrom(GLOBAL_PAGE)
                 .where(GLOBAL_PAGE.LANGUAGE.in(preferredLanguageCode, fallbackLanguageCode))
@@ -112,7 +112,7 @@ final class GlobalPageStore {
      *
      * @return a list of all global page DTOs
      */
-    public @NotNull List<@NotNull GlobalPageDto> getAllGlobalPages() {
+    @NotNull List<@NotNull GlobalPageDto> getAllGlobalPages() {
         return dsl.selectFrom(GLOBAL_PAGE)
                 .fetchInto(GlobalPageDto.class);
     }
@@ -122,7 +122,7 @@ final class GlobalPageStore {
      *
      * @return the total count of global pages; never negative
      */
-    public int getGlobalPageCount() {
+    int getGlobalPageCount() {
         return Optional.ofNullable(
                 dsl.selectCount()
                         .from(GLOBAL_PAGE)
@@ -141,7 +141,7 @@ final class GlobalPageStore {
      * @param markdown the new markdown content to set; must not be {@code null}
      * @return the number of updated rows
      */
-    public int updateGlobalPage(final @NotNull GlobalPageDto globalPage,
+    int updateGlobalPage(final @NotNull GlobalPageDto globalPage,
                                 final @NotNull String title,
                                 final @NotNull String markdown) {
         final var slot = globalPage.slot();
@@ -161,7 +161,7 @@ final class GlobalPageStore {
      * @param globalPage the page whose slot and language identify the record(s) to delete; must not be {@code null}
      * @return the number of deleted rows
      */
-    public int deleteGlobalPage(final @NotNull GlobalPageDto globalPage) {
+    int deleteGlobalPage(final @NotNull GlobalPageDto globalPage) {
         final var slot = globalPage.slot();
         final var languageCode = LocaleUtil.getLanguageCode(globalPage.language());
         return dsl.delete(GLOBAL_PAGE)

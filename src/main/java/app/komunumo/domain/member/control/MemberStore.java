@@ -64,7 +64,7 @@ final class MemberStore {
      * @param community the community in which membership is verified
      * @return {@code true} if the user is a member; otherwise {@code false}
      */
-    public boolean isMember(final @NotNull UserDto user, final @NotNull CommunityDto community) {
+    boolean isMember(final @NotNull UserDto user, final @NotNull CommunityDto community) {
         return dsl.fetchExists(dsl.selectFrom(MEMBER)
                 .where(MEMBER.USER_ID.eq(user.id())
                         .and(MEMBER.COMMUNITY_ID.eq(community.id()))));
@@ -76,7 +76,7 @@ final class MemberStore {
      * @param memberDto a DTO representation of the member relation
      * @return the persisted member relation
      */
-    public @NotNull MemberDto storeMember(final @NotNull MemberDto memberDto) {
+    @NotNull MemberDto storeMember(final @NotNull MemberDto memberDto) {
         final var memberRecord = dsl.fetchOptional(MEMBER,
                         MEMBER.USER_ID.eq(memberDto.userId())
                                 .and(MEMBER.COMMUNITY_ID.eq(memberDto.communityId())))
@@ -102,7 +102,7 @@ final class MemberStore {
      *
      * @return all members
      */
-    public @NotNull List<@NotNull MemberDto> getMembers() {
+    @NotNull List<@NotNull MemberDto> getMembers() {
         return dsl.selectFrom(MEMBER)
                 .fetchInto(MemberDto.class);
     }
@@ -114,7 +114,7 @@ final class MemberStore {
      * @param community the community to lookup
      * @return an optional containing the relation if found; otherwise empty
      */
-    public @NotNull Optional<MemberDto> getMember(final @NotNull UserDto user,
+    @NotNull Optional<MemberDto> getMember(final @NotNull UserDto user,
                                                   final @NotNull CommunityDto community) {
         return dsl.selectFrom(MEMBER)
                 .where(MEMBER.USER_ID.eq(user.id())
@@ -128,7 +128,7 @@ final class MemberStore {
      * @param communityId the community ID
      * @return all members of the given community
      */
-    public @NotNull List<@NotNull MemberDto> getMembersByCommunityId(final @NotNull UUID communityId) {
+    @NotNull List<@NotNull MemberDto> getMembersByCommunityId(final @NotNull UUID communityId) {
         return dsl.selectFrom(MEMBER)
                 .where(MEMBER.COMMUNITY_ID.eq(communityId))
                 .fetchInto(MemberDto.class);
@@ -141,7 +141,7 @@ final class MemberStore {
      * @param role the role to filter by
      * @return all matching members ordered by membership date descending
      */
-    public @NotNull List<@NotNull MemberDto> getMembersByCommunityId(final @NotNull UUID communityId,
+    @NotNull List<@NotNull MemberDto> getMembersByCommunityId(final @NotNull UUID communityId,
                                                                      final @NotNull MemberRole role) {
         return dsl.selectFrom(MEMBER)
                 .where(MEMBER.COMMUNITY_ID.eq(communityId)
@@ -155,7 +155,7 @@ final class MemberStore {
      *
      * @return the total count of members; never negative
      */
-    public int getMemberCount() {
+    int getMemberCount() {
         return Optional.ofNullable(
                 dsl.selectCount()
                         .from(MEMBER)
@@ -169,7 +169,7 @@ final class MemberStore {
      * @param communityId the community ID to filter by
      * @return the number of members in the given community; never negative
      */
-    public int getMemberCount(final @Nullable UUID communityId) {
+    int getMemberCount(final @Nullable UUID communityId) {
         return dsl.fetchCount(MEMBER, MEMBER.COMMUNITY_ID.eq(communityId));
     }
 
@@ -182,7 +182,7 @@ final class MemberStore {
      * @param member the member relation to delete
      * @return the number of deleted rows; usually {@code 0} or {@code 1}
      */
-    public int deleteMember(final @NotNull MemberDto member) {
+    int deleteMember(final @NotNull MemberDto member) {
         return dsl.delete(MEMBER)
                 .where(MEMBER.USER_ID.eq(member.userId())
                         .and(MEMBER.COMMUNITY_ID.eq(member.communityId())))

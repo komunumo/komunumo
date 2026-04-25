@@ -60,7 +60,7 @@ final class MailStore {
      * @param locale the locale used to resolve the language variant
      * @return an optional containing the template if found; otherwise empty
      */
-    public @NotNull Optional<MailTemplate> getMailTemplate(final @NotNull MailTemplateId mailTemplateId,
+    @NotNull Optional<MailTemplate> getMailTemplate(final @NotNull MailTemplateId mailTemplateId,
                                                             final @NotNull Locale locale) {
         final var languageCode = LocaleUtil.getLanguageCode(locale);
         return dsl.selectFrom(MAIL_TEMPLATE)
@@ -75,7 +75,7 @@ final class MailStore {
      * @param mailTemplate the template to persist
      * @return the persisted template
      */
-    public @NotNull MailTemplate storeMailTemplate(final @NotNull MailTemplate mailTemplate) {
+    @NotNull MailTemplate storeMailTemplate(final @NotNull MailTemplate mailTemplate) {
         final var languageCode = LocaleUtil.getLanguageCode(mailTemplate.language());
         final var mailTemplateRecord = dsl.selectFrom(MAIL_TEMPLATE)
                 .where(MAIL_TEMPLATE.ID.eq(mailTemplate.id().name()))
@@ -95,7 +95,7 @@ final class MailStore {
      *
      * @return the total count of mail templates; never negative
      */
-    public int getMailTemplateCount() {
+    int getMailTemplateCount() {
         return Optional.ofNullable(
                 dsl.selectCount()
                         .from(MAIL_TEMPLATE)
@@ -108,7 +108,7 @@ final class MailStore {
      *
      * @return a list of all mail templates including all language variants
      */
-    public @NotNull List<@NotNull MailTemplate> getAllMailTemplates() {
+    @NotNull List<@NotNull MailTemplate> getAllMailTemplates() {
         return dsl.selectFrom(MAIL_TEMPLATE)
                 .fetch()
                 .map(record -> new MailTemplate(

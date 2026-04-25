@@ -91,6 +91,59 @@ class ArchitectureTest {
     }
 
     @Test
+    void storesShouldOnlyBeAccessedByMatchingServices() {
+        final var onlyBeAccessedByMatchingService = new ArchCondition<JavaClass>(
+                "only be accessed by their matching service") {
+            @Override
+            public void check(final @NotNull JavaClass storeClass, final @NotNull ConditionEvents events) {
+                final var matchingServiceClassName = storeClass.getPackageName() + "."
+                        + storeClass.getSimpleName().replaceFirst("Store$", "Service");
+
+                storeClass.getAccessesToSelf().forEach(access -> {
+                    final var originOwner = access.getOriginOwner();
+                    final var originOwnerName = originOwner.getName();
+
+                    if (!originOwnerName.equals(storeClass.getName())
+                            && !originOwnerName.equals(matchingServiceClassName)) {
+                        events.add(SimpleConditionEvent.violated(
+                                access,
+                                originOwnerName + " accesses " + storeClass.getName()
+                                        + " but only " + matchingServiceClassName + " may do so"));
+                    }
+                });
+            }
+        };
+
+        classes()
+                .that().resideInAPackage("..domain..control..")
+                .and().haveSimpleNameEndingWith("Store")
+                .should(onlyBeAccessedByMatchingService)
+                .because("stores should only be accessed by their matching service")
+                .check(classesWithoutTests);
+    }
+
+    @Test
+    void storeClassesShouldNotBePublic() {
+        classes()
+                .that().resideInAPackage("..domain..control..")
+                .and().haveSimpleNameEndingWith("Store")
+                .should().notBePublic()
+                .because("stores should only be visible within their package")
+                .check(classesWithoutTests);
+    }
+
+    @Test
+    void storeMethodsShouldBeAtMostPackagePrivate() {
+        methods()
+                .that().areDeclaredInClassesThat().resideInAPackage("..domain..control..")
+                .and().areDeclaredInClassesThat().haveSimpleNameEndingWith("Store")
+                .should().notBePublic()
+                .andShould().notBeProtected()
+                .because("store methods should only be callable from within their package")
+                .check(classesWithoutTests);
+    }
+
+    @Test
     void dtosShouldBeRecordsOrEnums() {
         ArchCondition<JavaClass> beRecordOrEnum = new ArchCondition<>("be a record or enum") {
             @Override

@@ -83,7 +83,7 @@ final class EventStore extends AbstractStore {
      * @param event a DTO representation of the event information
      * @return the persisted event information in DTO form
      */
-    public @NotNull EventDto storeEvent(final @NotNull EventDto event) {
+    @NotNull EventDto storeEvent(final @NotNull EventDto event) {
         final EventRecord eventRecord = dsl.fetchOptional(EVENT, EVENT.ID.eq(event.id()))
                 .orElse(dsl.newRecord(EVENT));
         createOrUpdate(EVENT, event, eventRecord);
@@ -96,7 +96,7 @@ final class EventStore extends AbstractStore {
      * @param id the event ID
      * @return an optional containing the event if found; otherwise empty
      */
-    public @NotNull Optional<EventDto> getEvent(final @NotNull UUID id) {
+    @NotNull Optional<EventDto> getEvent(final @NotNull UUID id) {
         return dsl.selectFrom(EVENT)
                 .where(EVENT.ID.eq(id))
                 .fetchOptionalInto(EventDto.class);
@@ -108,7 +108,7 @@ final class EventStore extends AbstractStore {
      * @param id the event ID
      * @return an optional containing the event and image projection if found; otherwise empty
      */
-    public @NotNull Optional<EventWithImageDto> getEventWithImage(final @NotNull UUID id) {
+    @NotNull Optional<EventWithImageDto> getEventWithImage(final @NotNull UUID id) {
         final var communityImage = IMAGE.as("COMMUNITY_IMAGE");
         return dsl.select()
                 .from(EVENT)
@@ -126,7 +126,7 @@ final class EventStore extends AbstractStore {
      *
      * @return all events
      */
-    public @NotNull List<@NotNull EventDto> getEvents() {
+    @NotNull List<@NotNull EventDto> getEvents() {
         return dsl.selectFrom(EVENT)
                 .fetchInto(EventDto.class);
     }
@@ -137,7 +137,7 @@ final class EventStore extends AbstractStore {
      * @param community the community filter; if {@code null}, events from all communities are returned
      * @return upcoming events with optional image projection
      */
-    public @NotNull List<@NotNull EventWithImageDto> getUpcomingEventsWithImage(final @Nullable CommunityDto community) {
+    @NotNull List<@NotNull EventWithImageDto> getUpcomingEventsWithImage(final @Nullable CommunityDto community) {
         final var now = ZonedDateTime.now(ZoneOffset.UTC);
         final var communityImage = IMAGE.as("COMMUNITY_IMAGE");
         return dsl.select()
@@ -162,7 +162,7 @@ final class EventStore extends AbstractStore {
      * @param community the community filter; if {@code null}, events from all communities are returned
      * @return past events with optional image projection
      */
-    public @NotNull List<@NotNull EventWithImageDto> getPastEventsWithImage(final @Nullable CommunityDto community) {
+    @NotNull List<@NotNull EventWithImageDto> getPastEventsWithImage(final @Nullable CommunityDto community) {
         final var now = ZonedDateTime.now(ZoneOffset.UTC);
         final var communityImage = IMAGE.as("COMMUNITY_IMAGE");
         return dsl.select()
@@ -186,7 +186,7 @@ final class EventStore extends AbstractStore {
      *
      * @return the total count of events; never negative
      */
-    public int getEventCount() {
+    int getEventCount() {
         return Optional.ofNullable(
                 dsl.selectCount()
                         .from(EVENT)
@@ -200,7 +200,7 @@ final class EventStore extends AbstractStore {
      * @param event the event to delete
      * @return the number of deleted event rows (typically {@code 0} or {@code 1})
      */
-    public int deleteEvent(final @NotNull EventDto event) {
+    int deleteEvent(final @NotNull EventDto event) {
         return dsl.delete(EVENT)
                 .where(EVENT.ID.eq(event.id()))
                 .execute();
@@ -216,7 +216,7 @@ final class EventStore extends AbstractStore {
      * @param user the user to check
      * @return {@code true} if the user can manage the event; otherwise {@code false}
      */
-    public boolean hasManagementPermission(final @NotNull EventDto event, final @NotNull UserDto user) {
+    boolean hasManagementPermission(final @NotNull EventDto event, final @NotNull UserDto user) {
         return dsl.fetchExists(
                 dsl.selectOne()
                         .from(EVENT)

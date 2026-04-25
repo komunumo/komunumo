@@ -54,7 +54,7 @@ final class ConfigurationStore {
      *
      * @return the total row count; never negative
      */
-    public int getConfigurationCount() {
+    int getConfigurationCount() {
         return Optional.ofNullable(
                 dsl.selectCount()
                         .from(CONFIG)
@@ -69,7 +69,7 @@ final class ConfigurationStore {
      * @param language the language code (for example {@code "en"}) or empty string for neutral values
      * @return the stored value if present; otherwise empty
      */
-    public @NotNull Optional<String> getConfigurationValue(final @NotNull ConfigurationSetting setting,
+    @NotNull Optional<String> getConfigurationValue(final @NotNull ConfigurationSetting setting,
                                                            final @NotNull String language) {
         return dsl.select(CONFIG.VALUE)
                 .from(CONFIG)
@@ -85,7 +85,7 @@ final class ConfigurationStore {
      * @param language the language code (for example {@code "en"}) or empty string for neutral values
      * @param value the value to persist
      */
-    public void upsertConfigurationValue(final @NotNull ConfigurationSetting setting,
+    void upsertConfigurationValue(final @NotNull ConfigurationSetting setting,
                                          final @NotNull String language,
                                          final @NotNull String value) {
         dsl.insertInto(CONFIG)
@@ -104,7 +104,7 @@ final class ConfigurationStore {
      * @param language the language code (for example {@code "en"}) or empty string for neutral values
      * @return the number of deleted rows
      */
-    public int deleteConfigurationValue(final @NotNull ConfigurationSetting setting,
+    int deleteConfigurationValue(final @NotNull ConfigurationSetting setting,
                                         final @NotNull String language) {
         return dsl.deleteFrom(CONFIG)
                 .where(CONFIG.SETTING.eq(setting.setting()))
@@ -117,7 +117,7 @@ final class ConfigurationStore {
      *
      * @return the number of deleted rows
      */
-    public int deleteAllConfigurations() {
+    int deleteAllConfigurations() {
         return dsl.delete(CONFIG).execute();
     }
 

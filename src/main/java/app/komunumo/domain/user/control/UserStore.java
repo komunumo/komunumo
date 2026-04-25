@@ -66,7 +66,7 @@ final class UserStore extends AbstractStore {
      * @param user the user data to persist
      * @return the persisted user
      */
-    public @NotNull UserDto storeUser(final @NotNull UserDto user) {
+    @NotNull UserDto storeUser(final @NotNull UserDto user) {
         final UserRecord userRecord = dsl.fetchOptional(USER, USER.ID.eq(user.id()))
                 .orElse(dsl.newRecord(USER));
         createOrUpdate(USER, user, userRecord);
@@ -78,7 +78,7 @@ final class UserStore extends AbstractStore {
      *
      * @return all persisted users
      */
-    public @NotNull List<@NotNull UserDto> getAllUsers() {
+    @NotNull List<@NotNull UserDto> getAllUsers() {
         return dsl.select(USER.fields())
                 .select(ACTOR_HANDLE.HANDLE)
                 .from(USER)
@@ -91,7 +91,7 @@ final class UserStore extends AbstractStore {
      *
      * @return the number of admin users; never negative
      */
-    public int getAdminCount() {
+    int getAdminCount() {
         return Optional.ofNullable(
                 dsl.selectCount()
                         .from(USER)
@@ -105,7 +105,7 @@ final class UserStore extends AbstractStore {
      *
      * @return the number of regular users; never negative
      */
-    public int getUserCount() {
+    int getUserCount() {
         return Optional.ofNullable(
                 dsl.selectCount()
                         .from(USER)
@@ -120,7 +120,7 @@ final class UserStore extends AbstractStore {
      * @param id the user ID
      * @return an optional containing the user if found; otherwise empty
      */
-    public @NotNull Optional<UserDto> getUserById(final @NotNull UUID id) {
+    @NotNull Optional<UserDto> getUserById(final @NotNull UUID id) {
         return dsl.select(USER.fields())
                 .select(ACTOR_HANDLE.HANDLE)
                 .from(USER)
@@ -135,7 +135,7 @@ final class UserStore extends AbstractStore {
      * @param email the email address to lookup
      * @return an optional containing the user if found; otherwise empty
      */
-    public @NotNull Optional<UserDto> getUserByEmail(final @NotNull String email) {
+    @NotNull Optional<UserDto> getUserByEmail(final @NotNull String email) {
         return dsl.select(USER.fields())
                 .select(ACTOR_HANDLE.HANDLE)
                 .from(USER)
@@ -150,7 +150,7 @@ final class UserStore extends AbstractStore {
      * @param user the user to delete
      * @return the number of deleted rows
      */
-    public int deleteUser(final @NotNull UserDto user) {
+    int deleteUser(final @NotNull UserDto user) {
         return dsl.delete(USER)
                 .where(USER.ID.eq(user.id()))
                 .execute();
@@ -162,7 +162,7 @@ final class UserStore extends AbstractStore {
      * @param user the user whose type should be changed
      * @param userType the new user type to persist
      */
-    public void changeUserType(final @NotNull UserDto user, final @NotNull UserType userType) {
+    void changeUserType(final @NotNull UserDto user, final @NotNull UserType userType) {
         dsl.update(USER)
                 .set(USER.TYPE, userType.name())
                 .where(USER.ID.eq(user.id()))

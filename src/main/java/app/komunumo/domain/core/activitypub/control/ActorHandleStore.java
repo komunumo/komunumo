@@ -61,7 +61,7 @@ final class ActorHandleStore {
      * @param actorHandle the actor handle to persist
      * @return the persisted actor handle DTO
      */
-    public @NotNull ActorHandleDto storeActorHandle(final @NotNull ActorHandleDto actorHandle) {
+    @NotNull ActorHandleDto storeActorHandle(final @NotNull ActorHandleDto actorHandle) {
         final var existingActorHandle = fetchByActorReference(actorHandle);
         if (existingActorHandle.isPresent()) {
             final var existingActorHandleRecord = existingActorHandle.orElseThrow();
@@ -90,7 +90,7 @@ final class ActorHandleStore {
      * @param handle the federated handle to look up
      * @return an optional containing the actor handle if found; otherwise empty
      */
-    public @NotNull Optional<ActorHandleDto> getActorHandle(final @NotNull String handle) {
+    @NotNull Optional<ActorHandleDto> getActorHandle(final @NotNull String handle) {
         return dsl.selectFrom(ACTOR_HANDLE)
                 .where(ACTOR_HANDLE.HANDLE.eq(handle))
                 .fetchOptionalInto(ActorHandleDto.class);
@@ -102,7 +102,7 @@ final class ActorHandleStore {
      * @param userId the user ID whose actor handle should be deleted
      * @return the number of deleted rows
      */
-    public int deleteActorHandleByUserId(final @NotNull UUID userId) {
+    int deleteActorHandleByUserId(final @NotNull UUID userId) {
         return dsl.delete(ACTOR_HANDLE)
                 .where(ACTOR_HANDLE.USER_ID.eq(userId))
                 .execute();
@@ -114,7 +114,7 @@ final class ActorHandleStore {
      * @param communityId the community ID whose actor handle should be deleted
      * @return the number of deleted rows
      */
-    public int deleteActorHandleByCommunityId(final @NotNull UUID communityId) {
+    int deleteActorHandleByCommunityId(final @NotNull UUID communityId) {
         return dsl.delete(ACTOR_HANDLE)
                 .where(ACTOR_HANDLE.COMMUNITY_ID.eq(communityId))
                 .execute();

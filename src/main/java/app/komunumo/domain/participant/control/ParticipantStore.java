@@ -67,7 +67,7 @@ final class ParticipantStore {
      *
      * @param participant the participant relation to persist
      */
-    public void storeParticipant(final @NotNull ParticipantDto participant) {
+    void storeParticipant(final @NotNull ParticipantDto participant) {
         final ParticipantRecord participantRecord = dsl.fetchOptional(PARTICIPANT,
                         PARTICIPANT.EVENT_ID.eq(participant.eventId())
                                 .and(PARTICIPANT.USER_ID.eq(participant.userId())))
@@ -86,7 +86,7 @@ final class ParticipantStore {
      *
      * @return all persisted participants
      */
-    public @NotNull List<@NotNull ParticipantDto> getAllParticipants() {
+    @NotNull List<@NotNull ParticipantDto> getAllParticipants() {
         return dsl.selectFrom(PARTICIPANT)
                 .fetchInto(ParticipantDto.class);
     }
@@ -98,7 +98,7 @@ final class ParticipantStore {
      * @param user the user context of the participant
      * @return an optional containing the participant relation if found; otherwise empty
      */
-    public @NotNull Optional<ParticipantDto> getParticipant(final @NotNull EventDto event,
+    @NotNull Optional<ParticipantDto> getParticipant(final @NotNull EventDto event,
                                                             final @NotNull UserDto user) {
         return dsl.selectFrom(PARTICIPANT)
                 .where(PARTICIPANT.EVENT_ID.eq(event.id())
@@ -112,7 +112,7 @@ final class ParticipantStore {
      * @param participant the participant relation to delete
      * @return the number of deleted rows
      */
-    public int deleteParticipant(final @NotNull ParticipantDto participant) {
+    int deleteParticipant(final @NotNull ParticipantDto participant) {
         return dsl.delete(PARTICIPANT)
                 .where(PARTICIPANT.EVENT_ID.eq(participant.eventId())
                         .and(PARTICIPANT.USER_ID.eq(participant.userId())))
@@ -124,7 +124,7 @@ final class ParticipantStore {
      *
      * @return the total count of participants; never negative
      */
-    public int getParticipantCount() {
+    int getParticipantCount() {
         return Optional.ofNullable(
                 dsl.selectCount()
                         .from(PARTICIPANT)
@@ -138,7 +138,7 @@ final class ParticipantStore {
      * @param event the event for which the participants should be counted
      * @return the total count of participants for the event; never negative
      */
-    public int getParticipantCount(final @NotNull EventDto event) {
+    int getParticipantCount(final @NotNull EventDto event) {
         return Optional.ofNullable(
                 dsl.selectCount()
                         .from(PARTICIPANT)
@@ -154,7 +154,7 @@ final class ParticipantStore {
      * @param event the event to check
      * @return {@code true} if the user participates in the event; otherwise {@code false}
      */
-    public boolean isParticipant(final @NotNull UserDto user,
+    boolean isParticipant(final @NotNull UserDto user,
                                  final @NotNull EventDto event) {
         return dsl.fetchExists(dsl.selectFrom(PARTICIPANT)
                 .where(PARTICIPANT.USER_ID.eq(user.id())
@@ -167,7 +167,7 @@ final class ParticipantStore {
      * @param event the event whose participants should be loaded
      * @return ordered participants with user projection and registration timestamp
      */
-    public @NotNull List<@NotNull RegisteredParticipantDto> getParticipants(final @NotNull EventDto event) {
+    @NotNull List<@NotNull RegisteredParticipantDto> getParticipants(final @NotNull EventDto event) {
         return dsl.select(USER.fields())
                 .select(ACTOR_HANDLE.HANDLE)
                 .select(PARTICIPANT.REGISTERED)
@@ -201,7 +201,7 @@ final class ParticipantStore {
      * @param event the event whose manager recipients should be loaded
      * @return distinct non-null manager email addresses
      */
-    public @NotNull List<@NotNull String> getManagerEmailsForEvent(final @NotNull EventDto event) {
+    @NotNull List<@NotNull String> getManagerEmailsForEvent(final @NotNull EventDto event) {
         return dsl.select(USER.EMAIL)
                 .from(MEMBER)
                 .join(USER).on(MEMBER.USER_ID.eq(USER.ID))

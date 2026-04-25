@@ -75,7 +75,7 @@ final class CommunityStore extends AbstractStore {
      * @param community a DTO representation of the community information
      * @return the persisted community ID
      */
-    public @Nullable UUID storeCommunity(final @NotNull CommunityDto community) {
+    @Nullable UUID storeCommunity(final @NotNull CommunityDto community) {
         final var communityRecord = dsl.fetchOptional(COMMUNITY, COMMUNITY.ID.eq(community.id()))
                 .orElse(dsl.newRecord(COMMUNITY));
         createOrUpdate(COMMUNITY, community, communityRecord);
@@ -88,7 +88,7 @@ final class CommunityStore extends AbstractStore {
      * @param id the community ID
      * @return an optional containing the community if found; otherwise empty
      */
-    public @NotNull Optional<CommunityDto> getCommunity(final @NotNull UUID id) {
+    @NotNull Optional<CommunityDto> getCommunity(final @NotNull UUID id) {
         return dsl.select(COMMUNITY.fields())
                 .select(ACTOR_HANDLE.HANDLE)
                 .from(COMMUNITY)
@@ -103,7 +103,7 @@ final class CommunityStore extends AbstractStore {
      * @param handle the community handle slug/name
      * @return an optional containing the community and image projection if found; otherwise empty
      */
-    public @NotNull Optional<CommunityWithImageDto> getCommunityWithImage(final @NotNull String handle) {
+    @NotNull Optional<CommunityWithImageDto> getCommunityWithImage(final @NotNull String handle) {
         return dsl.select(COMMUNITY.fields())
                 .select(ACTOR_HANDLE.HANDLE)
                 .select(IMAGE.fields())
@@ -122,7 +122,7 @@ final class CommunityStore extends AbstractStore {
      *
      * @return all communities
      */
-    public @NotNull List<@NotNull CommunityDto> getCommunities() {
+    @NotNull List<@NotNull CommunityDto> getCommunities() {
         return dsl.select(COMMUNITY.fields())
                 .select(ACTOR_HANDLE.HANDLE)
                 .from(COMMUNITY)
@@ -136,7 +136,7 @@ final class CommunityStore extends AbstractStore {
      *
      * @return all communities including optional image projection
      */
-    public @NotNull List<@NotNull CommunityWithImageDto> getCommunitiesWithImage() {
+    @NotNull List<@NotNull CommunityWithImageDto> getCommunitiesWithImage() {
         return dsl.select()
                 .from(COMMUNITY)
                 .leftJoin(ACTOR_HANDLE).on(ACTOR_HANDLE.COMMUNITY_ID.eq(COMMUNITY.ID))
@@ -157,7 +157,7 @@ final class CommunityStore extends AbstractStore {
      * @param user the user whose manageable communities should be loaded
      * @return all communities the user can manage
      */
-    public @NotNull List<@NotNull CommunityDto> getCommunitiesForManager(final @NotNull UserDto user) {
+    @NotNull List<@NotNull CommunityDto> getCommunitiesForManager(final @NotNull UserDto user) {
         return dsl.select(COMMUNITY.fields())
                 .select(ACTOR_HANDLE.HANDLE)
                 .from(COMMUNITY)
@@ -174,7 +174,7 @@ final class CommunityStore extends AbstractStore {
      *
      * @return the total count of communities; never negative
      */
-    public int getCommunityCount() {
+    int getCommunityCount() {
         return Optional.ofNullable(
                 dsl.selectCount()
                         .from(COMMUNITY)
@@ -188,7 +188,7 @@ final class CommunityStore extends AbstractStore {
      * @param community the community to delete
      * @return the number of deleted community rows (typically {@code 0} or {@code 1})
      */
-    public int deleteCommunity(final @NotNull CommunityDto community) {
+    int deleteCommunity(final @NotNull CommunityDto community) {
         dsl.delete(MEMBER)
                 .where(MEMBER.COMMUNITY_ID.eq(community.id()))
                 .execute();
