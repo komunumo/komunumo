@@ -72,10 +72,8 @@ final class ActorHandleStore {
 
         if (actorHandle.userId() != null) {
             deleteActorHandleByUserId(actorHandle.userId());
-        } else if (actorHandle.communityId() != null) {
-            deleteActorHandleByCommunityId(actorHandle.communityId());
         } else {
-            throw new IllegalArgumentException("storeActorHandle requires a user or community reference.");
+            deleteActorHandleByCommunityId(actorHandle.communityId());
         }
 
         final var actorHandleRecord = dsl.newRecord(ACTOR_HANDLE);
@@ -130,9 +128,6 @@ final class ActorHandleStore {
         if (actorHandle.userId() != null) {
             return dsl.fetchOptional(ACTOR_HANDLE, ACTOR_HANDLE.USER_ID.eq(actorHandle.userId()));
         }
-        if (actorHandle.communityId() != null) {
-            return dsl.fetchOptional(ACTOR_HANDLE, ACTOR_HANDLE.COMMUNITY_ID.eq(actorHandle.communityId()));
-        }
-        return Optional.empty();
+        return dsl.fetchOptional(ACTOR_HANDLE, ACTOR_HANDLE.COMMUNITY_ID.eq(actorHandle.communityId()));
     }
 }

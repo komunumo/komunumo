@@ -24,7 +24,6 @@ import app.komunumo.domain.user.entity.UserDto;
 import app.komunumo.infra.persistence.jooq.AbstractStore;
 import app.komunumo.infra.persistence.jooq.UniqueIdGenerator;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jooq.DSLContext;
 import org.jooq.Record;
 import org.springframework.stereotype.Service;
@@ -75,7 +74,7 @@ final class CommunityStore extends AbstractStore {
      * @param community a DTO representation of the community information
      * @return the persisted community ID
      */
-    @Nullable UUID storeCommunity(final @NotNull CommunityDto community) {
+    @NotNull UUID storeCommunity(final @NotNull CommunityDto community) {
         final var communityRecord = dsl.fetchOptional(COMMUNITY, COMMUNITY.ID.eq(community.id()))
                 .orElse(dsl.newRecord(COMMUNITY));
         createOrUpdate(COMMUNITY, community, communityRecord);

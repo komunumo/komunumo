@@ -77,7 +77,7 @@ public final class ImageService {
      * @return an optional containing the image if found; otherwise empty
      */
     public @NotNull Optional<ImageDto> getImage(final @Nullable UUID id) {
-        return imageStore.getImage(id);
+        return id == null ? Optional.empty() : imageStore.getImage(id);
     }
 
     /**

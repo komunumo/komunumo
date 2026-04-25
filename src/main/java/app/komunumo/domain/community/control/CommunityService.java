@@ -72,10 +72,6 @@ public class CommunityService {
     public @NotNull CommunityDto storeCommunity(final @NotNull CommunityDto community) {
         final var handle = community.handle();
         final var communityId = communityStore.storeCommunity(community);
-        if (communityId == null) {
-            throw new IllegalStateException("Stored community must have a community ID.");
-        }
-
         actorHandleService.storeActorHandle(new ActorHandleDto(handle, null, communityId));
         return communityStore.getCommunity(communityId).orElseThrow();
     }

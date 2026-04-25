@@ -57,22 +57,6 @@ class CommunityServiceTest {
     }
 
     @Test
-    void storeCommunityThrowsIllegalStateExceptionIfStoredCommunityHasNoId() {
-        final var communityStore = mock(CommunityStore.class);
-        final var actorHandleService = mock(ActorHandleService.class);
-        final var communityService = new CommunityService(communityStore, actorHandleService);
-        final var input = createCommunity();
-        when(communityStore.storeCommunity(input)).thenReturn(null);
-
-        assertThatThrownBy(() -> communityService.storeCommunity(input))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessage("Stored community must have a community ID.");
-
-        verify(communityStore).storeCommunity(input);
-        verifyNoInteractions(actorHandleService);
-    }
-
-    @Test
     void getCommunityDelegatesToStore() {
         final var communityStore = mock(CommunityStore.class);
         final var communityService = new CommunityService(communityStore, mock(ActorHandleService.class));

@@ -22,7 +22,6 @@ import app.komunumo.data.db.tables.records.ImageRecord;
 import app.komunumo.domain.core.image.entity.ImageDto;
 import app.komunumo.infra.persistence.jooq.UniqueIdGenerator;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.jooq.DSLContext;
 import org.springframework.stereotype.Service;
 
@@ -88,11 +87,11 @@ final class ImageStore {
     /**
      * <p>Loads an image by ID.</p>
      *
-     * @param id the image ID; may be {@code null}
+     * @param id the image ID
      * @return an optional containing the image if found; otherwise empty
      */
-    @NotNull Optional<ImageDto> getImage(final @Nullable UUID id) {
-        return id == null ? Optional.empty() : dsl
+    @NotNull Optional<ImageDto> getImage(final @NotNull UUID id) {
+        return dsl
                 .selectFrom(IMAGE)
                 .where(IMAGE.ID.eq(id))
                 .fetchOptionalInto(ImageDto.class);

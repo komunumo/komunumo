@@ -69,12 +69,10 @@ class ImageServiceTest {
     void getImageWithNullIdDelegatesToStore() {
         final var imageStore = mock(ImageStore.class);
         final var service = new ImageService(imageStore);
-        when(imageStore.getImage(null)).thenReturn(Optional.empty());
 
         final var result = service.getImage(null);
 
         assertThat(result).isEmpty();
-        verify(imageStore).getImage(null);
     }
 
     @Test

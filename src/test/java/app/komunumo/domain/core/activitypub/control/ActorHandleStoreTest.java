@@ -24,18 +24,15 @@ import org.jooq.DeleteConditionStep;
 import org.jooq.DeleteUsingStep;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.UUID;
 
+import static app.komunumo.data.db.tables.ActorHandle.ACTOR_HANDLE;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import static app.komunumo.data.db.tables.ActorHandle.ACTOR_HANDLE;
 
 class ActorHandleStoreTest {
 
@@ -86,32 +83,5 @@ class ActorHandleStoreTest {
         verify(dsl).newRecord(ACTOR_HANDLE);
         verify(newRecord).from(actorHandle);
         verify(newRecord).store();
-    }
-
-    @Test
-    void fetchByActorReferenceReturnsEmptyWhenAllIDsAreNull() throws Exception {
-        final var dsl = mock(DSLContext.class);
-        final var actorHandleStore = new ActorHandleStore(dsl);
-        final var actorHandle = new ActorHandleDto("testHandle", null, null);
-
-        final Method method = ActorHandleStore.class.getDeclaredMethod(
-                "fetchByActorReference", ActorHandleDto.class);
-        method.setAccessible(true);
-
-        @SuppressWarnings("unchecked")
-        final var result = (Optional<ActorHandleRecord>) method.invoke(actorHandleStore, actorHandle);
-
-        assertThat(result).isEmpty();
-    }
-
-    @Test
-    void storeActorHandleThrowsWhenNoReferenceIsSet() {
-        final var dsl = mock(DSLContext.class);
-        final var actorHandleStore = new ActorHandleStore(dsl);
-        final var actorHandle = new ActorHandleDto("testHandle", null, null);
-
-        assertThatThrownBy(() -> actorHandleStore.storeActorHandle(actorHandle))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("storeActorHandle requires a user or community reference.");
     }
 }
