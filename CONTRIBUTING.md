@@ -245,6 +245,17 @@ If you use Podman Desktop for macOS, activate the full Docker compatibility laye
 4. Click on the new entry "Docker Compatibility".
 5. Make sure, "Third-Party Docker Tool Compatibility" is *activated*.
 
+#### Vaadin Path Troubleshooting
+
+Vaadin resource scanning can fail when the checkout path contains special or non-ASCII characters. The known error looks like `Parent resource of [...] not found in the resources!`; see [vaadin/flow#11871](https://github.com/vaadin/flow/issues/11871).
+
+Until this is fixed upstream, keep the checkout in a simple ASCII-only path without special characters. Alternatively, run the build through an ASCII-only symlink:
+
+```bash
+ln -sfn "$PWD" /tmp/komunumo
+/tmp/komunumo/mvnw -f /tmp/komunumo/pom.xml verify
+```
+
 ### Clone and Verify
 
 1. Fork the [Komunumo repository](https://github.com/komunumo/komunumo) on GitHub.
