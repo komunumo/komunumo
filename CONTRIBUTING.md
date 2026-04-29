@@ -245,6 +245,39 @@ If you use Podman Desktop for macOS, activate the full Docker compatibility laye
 4. Click on the new entry "Docker Compatibility".
 5. Make sure, "Third-Party Docker Tool Compatibility" is *activated*.
 
+#### Using Colima on macOS
+
+[Colima](https://github.com/abiosoft/colima) can be used instead of Docker Desktop/Podman.
+Install Colima and the Docker CLI, then start the default Colima instance:
+
+```bash
+brew install colima docker
+colima start
+docker context use colima
+```
+
+Verify that Docker commands are routed to Colima:
+
+```bash
+docker version
+docker context inspect colima
+```
+
+When running Maven goals that use Testcontainers, enable the `colima` Maven profile:
+
+```bash
+./mvnw -Pcolima verify
+```
+
+The profile configures Testcontainers for the default Colima socket at `${user.home}/.colima/default/docker.sock` and sets the container-internal Docker socket override to `/var/run/docker.sock`.
+If you use a non-default Colima instance, override the socket path explicitly:
+
+```bash
+./mvnw -Pcolima \
+  -Dtestcontainers.docker.host=unix://${HOME}/.colima/YOUR_INSTANCE/docker.sock \
+  verify
+```
+
 ### Clone and Verify
 
 1. Fork the [Komunumo repository](https://github.com/komunumo/komunumo) on GitHub.
@@ -259,6 +292,12 @@ If you use Podman Desktop for macOS, activate the full Docker compatibility laye
 
    ```bash
    ./mvnw verify
+   ```
+
+   If you use Colima on macOS, run:
+
+   ```bash
+   ./mvnw -Pcolima verify
    ```
 
 ### Start Required Services
