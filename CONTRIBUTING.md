@@ -254,6 +254,44 @@ Until this is fixed upstream, keep the checkout in a simple ASCII-only path with
 ```bash
 ln -sfn "$PWD" /tmp/komunumo
 /tmp/komunumo/mvnw -f /tmp/komunumo/pom.xml verify
+
+#### Testcontainers Troubleshooting
+
+Testcontainers can read global settings from `~/.testcontainers.properties`. These settings apply to all projects and Docker-compatible runtimes.
+
+If tests fail because Testcontainers cannot connect to Docker, Podman, or another Docker-compatible runtime, check whether that file contains stale `docker.host` or `tc.host` values. Remove outdated entries unless you intentionally need a global override. Prefer project-specific environment variables or Maven profiles where possible.
+
+#### Using Colima on macOS
+
+[Colima](https://github.com/abiosoft/colima) can be used instead of Docker Desktop/Podman.
+Install Colima and the Docker CLI, then start the default Colima instance:
+
+```bash
+brew install colima docker
+colima start
+docker context use colima
+```
+
+Verify that Docker commands are routed to Colima:
+
+```bash
+docker version
+docker context inspect colima
+```
+
+When running Maven goals that use Testcontainers, enable the `colima` Maven profile:
+
+```bash
+./mvnw -Pcolima verify
+```
+
+The profile configures Testcontainers for the default Colima socket at `${user.home}/.colima/default/docker.sock` and sets the container-internal Docker socket override to `/var/run/docker.sock`.
+If you use a non-default Colima instance, override the socket path explicitly:
+
+```bash
+./mvnw -Pcolima \
+  -Dtestcontainers.docker.host=unix://${HOME}/.colima/YOUR_INSTANCE/docker.sock \
+  verify
 ```
 
 ### Clone and Verify
@@ -270,6 +308,12 @@ ln -sfn "$PWD" /tmp/komunumo
 
    ```bash
    ./mvnw verify
+   ```
+
+   If you use Colima on macOS, run:
+
+   ```bash
+   ./mvnw -Pcolima verify
    ```
 
 ### Start Required Services
