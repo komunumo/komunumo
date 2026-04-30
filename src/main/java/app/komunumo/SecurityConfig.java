@@ -79,6 +79,7 @@ public class SecurityConfig {
                         "/actuator/health",
                         "/css/**",
                         "/images/**",
+                        "/custom/favicon/**",
                         "/custom/styles/**"
                 ).permitAll()
         );
