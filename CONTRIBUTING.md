@@ -245,6 +245,12 @@ If you use Podman Desktop for macOS, activate the full Docker compatibility laye
 4. Click on the new entry "Docker Compatibility".
 5. Make sure, "Third-Party Docker Tool Compatibility" is *activated*.
 
+#### Testcontainers Troubleshooting
+
+Testcontainers can read global settings from `~/.testcontainers.properties`. These settings apply to all projects and Docker-compatible runtimes.
+
+If tests fail because Testcontainers cannot connect to Docker, Podman, or another Docker-compatible runtime, check whether that file contains stale `docker.host` or `tc.host` values. Remove outdated entries unless you intentionally need a global override. Prefer project-specific environment variables or Maven profiles where possible.
+
 #### Using Colima on macOS
 
 [Colima](https://github.com/abiosoft/colima) can be used instead of Docker Desktop/Podman.
