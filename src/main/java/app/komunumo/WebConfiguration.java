@@ -69,9 +69,14 @@ public class WebConfiguration implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(final @NotNull ResourceHandlerRegistry registry) {
         final var stylePath = appConfig.files().basedir().resolve("custom", "styles");
-        final var resourceLocation = "file:" + stylePath.toAbsolutePath() + "/";
+        final var styleLocation = "file:" + stylePath.toAbsolutePath() + "/";
         registry.addResourceHandler("/custom/styles/**")
-                .addResourceLocations(resourceLocation);
+                .addResourceLocations(styleLocation);
+
+        final var favivonPath = appConfig.files().basedir().resolve("custom", "favicon");
+        final var faviconLocation = "file:" + favivonPath.toAbsolutePath() + "/";
+        registry.addResourceHandler("/custom/favicon/**")
+                .addResourceLocations(faviconLocation);
     }
 
 }

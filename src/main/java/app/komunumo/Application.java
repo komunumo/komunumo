@@ -29,6 +29,9 @@ import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.theme.aura.Aura;
 import jakarta.servlet.http.HttpServlet;
 import org.jetbrains.annotations.NotNull;
+import org.jspecify.annotations.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -36,6 +39,12 @@ import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.scheduling.annotation.EnableScheduling;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Pattern;
 
 /**
  * The entry point of the Spring Boot application.
@@ -50,7 +59,12 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableConfigurationProperties(AppConfig.class)
 public class Application extends SpringBootServletInitializer implements AppShellConfigurator {
 
+    private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(Application.class);
+
     private final @NotNull AppConfig appConfig;
+
+    private final @NotNull Pattern faviconFilenamePattern =
+            Pattern.compile("^favicon-(\\d+x\\d+)\\.[a-zA-Z0-9]+$");
 
     /**
      * <p>Creates the main application instance.</p>
@@ -96,19 +110,56 @@ public class Application extends SpringBootServletInitializer implements AppShel
     @Override
     public void configurePage(final @NotNull AppShellSettings settings) {
         final var baseDir = appConfig.files().basedir();
-        final var stylePath = baseDir.resolve("custom", "styles", "styles.css");
 
+        final var stylePath = baseDir.resolve("custom", "styles", "styles.css");
         if (stylePath.toFile().exists()) {
             settings.addLink("stylesheet", "/custom/styles/styles.css");
         }
 
-        settings.addFavIcon("icon", "icons/icon.png", "1024x1024");
-        settings.addFavIcon("icon", "icons/favicon-512x512.png", "512x512");
-        settings.addFavIcon("icon", "icons/favicon-192x192.png", "192x192");
-        settings.addFavIcon("icon", "icons/favicon-180x180.png", "180x180");
-        settings.addFavIcon("icon", "icons/favicon-32x32.png", "32x32");
-        settings.addFavIcon("icon", "icons/favicon-16x16.png", "16x16");
-        settings.addLink("shortcut icon", "icons/favicon.ico");
+        if (!addCustomFavicon(settings, baseDir)) {
+            settings.addFavIcon("icon", "icons/icon.png", "1024x1024");
+            settings.addFavIcon("icon", "icons/favicon-512x512.png", "512x512");
+            settings.addFavIcon("icon", "icons/favicon-192x192.png", "192x192");
+            settings.addFavIcon("icon", "icons/favicon-180x180.png", "180x180");
+            settings.addFavIcon("icon", "icons/favicon-32x32.png", "32x32");
+            settings.addFavIcon("icon", "icons/favicon-16x16.png", "16x16");
+            settings.addLink("shortcut icon", "icons/favicon.ico");
+        }
+    }
+
+    private boolean addCustomFavicon(final @NonNull AppShellSettings settings, final @NotNull Path baseDir) {
+        final var faviconDir = baseDir.resolve("custom").resolve("favicon");
+
+        if (!Files.isDirectory(faviconDir)) {
+            return false;
+        }
+
+        try (var files = Files.list(faviconDir)) {
+            final var faviconFound = new AtomicBoolean(false);
+            files
+                    .filter(Files::isRegularFile)
+                    .map(Path::getFileName)
+                    .map(Path::toString)
+                    .forEach(fileName -> {
+                        if ("favicon.ico".equals(fileName)) {
+                            settings.addLink("shortcut icon", "/custom/favicon/" + fileName);
+                            faviconFound.set(true);
+                        } else {
+                            final var matcher = faviconFilenamePattern.matcher(fileName);
+                            if (matcher.matches()) {
+                                final var size = matcher.group(1);
+                                settings.addFavIcon("icon", "/custom/favicon/" + fileName, size);
+                                faviconFound.set(true);
+                            } else {
+                                LOGGER.warn("Invalid favicon filename syntax: {}", fileName);
+                            }
+                        }
+                    });
+            return faviconFound.get();
+        } catch (IOException e) {
+            LOGGER.warn("Could not read favicon directory: {}", faviconDir, e);
+        }
+        return false;
     }
 
     /**
