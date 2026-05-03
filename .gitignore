@@ -66,3 +66,10 @@ nb-configuration.xml
 codecov
 codecov.SHA256SUM
 codecov.SHA256SUM.sig
+
+# Coding Assistants
+.codex/
+.aider*
+.cursor/
+.roo/
+.windsurf/
