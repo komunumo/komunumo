@@ -26,6 +26,7 @@ import app.komunumo.infra.ui.vaadin.components.KomunumoMessageBox;
 import app.komunumo.infra.ui.vaadin.control.LinkUtil;
 import app.komunumo.infra.ui.vaadin.layout.AbstractView;
 import app.komunumo.infra.ui.vaadin.layout.WebsiteLayout;
+import app.komunumo.util.CalendarUtil;
 import app.komunumo.util.DateTimeUtil;
 import app.komunumo.util.ImageUtil;
 import app.komunumo.util.ParseUtil;
@@ -43,12 +44,14 @@ import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
+import com.vaadin.flow.server.streams.DownloadHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.time.ZonedDateTime;
 import java.util.Locale;
 
@@ -124,6 +127,15 @@ public final class EventDetailView extends AbstractView implements BeforeEnterOb
         final var description = new Markdown(event.description());
         description.addClassName("event-description");
         pageContent.add(description);
+
+        var calendarUrl = CalendarUtil.resolveCalendarUrl(event);
+        if (calendarUrl != null) {
+            File calendarFile = new File(calendarUrl);
+            final var downloadLink  = new Anchor(DownloadHandler.forFile(calendarFile), "Add to calendar");
+            downloadLink.addClassName("export-download-link");
+            final var downloadParagraph = new Paragraph(downloadLink);
+            pageContent.add(downloadParagraph);
+        }
 
         final var participantCount = this.participantService.getParticipantCount(event);
         final var loggedInUser = loginService.getLoggedInUser();

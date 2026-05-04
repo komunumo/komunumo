@@ -30,6 +30,7 @@ import app.komunumo.infra.ui.vaadin.components.ImageUpload;
 import app.komunumo.infra.ui.vaadin.components.MarkdownEditor;
 import app.komunumo.infra.ui.vaadin.layout.AbstractView;
 import app.komunumo.infra.ui.vaadin.layout.WebsiteLayout;
+import app.komunumo.util.CalendarUtil;
 import app.komunumo.util.SecurityUtil;
 import app.komunumo.util.TimeZoneUtil;
 import com.vaadin.flow.component.ClickEvent;
@@ -293,6 +294,8 @@ public final class CreateEventView extends AbstractView implements AfterNavigati
             final var newEvent = new EventDto(null, communityId, null, null, title, description,
                     location, beginDateTime, endDateTime, imageId, anonymousParticipation, visibility, status);
             final var event = eventService.storeEvent(newEvent);
+
+            CalendarUtil.storeCalendar(event);
 
             showNotification(getTranslation("event.boundary.CreateEventView.notification.success"), SUCCESS);
             UI.getCurrent().navigate("events/%s".formatted(event.id()));
