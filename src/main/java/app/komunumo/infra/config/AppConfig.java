@@ -17,7 +17,6 @@
  */
 package app.komunumo.infra.config;
 
-import app.komunumo.util.CalendarUtil;
 import app.komunumo.util.ImageUtil;
 import jakarta.annotation.PostConstruct;
 import org.jetbrains.annotations.NotNull;
@@ -38,7 +37,6 @@ public record AppConfig(@NotNull String version,
     @PostConstruct
     public void configureUtilityClasses() {
         ImageUtil.initialize(this);
-        CalendarUtil.initialize(this);
     }
 
 }

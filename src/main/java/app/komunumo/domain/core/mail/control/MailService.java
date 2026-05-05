@@ -22,10 +22,12 @@ import app.komunumo.domain.core.mail.entity.MailFormat;
 import app.komunumo.domain.core.mail.entity.MailTemplate;
 import app.komunumo.domain.core.mail.entity.MailTemplateId;
 import app.komunumo.infra.config.AppConfig;
+import jakarta.mail.MessagingException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.Resource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
@@ -111,6 +113,29 @@ public final class MailService {
                             final @NotNull MailFormat format,
                             final @Nullable Map<String, String> variables,
                             final @NotNull String... emailAddresses) {
+        return sendMail(mailTemplateId, locale, format, variables, null, emailAddresses);
+    }
+
+    /**
+     * <p>Sends a mail with attachments based on the requested template, locale, and output format.</p>
+     *
+     * <p>Template variables are enriched with instance-level variables ({@code instanceName},
+     * {@code instanceUrl}) before rendering subject and body.</p>
+     *
+     * @param mailTemplateId the template identifier
+     * @param locale the locale used to resolve the template language
+     * @param format the desired output format for the mail body
+     * @param variables optional template variables provided by the caller
+     * @param attachments optional attachments provided by the caller
+     * @param emailAddresses one or more recipient addresses
+     * @return {@code true} if sending succeeded; otherwise {@code false}
+     */
+    public boolean sendMail(final @NotNull MailTemplateId mailTemplateId,
+                            final @NotNull Locale locale,
+                            final @NotNull MailFormat format,
+                            final @Nullable Map<String, String> variables,
+                            final @Nullable Map<String, Resource> attachments,
+                            final @NotNull String... emailAddresses) {
         final var instanceName = configurationService.getConfiguration(INSTANCE_NAME);
         final var instanceUrl = configurationService.getConfiguration(INSTANCE_URL);
         final HashMap<String, String> allVariables = new HashMap<>();
@@ -123,10 +148,11 @@ public final class MailService {
         final var mailTemplate = getMailTemplate(mailTemplateId, locale).orElseThrow();
         final var subject = "[%s] %s".formatted(instanceName, replaceVariables(mailTemplate.subject(), allVariables));
         final var markdown = replaceVariables(mailTemplate.markdown(), allVariables);
+        final var hasAttachments = attachments != null && !attachments.isEmpty();
 
         try {
             final var mimeMessage = mailSender.createMimeMessage();
-            final var helper = new MimeMessageHelper(mimeMessage, false, StandardCharsets.UTF_8.name());
+            final var helper = new MimeMessageHelper(mimeMessage, hasAttachments, StandardCharsets.UTF_8.name());
 
             helper.setTo(emailAddresses);
             helper.setFrom(appConfig.mail().from());
@@ -142,6 +168,16 @@ public final class MailService {
                     ? markdown
                     : convertMarkdownToHtml(markdown);
             helper.setText(body, format == HTML);
+
+            if(hasAttachments) {
+                attachments.forEach((attachmentName, attachment) -> {
+                    try {
+                        helper.addAttachment(attachmentName, attachment);
+                    } catch (MessagingException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+            }
 
             mailSender.send(mimeMessage);
 

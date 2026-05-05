@@ -20,47 +20,58 @@ package app.komunumo.util;
 import app.komunumo.domain.event.entity.EventDto;
 import app.komunumo.domain.event.entity.EventStatus;
 import app.komunumo.domain.event.entity.EventVisibility;
-import app.komunumo.infra.config.AppConfig;
-import app.komunumo.infra.config.DemoConfig;
-import app.komunumo.infra.config.FilesConfig;
-import app.komunumo.infra.config.InstanceConfig;
-import app.komunumo.infra.config.MailConfig;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
+import org.springframework.core.io.Resource;
 
 import java.io.IOException;
-import java.nio.file.Path;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 
-class CalendarUtilTest {
-    @TempDir
-    private Path tempDir;
+import static org.assertj.core.api.Assertions.assertThat;
 
-    @BeforeEach
-    public void setUp() throws IOException {
-        final var demoConfig = new DemoConfig(false, "");
-        final var filesConfig = new FilesConfig(tempDir);
-        final var mailConfig = new MailConfig("noreply@foo.bar", "support@foo.bar");
-        final var instanceConfig = new InstanceConfig("admin@foo.bar");
-        final var appConfig = new AppConfig("0.0.0", demoConfig, filesConfig, instanceConfig, mailConfig);
-        CalendarUtil.initialize(appConfig);
-    }
+class CalendarUtilTest {
 
     @Test
-    void testICalCreation() {
+    void testGenerateCalendarResource() throws IOException {
         ZoneId zoneId = ZoneId.systemDefault();
         final var beginDateTime = ZonedDateTime.of(LocalDateTime.now(), zoneId);
         final var endDateTime = ZonedDateTime.of(LocalDateTime.now().plusHours(1), zoneId);
         final var event = createEvent(beginDateTime, endDateTime);
 
-        CalendarUtil.storeCalendar(event);
+        Resource resource = CalendarUtil.generateCalendarResource(event);
 
-        var calendarUrl = CalendarUtil.resolveCalendarUrl(event);
-        System.out.println(calendarUrl);
+        assertThat(resource).isNotNull();
+        assertThat(resource.exists()).isTrue();
+
+        // Convert resource content to string for validation
+        String content = new String(resource.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+
+        // Verify iCal format headers
+        assertThat(content).contains("BEGIN:VCALENDAR");
+        assertThat(content).contains("VERSION:2.0");
+        assertThat(content).contains("PRODID:-//Events Calendar//iCal4j 1.0//EN");
+
+        // Verify Event specific details
+        assertThat(content).contains("BEGIN:VEVENT");
+        assertThat(content).contains("SUMMARY:Test Event");
+        assertThat(content).contains("DESCRIPTION:Test Description");
+        assertThat(content).contains("LOCATION:Test Location");
+        assertThat(content).contains("END:VEVENT");
+        assertThat(content).contains("END:VCALENDAR");
+    }
+
+    @Test
+    void testGenerateCalendarBytes() {
+        final var event = createEvent(ZonedDateTime.now(), ZonedDateTime.now().plusHours(1));
+
+        byte[] bytes = CalendarUtil.generateCalendarBytes(event);
+
+        assertThat(bytes).isNotEmpty();
+        String content = new String(bytes, StandardCharsets.UTF_8);
+        assertThat(content).startsWith("BEGIN:VCALENDAR");
     }
 
     private static EventDto createEvent(final ZonedDateTime begin, final ZonedDateTime end) {

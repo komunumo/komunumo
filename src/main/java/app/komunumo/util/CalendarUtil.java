@@ -1,7 +1,23 @@
+/*
+ * Komunumo - Open Source Community Manager
+ * Copyright (C) Marcus Fihlon and the individual contributors to Komunumo.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 package app.komunumo.util;
 
 import app.komunumo.domain.event.entity.EventDto;
-import app.komunumo.infra.config.AppConfig;
 import net.fortuna.ical4j.data.CalendarOutputter;
 import net.fortuna.ical4j.model.Calendar;
 import net.fortuna.ical4j.model.component.VEvent;
@@ -12,63 +28,21 @@ import net.fortuna.ical4j.model.property.immutable.ImmutableCalScale;
 import net.fortuna.ical4j.model.property.immutable.ImmutableVersion;
 import net.fortuna.ical4j.util.RandomUidGenerator;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.UUID;
 
 public final class CalendarUtil {
 
-    private static final @NotNull Path RELATIVE_CALENDAR_PATH = Path.of("uploads", "calendars");
-
     private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(CalendarUtil.class);
-    private static Path uploadCalendarPath;
 
-    public static void initialize(final @NotNull AppConfig appConfig) {
-        uploadCalendarPath = appConfig.files().basedir().resolve(RELATIVE_CALENDAR_PATH);
-    }
-
-    public static @Nullable String resolveCalendarUrl(final @Nullable EventDto event) {
-        if (event == null || event.id() == null) {
-            return null;
-        }
-
-        Path filePath = uploadCalendarPath.resolve(event.id() + ".ics");
-
-        // Check if the file actually exists on the disk
-        if (Files.exists(filePath)) {
-            return filePath.toString();
-        }
-
-        return null;
-    }
-
-    public static void storeCalendar(final @NotNull EventDto event) {
-        final UUID eventId = event.id();
-        if (eventId == null) {
-            throw new IllegalArgumentException("EventDto must have an ID!");
-        }
-
-        Calendar icsCalendar = createCalendar(event);
-
-        try {
-            Files.createDirectories(uploadCalendarPath);
-            File file = uploadCalendarPath.resolve(eventId + ".ics").toFile();
-            FileOutputStream fileOutputStream = new FileOutputStream(file);
-            CalendarOutputter outputter = new CalendarOutputter();
-            outputter.output(icsCalendar, fileOutputStream);
-
-            LOGGER.info("Stored calendar in '{}'", uploadCalendarPath.toAbsolutePath());
-        } catch (IOException e) {
-            LOGGER.error("Failed to create calendar in '{}'", uploadCalendarPath.toAbsolutePath());
-        }
+    public static Resource generateCalendarResource(final @NotNull EventDto event){
+        var calendarBytes = generateCalendarBytes(event);
+        return new ByteArrayResource(calendarBytes);
     }
 
     public static byte[] generateCalendarBytes(final @NotNull EventDto event) {
