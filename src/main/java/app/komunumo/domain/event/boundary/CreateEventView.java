@@ -30,7 +30,6 @@ import app.komunumo.infra.ui.vaadin.components.ImageUpload;
 import app.komunumo.infra.ui.vaadin.components.MarkdownEditor;
 import app.komunumo.infra.ui.vaadin.layout.AbstractView;
 import app.komunumo.infra.ui.vaadin.layout.WebsiteLayout;
-import app.komunumo.util.CalendarUtil;
 import app.komunumo.util.SecurityUtil;
 import app.komunumo.util.TimeZoneUtil;
 import com.vaadin.flow.component.ClickEvent;
@@ -221,6 +220,7 @@ public final class CreateEventView extends AbstractView implements AfterNavigati
         timeZoneSelector.setItemLabelGenerator(ZoneId::getId);
         timeZoneSelector.setItems(ZoneId.getAvailableZoneIds()
                 .stream()
+                .filter(id -> !id.startsWith("ical4j")) // Filter out the iCal4j internal zones
                 .sorted()
                 .map(ZoneId::of)
                 .toList());
