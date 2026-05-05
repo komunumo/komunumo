@@ -17,7 +17,7 @@ services:
         target: /var/lib/mysql
 
   phpmyadmin:
-    image: docker.io/phpmyadmin/phpmyadmin:latest
+    image: docker.io/linuxserver/phpmyadmin:latest
     container_name: phpmyadmin
     restart: unless-stopped
     ports:
@@ -33,7 +33,7 @@ services:
       - mariadb
 
   mailpit:
-    image: docker.io/axllent/mailpit
+    image: docker.io/axllent/mailpit:v1.27
     container_name: mailpit
     restart: unless-stopped
     ports:

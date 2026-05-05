@@ -941,6 +941,39 @@
 
     <profiles>
         <profile>
+            <id>local-stack</id>
+            <properties>
+                <spring-boot.run.profiles>local</spring-boot.run.profiles>
+            </properties>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>local-stack-compose-up</id>
+                                <phase>validate</phase>
+                                <goals>
+                                    <goal>exec</goal>
+                                </goals>
+                                <configuration>
+                                    <executable>docker</executable>
+                                    <workingDirectory>${project.basedir}/dev-tools</workingDirectory>
+                                    <arguments>
+                                        <argument>compose</argument>
+                                        <argument>up</argument>
+                                        <argument>-d</argument>
+                                    </arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+
+        <profile>
             <id>colima</id>
             <properties>
                 <testcontainers.docker.host>unix://${user.home}/.colima/default/docker.sock</testcontainers.docker.host>
