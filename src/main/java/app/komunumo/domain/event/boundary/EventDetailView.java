@@ -19,6 +19,7 @@ package app.komunumo.domain.event.boundary;
 
 import app.komunumo.domain.core.config.control.ConfigurationService;
 import app.komunumo.domain.event.control.EventService;
+import app.komunumo.domain.event.entity.EventDto;
 import app.komunumo.domain.event.entity.EventWithImageDto;
 import app.komunumo.domain.participant.control.ParticipantService;
 import app.komunumo.domain.user.control.LoginService;
@@ -45,13 +46,15 @@ import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadResponse;
+import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
+import java.io.ByteArrayInputStream;
 import java.time.ZonedDateTime;
 import java.util.Locale;
 
@@ -128,13 +131,8 @@ public final class EventDetailView extends AbstractView implements BeforeEnterOb
         description.addClassName("event-description");
         pageContent.add(description);
 
-        var calendarUrl = CalendarUtil.resolveCalendarUrl(event);
-        if (calendarUrl != null) {
-            File calendarFile = new File(calendarUrl);
-            final var downloadLink  = new Anchor(DownloadHandler.forFile(calendarFile), "Add to calendar");
-            downloadLink.addClassName("export-download-link");
-            final var downloadParagraph = new Paragraph(downloadLink);
-            pageContent.add(downloadParagraph);
+        if(participantService.isLoggedInUserParticipantOf(event)){
+            createCalendarLink(event);
         }
 
         final var participantCount = this.participantService.getParticipantCount(event);
@@ -215,6 +213,26 @@ public final class EventDetailView extends AbstractView implements BeforeEnterOb
         final var paragraph = new Paragraph(label + ": " + localizedEndDate);
         paragraph.addClassName(className);
         pageContent.add(paragraph);
+    }
+
+    private void createCalendarLink(final @NotNull EventDto event){
+        var calendarBytes = CalendarUtil.generateCalendarBytes(event);
+        final String fileName = event.id() + ".ics";
+        final var downloadLink = new Anchor(
+                getDownloadHandler(calendarBytes, fileName),
+                getTranslation("event.boundary.EventDetailView.calendarLink"));
+        downloadLink.addClassName("export-download-link");
+        final var downloadParagraph = new Paragraph(downloadLink);
+        pageContent.add(downloadParagraph);
+    }
+
+    private static @NonNull InputStreamDownloadHandler getDownloadHandler(
+            final byte[] calendarData, final @NotNull String fileName) {
+        return DownloadHandler.fromInputStream(_ -> new DownloadResponse(
+                new ByteArrayInputStream(calendarData),
+                fileName,
+                "application/json",
+                -1));
     }
 
     @Override

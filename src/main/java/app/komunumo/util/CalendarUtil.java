@@ -16,6 +16,7 @@ import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -27,10 +28,8 @@ public final class CalendarUtil {
 
     private static final @NotNull Path RELATIVE_CALENDAR_PATH = Path.of("uploads", "calendars");
 
-
     private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(CalendarUtil.class);
     private static Path uploadCalendarPath;
-
 
     public static void initialize(final @NotNull AppConfig appConfig) {
         uploadCalendarPath = appConfig.files().basedir().resolve(RELATIVE_CALENDAR_PATH);
@@ -70,6 +69,18 @@ public final class CalendarUtil {
         } catch (IOException e) {
             LOGGER.error("Failed to create calendar in '{}'", uploadCalendarPath.toAbsolutePath());
         }
+    }
+
+    public static byte[] generateCalendarBytes(final @NotNull EventDto event) {
+        Calendar icsCalendar = createCalendar(event);
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        CalendarOutputter outputter = new CalendarOutputter();
+        try {
+            outputter.output(icsCalendar, out);
+        } catch (IOException e) {
+            LOGGER.error("Failed to generate calendar based on id: {}", event.id());
+        }
+        return out.toByteArray();
     }
 
     private static Calendar createCalendar(final EventDto event) {

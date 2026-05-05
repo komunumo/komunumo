@@ -295,8 +295,6 @@ public final class CreateEventView extends AbstractView implements AfterNavigati
                     location, beginDateTime, endDateTime, imageId, anonymousParticipation, visibility, status);
             final var event = eventService.storeEvent(newEvent);
 
-            CalendarUtil.storeCalendar(event);
-
             showNotification(getTranslation("event.boundary.CreateEventView.notification.success"), SUCCESS);
             UI.getCurrent().navigate("events/%s".formatted(event.id()));
         } else {
