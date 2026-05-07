@@ -389,6 +389,18 @@ You can run *Komunumo* either via your IDE or the command line. On the command l
 
 This runs the `app.komunumo.Application` main class.
 
+If you want to use local defaults from `application-local.properties` (database, mail, demo mode, admin), activate the `local` Spring profile:
+
+```bash
+SPRING_PROFILES_ACTIVE=local ./mvnw
+```
+
+To start the complete local stack in one command (Docker Compose services from `dev-tools` + application with `local` profile), use:
+
+```bash
+./mvnw -Plocal-stack
+```
+
 ### Open in Browser
 
 Once the application is running, open your browser and navigate to:
@@ -583,6 +595,7 @@ To start a local MariaDB instance using [Docker](https://www.docker.com/) or [Po
 | Command          | What it does                                                      |
 |------------------|-------------------------------------------------------------------|
 | `./mvnw`         | compile and run the app                                           |
+| `./mvnw -Plocal-stack` | start local docker stack and run app with `local` profile  |
 | `./mvnw clean`   | cleanup generated files and build artefacts                       |
 | `./mvnw compile` | compile the code without running the tests                        |
 | `./mvnw test`    | compile and run all tests                                         |
