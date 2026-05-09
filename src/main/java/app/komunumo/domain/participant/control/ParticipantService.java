@@ -35,10 +35,12 @@ import app.komunumo.domain.user.control.UserService;
 import app.komunumo.domain.user.entity.UserDto;
 import app.komunumo.infra.i18n.TranslationProvider;
 import app.komunumo.infra.ui.vaadin.control.LinkUtil;
+import app.komunumo.util.CalendarUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.VisibleForTesting;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -213,8 +215,12 @@ public final class ParticipantService {
         final var email = user.email();
         if (email != null && !email.isBlank()) {
             final Map<String, String> mailVariables = Map.of("eventTitle", eventTitle, "eventLink", eventLink);
+
+            final var calendarResource = CalendarUtil.generateCalendarResource(event);
+            final Map<String, Resource> attachments = Map.of("event.ics", calendarResource);
+
             mailService.sendMail(MailTemplateId.EVENT_REGISTRATION_SUCCESS, locale, MailFormat.MARKDOWN,
-                    mailVariables, email);
+                    mailVariables, attachments, email);
         }
 
         notifyEventManagersAboutParticipationChange(event, user, locale,
