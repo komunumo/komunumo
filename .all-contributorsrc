@@ -193,6 +193,15 @@
       "contributions": [
         "doc"
       ]
+    },
+    {
+      "login": "YohanDacosta",
+      "name": "Yohan Diaz Acosta",
+      "avatar_url": "https://avatars.githubusercontent.com/u/170967327?v=4",
+      "profile": "https://github.com/YohanDacosta",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
