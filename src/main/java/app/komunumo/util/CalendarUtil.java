@@ -40,7 +40,7 @@ public final class CalendarUtil {
 
     private static final @NotNull Logger LOGGER = LoggerFactory.getLogger(CalendarUtil.class);
 
-    public static Resource generateCalendarResource(final @NotNull EventDto event){
+    public static Resource generateCalendarResource(final @NotNull EventDto event) {
         var calendarBytes = generateCalendarBytes(event);
         return new ByteArrayResource(calendarBytes);
     }
@@ -74,5 +74,9 @@ public final class CalendarUtil {
         icsCalendar.add(meeting);
 
         return icsCalendar;
+    }
+
+    private CalendarUtil() {
+        throw new IllegalStateException("Utility class");
     }
 }

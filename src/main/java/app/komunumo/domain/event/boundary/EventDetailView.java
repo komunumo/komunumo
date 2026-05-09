@@ -131,7 +131,7 @@ public final class EventDetailView extends AbstractView implements BeforeEnterOb
         description.addClassName("event-description");
         pageContent.add(description);
 
-        if(participantService.isLoggedInUserParticipantOf(event)){
+        if (participantService.isLoggedInUserParticipantOf(event)) {
             createCalendarLink(event);
         }
 
@@ -215,7 +215,7 @@ public final class EventDetailView extends AbstractView implements BeforeEnterOb
         pageContent.add(paragraph);
     }
 
-    private void createCalendarLink(final @NotNull EventDto event){
+    private void createCalendarLink(final @NotNull EventDto event) {
         var calendarBytes = CalendarUtil.generateCalendarBytes(event);
         final String fileName = event.id() + ".ics";
         final var downloadLink = new Anchor(

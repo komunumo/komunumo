@@ -169,7 +169,7 @@ public final class MailService {
                     : convertMarkdownToHtml(markdown);
             helper.setText(body, format == HTML);
 
-            if(hasAttachments) {
+            if (hasAttachments) {
                 attachments.forEach((attachmentName, attachment) -> {
                     try {
                         helper.addAttachment(attachmentName, attachment);
