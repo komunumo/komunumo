@@ -82,7 +82,7 @@ final class SvgHelper {
             final var document = parseSvg(wrapperSvg, false);
 
             final var xPath = XPathFactory.newInstance().newXPath();
-            final var xpathExpr = String.format("//%s[@id='%s']", "g", "Logo");
+            final var xpathExpr = "//%s[@id='%s']".formatted("g", "Logo");
             final var gLogo = (Element) xPath.evaluate(xpathExpr, document, XPathConstants.NODE);
 
             if (gLogo == null) {
