@@ -62,7 +62,17 @@ public enum ConfigurationSetting {
     /**
      * <p>Whether to allow account registration or not.</p>
      */
-    INSTANCE_REGISTRATION_ALLOWED("instance.registrationAllowed", false, "true");
+    INSTANCE_REGISTRATION_ALLOWED("instance.registrationAllowed", false, "true"),
+
+    /**
+     * <p>URL to the privacy policy page.</p>
+     */
+    INSTANCE_PRIVACY_URL("instance.privacyUrl", false, ""),
+
+    /**
+     * <p>URL to the imprint/legal notice page.</p>
+     */
+    INSTANCE_IMPRINT_URL("instance.imprintUrl", false, "");
 
     /**
      * <p>The unique key identifying this configuration setting.</p>

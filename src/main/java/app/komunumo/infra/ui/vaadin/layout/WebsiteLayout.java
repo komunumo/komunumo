@@ -43,6 +43,8 @@ import org.slf4j.LoggerFactory;
 
 import static app.komunumo.domain.core.config.entity.ConfigurationSetting.INSTANCE_NAME;
 import static app.komunumo.domain.core.config.entity.ConfigurationSetting.INSTANCE_SLOGAN;
+import static app.komunumo.domain.core.config.entity.ConfigurationSetting.INSTANCE_PRIVACY_URL;
+import static app.komunumo.domain.core.config.entity.ConfigurationSetting.INSTANCE_IMPRINT_URL;
 
 @AnonymousAllowed
 public final class WebsiteLayout extends Div implements RouterLayout, BeforeEnterObserver {
@@ -77,7 +79,9 @@ public final class WebsiteLayout extends Div implements RouterLayout, BeforeEnte
         add(main);
 
         final var komunumoVersion = appConfig.version();
-        add(new PageFooter(ui, komunumoVersion));
+        final var privacyUrl = configurationService.getConfiguration(INSTANCE_PRIVACY_URL);
+        final var imprintUrl = configurationService.getConfiguration(INSTANCE_IMPRINT_URL);
+        add(new PageFooter(ui, komunumoVersion, privacyUrl, imprintUrl));
     }
 
     private void addPageHeader(final @NotNull ConfigurationService configurationService) {
