@@ -214,7 +214,7 @@ class ParticipantServiceTest {
         assertThat(result).isTrue();
         verify(participantStore).storeParticipant(participant);
         verify(mailService).sendMail(eq(MailTemplateId.EVENT_REGISTRATION_SUCCESS), eq(Locale.ENGLISH),
-                eq(MailFormat.MARKDOWN), any(Map.class), eq("member@example.org"));
+                eq(MailFormat.MARKDOWN), any(Map.class), any(Map.class), eq("member@example.org"));
 
         final var mapCaptor = ArgumentCaptor.forClass(Map.class);
         final var recipientsCaptor = ArgumentCaptor.forClass(String[].class);
