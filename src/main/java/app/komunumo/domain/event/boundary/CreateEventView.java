@@ -220,6 +220,7 @@ public final class CreateEventView extends AbstractView implements AfterNavigati
         timeZoneSelector.setItemLabelGenerator(ZoneId::getId);
         timeZoneSelector.setItems(ZoneId.getAvailableZoneIds()
                 .stream()
+                .filter(id -> !id.startsWith("ical4j")) // Filter out the iCal4j internal zones
                 .sorted()
                 .map(ZoneId::of)
                 .toList());
