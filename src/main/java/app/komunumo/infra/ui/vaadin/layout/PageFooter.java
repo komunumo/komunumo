@@ -17,24 +17,45 @@
  */
 package app.komunumo.infra.ui.vaadin.layout;
 
+import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.AnchorTarget;
 import com.vaadin.flow.component.html.Footer;
+import com.vaadin.flow.dom.Element;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.time.Year;
 
 public final class PageFooter extends Footer {
 
     public PageFooter(final @NotNull UI ui,
-                      final @NotNull String version) {
+                      final @NotNull String version,
+                      final @Nullable String privacyUrl,
+                      final @Nullable String imprintUrl) {
         super();
         addClassName("page-footer");
 
         final var komunumoFooter = ui.getTranslation("vaadin.components.PageFooter.komunumo",
                 version, String.valueOf(Year.now().getValue()));
         add(new Anchor("https://komunumo.app/", komunumoFooter, AnchorTarget.BLANK));
+
+        if (privacyUrl != null && !privacyUrl.isEmpty()) {
+            getElement().appendChild(new Element("br"));
+            final var privacyText = ui.getTranslation("vaadin.components.PageFooter.privacy");
+            add(new Anchor(privacyUrl, privacyText, AnchorTarget.BLANK));
+        }
+
+        if (imprintUrl != null && !imprintUrl.isEmpty()) {
+            if (privacyUrl != null && !privacyUrl.isEmpty()) {
+                add(new Text(" | "));
+            } else {
+                getElement().appendChild(new Element("br"));
+            }
+            final var imprintText = ui.getTranslation("vaadin.components.PageFooter.imprint");
+            add(new Anchor(imprintUrl, imprintText, AnchorTarget.BLANK));
+        }
     }
 
 }

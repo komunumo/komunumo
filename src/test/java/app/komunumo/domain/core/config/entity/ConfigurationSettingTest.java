@@ -54,4 +54,26 @@ class ConfigurationSettingTest {
         assertThat(ConfigurationSetting.INSTANCE_SLOGAN.isLanguageDependent()).isTrue();
     }
 
+    @Test
+    void fromString_privacyUrl() {
+        assertThat(ConfigurationSetting.fromString("instance.privacyUrl"))
+                .isEqualTo(ConfigurationSetting.INSTANCE_PRIVACY_URL);
+    }
+
+    @Test
+    void fromString_imprintUrl() {
+        assertThat(ConfigurationSetting.fromString("instance.imprintUrl"))
+                .isEqualTo(ConfigurationSetting.INSTANCE_IMPRINT_URL);
+    }
+
+    @Test
+    void privacyUrl_notLanguageDependent() {
+        assertThat(ConfigurationSetting.INSTANCE_PRIVACY_URL.isLanguageDependent()).isFalse();
+    }
+
+    @Test
+    void imprintUrl_notLanguageDependent() {
+        assertThat(ConfigurationSetting.INSTANCE_IMPRINT_URL.isLanguageDependent()).isFalse();
+    }
+
 }
