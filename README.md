@@ -1,3 +1,8 @@
+> [!IMPORTANT]
+> **This repository is no longer maintained.**  
+> Development has moved to the [iJUG](https://www.ijug.eu/) Forgejo instance:  
+> https://git.ijug.eu/komunumo/komunumo/
+
 # Komunumo
 
 [![All Tests](https://github.com/komunumo/komunumo/actions/workflows/all-tests.yml/badge.svg)](https://github.com/komunumo/komunumo/actions/workflows/all-tests.yml)
